@@ -1,14 +1,12 @@
 import React, { Suspense, useMemo } from "react"
 import { useGLTF, useTexture } from "@react-three/drei"
 import {
-  Color,
   MeshStandardMaterial,
   DoubleSide,
   NormalBlending,
   NearestFilter,
+  Color,
 } from "three"
-import Modeload from "../../components/helpers/Modeload"
-import StatsPanel from "../../components/helpers/StatsPanel"
 
 // Componente de material e texturas para o Castelo
 const useCastleMaterial = () => {
@@ -18,6 +16,7 @@ const useCastleMaterial = () => {
     emissiveMap: "/texture/project6/CastleEmissive.jpg",
   })
 
+  // Ajustes de texturas
   useMemo(() => {
     Object.values(textures).forEach(texture => {
       if (texture) {
@@ -44,35 +43,17 @@ const useCastleMaterial = () => {
   }, [textures])
 }
 
-const CastleModel = () => {
+const CastleTheater = () => {
   const { nodes } = useGLTF("/models/project6/Castle.glb")
   const material = useCastleMaterial()
 
   return (
     <group dispose={null}>
-      <mesh
-        geometry={nodes.castleUV_Baked.geometry}
-        material={material}
-        position={[0, 0, 0]}
-        rotation={[0, 0, 0]}
-        scale={1}
-      />
+      <mesh geometry={nodes.castleUV_Baked.geometry} material={material} />
     </group>
   )
 }
 
 useGLTF.preload("/models/project6/Castle.glb")
 
-// Componente Principal
-const Castle = () => {
-  return (
-    <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
-      <StatsPanel />
-      <Suspense fallback={<Modeload />}>
-        <CastleModel />
-      </Suspense>
-    </group>
-  )
-}
-
-export default Castle
+export default CastleTheater
