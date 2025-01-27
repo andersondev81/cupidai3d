@@ -8,8 +8,8 @@ import {
   NormalBlending,
   NearestFilter,
 } from "three"
-import Modeload from "../../../components/helpers/Modeload"
-import StatsPanel from "../../../components/helpers/StatsPanel"
+import Modeload from "../../components/helpers/Modeload"
+import StatsPanel from "../../components/helpers/StatsPanel"
 
 // Posições da câmera para cada seção
 const cameraPositions = {

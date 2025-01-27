@@ -1,11 +1,12 @@
 // Experience.jsx
 import React, { Suspense, useState } from "react"
 import { Canvas } from "@react-three/fiber"
-import Castle from "../assets/models/proj6/Castle"
+import Castle from "../assets/models/Castle"
 import { EffectsTree } from "../components/helpers/EffectsTree"
-import CoudsD from "../assets/models/proj6/CloudsD"
+import CoudsD from "../assets/models/CloudsD"
 import { Grid } from "@react-three/drei"
-import { CastleUi } from "../assets/models/proj6/CastleUi"
+import { CastleUi } from "../assets/models/CastleUi"
+import CastleTheater from "../assets/models/CastleTheater"
 
 function Experience() {
   const [section, setSection] = useState(0)
@@ -17,13 +18,14 @@ function Experience() {
   }
 
   return (
-    <div className="w-full h-full bg-gradient-to-b from-[#bde0fe] to-[#ffafcc] ">
+    <div className="absolute top-0 left-0 w-full h-screen bg-gradient-to-b from-[#bde0fe] to-[#ffafcc] z-0">
       <Canvas camera={{ position: [0, 0, 20], fov: 45 }}>
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 10]} intensity={1} />
         <EffectsTree />
         <Suspense fallback={null}>
-          <Castle activeSection={activeSection} />
+          <CastleTheater />
+          {/* <Castle activeSection={activeSection} /> */}
           <CoudsD />
 
           <Grid
@@ -40,7 +42,7 @@ function Experience() {
           />
         </Suspense>
       </Canvas>
-      <CastleUi section={section} onSectionChange={handleSectionChange} />
+      {/* <CastleUi section={section} onSectionChange={handleSectionChange} /> */}
     </div>
   )
 }
