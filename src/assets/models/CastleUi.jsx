@@ -12,7 +12,7 @@ export const sections = [
 
 export const CastleUi = ({ section = 0, onSectionChange }) => {
   return (
-    <main className="w-full h-full flex flex-col items-center justify-center">
+    <main className="relative w-full h-full flex flex-col items-center justify-center">
       <div>
         {/* Intro */}
         <section

@@ -9,8 +9,8 @@ function CloudsD() {
 
   // Atualiza a intensidade da luz a cada intervalo aleatório
   useEffect(() => {
-    const minIntensity = 25
-    const maxIntensity = 100
+    const minIntensity = 0.1
+    const maxIntensity = 1
     const interval = setInterval(() => {
       const newIntensity =
         Math.random() * (maxIntensity - minIntensity) + minIntensity
@@ -35,7 +35,7 @@ function CloudsD() {
       {/* Luz Direcional - Fixa e não muda com a intensidade aleatória */}
       <directionalLight
         position={[10, 10, 10]}
-        intensity={2}
+        intensity={0.2}
         castShadow={true}
       />
 
@@ -70,9 +70,9 @@ function CloudsD() {
         position={[0, -5, 0]}
         speed={0.5}
         opacity={1}
-        width={10}
-        depth={10}
-        segments={26}
+        width={4}
+        depth={4}
+        segments={16}
         color={"#f0f0f0"}
         lightning={true}
         rayleigh={0.6}
@@ -90,13 +90,13 @@ function CloudsD() {
         speed={0.5}
         opacity={1}
         width={16}
-        depth={26}
-        segments={150}
+        depth={6}
+        segments={8}
         color={"#f0f0f0"}
         lightning={true}
         rayleigh={0.1}
         noise={8}
-        bounds={[8, 2, 16]}
+        bounds={[5, 2, 4]}
         fade={1}
         growth={1}
         scale={[1, 1, 1]}
