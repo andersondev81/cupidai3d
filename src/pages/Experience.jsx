@@ -4,7 +4,7 @@ import { Canvas } from "@react-three/fiber"
 import Castle from "../assets/models/Castle"
 import { EffectsTree } from "../components/helpers/EffectsTree"
 import CoudsD from "../assets/models/CloudsD"
-import { Grid } from "@react-three/drei"
+import { Grid, OrbitControls } from "@react-three/drei"
 import { CastleUi } from "../assets/models/CastleUi"
 import { Pole } from "../assets/models/Pole"
 
@@ -23,6 +23,7 @@ function Experience() {
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 10]} intensity={0.1} />
         <EffectsTree />
+        <OrbitControls />
         <Suspense fallback={null}>
           <Castle activeSection={activeSection} />
           {/* <CoudsD /> */}
