@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect, useMemo, useRef } from "react"
-import { useGLTF, useTexture, CameraControls } from "@react-three/drei"
-import { useControls, button, monitor } from "leva"
+import { useGLTF, useTexture, CameraControls, Html } from "@react-three/drei"
+import { useControls, button, monitor, folder } from "leva"
 import {
   Color,
   MeshStandardMaterial,
@@ -10,8 +10,8 @@ import {
 } from "three"
 import Modeload from "../../components/helpers/Modeload"
 import StatsPanel from "../../components/helpers/StatsPanel"
+import gsap from "gsap"
 
-// Posições da câmera para cada seção
 const cameraPositions = {
   intro: [
     29.077824806356972, 3.9710910170900005, 29.401594721548648,
@@ -39,7 +39,6 @@ const cameraPositions = {
   ],
 }
 
-// Componente de material e texturas para o Castelo
 const useCastleMaterial = () => {
   const textures = useTexture({
     map: "/texture/project6/CastleColorB.jpg",
@@ -92,31 +91,133 @@ const CastleModel = () => {
 
 useGLTF.preload("/models/project6/Castle.glb")
 
-// Componente Principal
 const Castle = ({ activeSection }) => {
   const controls = useRef()
   const statsRef = useRef()
+  const currentAnimation = useRef(null)
 
-  useControls("settings", {
-    fps: monitor(() => performance.now()),
-    smoothTime: {
-      value: 0.8,
-      min: 0.1,
-      max: 2,
-      step: 0.1,
-      onChange: v => (controls.current.smoothTime = v),
-    },
-    getLookAt: button(() => {
-      const position = controls.current.getPosition()
-      const target = controls.current.getTarget()
-      console.log([...position, ...target])
+  const {
+    smoothTime,
+    targetDelay,
+    targetDurationScale,
+    minDuration,
+    maxDuration,
+  } = useControls("Animation Settings", {
+    camera: folder({
+      smoothTime: {
+        value: 0.8,
+        min: 0.1,
+        max: 2,
+        step: 0.1,
+        onChange: v => (controls.current.smoothTime = v),
+      },
+    }),
+    animation: folder({
+      targetDelay: {
+        value: 0.2,
+        min: 0,
+        max: 1,
+        step: 0.05,
+        label: "Target Delay",
+      },
+      targetDurationScale: {
+        value: 0.8,
+        min: 0.5,
+        max: 1.5,
+        step: 0.05,
+        label: "Target Duration Scale",
+      },
+      minDuration: {
+        value: 1.2,
+        min: 0.5,
+        max: 2,
+        step: 0.1,
+        label: "Min Duration",
+      },
+      maxDuration: {
+        value: 2.5,
+        min: 1.5,
+        max: 4,
+        step: 0.1,
+        label: "Max Duration",
+      },
+    }),
+    debug: folder({
+      fps: monitor(() => performance.now()),
+      getLookAt: button(() => {
+        const position = controls.current.getPosition()
+        const target = controls.current.getTarget()
+        console.log([...position, ...target])
+      }),
     }),
   })
 
   const playTransition = sectionName => {
+    if (currentAnimation.current) {
+      currentAnimation.current.kill()
+    }
+
     const targetPosition = cameraPositions[sectionName]
     if (controls.current && targetPosition) {
-      controls.current.setLookAt(...targetPosition, true)
+      const [x, y, z, tx, ty, tz] = targetPosition
+      const currentPos = controls.current.getPosition()
+      const currentTarget = controls.current.getTarget()
+
+      // Calculate distance for dynamic duration
+      const positionDistance = Math.sqrt(
+        Math.pow(x - currentPos.x, 2) +
+          Math.pow(y - currentPos.y, 2) +
+          Math.pow(z - currentPos.z, 2)
+      )
+
+      // Base duration using the configurable min/max values
+      const baseDuration = Math.min(
+        Math.max(positionDistance * 0.1, minDuration),
+        maxDuration
+      )
+
+      // Create a timeline for synchronized animations
+      const tl = gsap.timeline({
+        defaults: {
+          ease: "power2.inOut",
+          onUpdate: () => {
+            controls.current.setPosition(
+              controls.current.x,
+              controls.current.y,
+              controls.current.z
+            )
+            controls.current.setTarget(
+              controls.current.tx,
+              controls.current.ty,
+              controls.current.tz
+            )
+          },
+        },
+      })
+
+      // Store the timeline for potential interruption
+      currentAnimation.current = tl
+
+      // Add position and target animations to timeline using configurable delays
+      tl.to(
+        controls.current,
+        {
+          x,
+          y,
+          z,
+          duration: baseDuration,
+        },
+        0
+      ).to(
+        controls.current,
+        {
+          tx,
+          ty,
+          tz,
+          duration: baseDuration * targetDurationScale,
+        },
+        baseDuration * targetDelay
+      )
     }
   }
 
@@ -124,7 +225,19 @@ const Castle = ({ activeSection }) => {
     if (activeSection) {
       playTransition(activeSection)
     }
-  }, [activeSection])
+
+    return () => {
+      if (currentAnimation.current) {
+        currentAnimation.current.kill()
+      }
+    }
+  }, [
+    activeSection,
+    targetDelay,
+    targetDurationScale,
+    minDuration,
+    maxDuration,
+  ])
 
   return (
     <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
