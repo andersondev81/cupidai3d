@@ -6,7 +6,7 @@ import { EffectsTree } from "../components/helpers/EffectsTree"
 import CoudsD from "../assets/models/CloudsD"
 import { Grid } from "@react-three/drei"
 import { CastleUi } from "../assets/models/CastleUi"
-import CastleTheater from "../assets/models/CastleTheater"
+import { Pole } from "../assets/models/Pole"
 
 function Experience() {
   const [section, setSection] = useState(0)
@@ -21,13 +21,12 @@ function Experience() {
     <div className="absolute top-0 left-0 w-full h-screen bg-gradient-to-b from-[#bde0fe] to-[#ffafcc] z-0">
       <Canvas camera={{ position: [0, 0, 20], fov: 45 }}>
         <ambientLight intensity={0.5} />
-        <directionalLight position={[10, 10, 10]} intensity={1} />
+        <directionalLight position={[10, 10, 10]} intensity={0.1} />
         <EffectsTree />
         <Suspense fallback={null}>
-          <CastleTheater />
-          {/* <Castle activeSection={activeSection} /> */}
-          <CoudsD />
-
+          <Castle activeSection={activeSection} />
+          {/* <CoudsD /> */}
+          <Pole position={[-3, -3.44, 8]} scale={[5, 5, 5]} />
           <Grid
             position={[0, -3.44, 0]} // Posição do grid
             sectionSize={3}
@@ -42,7 +41,7 @@ function Experience() {
           />
         </Suspense>
       </Canvas>
-      {/* <CastleUi section={section} onSectionChange={handleSectionChange} /> */}
+      <CastleUi section={section} onSectionChange={handleSectionChange} />
     </div>
   )
 }
