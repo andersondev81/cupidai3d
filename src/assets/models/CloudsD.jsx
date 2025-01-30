@@ -69,38 +69,19 @@ function CloudsD() {
       <Cloud
         position={[0, -5, 0]}
         speed={0.5}
-        opacity={1}
-        width={4}
-        depth={4}
-        segments={16}
+        opacity={0.2}
+        width={1}
+        depth={1}
+        segments={26}
         color={"#f0f0f0"}
         lightning={true}
-        rayleigh={0.6}
-        noise={8}
-        bounds={[6, 1, 6]}
-        fade={16}
+        rayleigh={0.01}
+        noise={4}
+        bounds={[16, 2, 12]}
+        fade={40}
         growth={4}
         scale={[1, 1, 1]}
-        seed={1}
-        concentrate="center"
-        receiveShadow={true}
-      />
-      <Cloud
-        position={[28, 3, 26]}
-        speed={0.5}
-        opacity={1}
-        width={16}
-        depth={6}
-        segments={8}
-        color={"#f0f0f0"}
-        lightning={true}
-        rayleigh={0.1}
-        noise={8}
-        bounds={[5, 2, 4]}
-        fade={1}
-        growth={1}
-        scale={[1, 1, 1]}
-        seed={1}
+        seed={8}
         concentrate="center"
         receiveShadow={true}
       />

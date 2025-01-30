@@ -78,12 +78,12 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
         <button
           onClick={() => onSectionChange(0, "intro")}
           className={`px-4 py-2 rounded-md ${
-            section === 0 ? "bg-blue-500 text-white" : "bg-gray-300 text-black"
+            section === 0 ? "bg-pink-400 text-white" : "bg-gray-300 text-black"
           }`}
         >
-          Intro
+          X
         </button>
-        <button
+        {/* <button
           onClick={() => onSectionChange(1, "about")}
           className={`px-4 py-2 rounded-md ${
             section === 1 ? "bg-blue-500 text-white" : "bg-gray-300 text-black"
@@ -122,7 +122,7 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
           }`}
         >
           RoadMap
-        </button>
+        </button> */}
       </div>
     </main>
   )
