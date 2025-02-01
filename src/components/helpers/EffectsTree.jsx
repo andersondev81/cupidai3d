@@ -10,7 +10,7 @@ import { useControls } from "leva"
 export const EffectsTree = () => {
   // Certifique-se de que o nome da função é 'EffectsTree'
   const vignetteConfig = useControls("vignette", {
-    enabled: true,
+    enabled: false,
     offset: { value: 0.55, min: 0, max: 1 },
     darkness: { value: 0.48, min: 0, max: 1.2 },
   })
@@ -26,7 +26,7 @@ export const EffectsTree = () => {
   })
 
   const noiseConfig = useControls("noise", {
-    enabled: true,
+    enabled: false,
     opacity: { value: 0.07, min: 0, max: 1 },
   })
 
