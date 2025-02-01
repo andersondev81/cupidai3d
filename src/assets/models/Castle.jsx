@@ -9,7 +9,6 @@ import {
   NearestFilter,
 } from "three"
 import Modeload from "../../components/helpers/Modeload"
-import StatsPanel from "../../components/helpers/StatsPanel"
 
 // Posições da câmera para cada seção
 const cameraPositions = {
@@ -38,6 +37,36 @@ const cameraPositions = {
     0.00025816130769796414, 0.34598539345333384, 0.10369558199844564,
   ],
 }
+
+// Posições da câmera para cada seção
+const cameraPositionsSmallScreen = {
+  intro: [
+    10.236728346101938, 6.301746236952154, 14.61287344412683,
+    -0.46112017760009805, 1.5111864168379876, 0.17289136379137532,
+  ],
+  about: [
+    -8.353014949489166, -0.013560590250668608, 12.57337844346448,
+    -0.8475404096833372, -0.13618077972400086, 0.6684951958313516,
+  ],
+  aidatingcoach: [
+    -2.7485496970274723, 1.2171669841244113, 1.3227101403905195,
+    -0.5354922096890259, 1.0929899188181706, 0.4284327164373669,
+  ],
+  download: [
+    1.4636476673009642, 1.3905474975838177, -4.216559988863749,
+    -0.5210618269570172, 1.4251827689316967, -1.105893976661937,
+  ],
+  token: [
+    2.118405773953273, 1.2172470657362846, 1.0635730429142927,
+    0.04723852527162822, 0.585365963592996, 0.11077814711949062,
+  ],
+  roadmap: [
+    -0.089306308893148, 17.251249369255323, 7.371872885036802,
+    0.00025816130769796414, 0.34598539345333384, 0.10369558199844564,
+  ],
+}
+
+const SMALL_SCREN_THRESHOLD = 768
 
 // Componente de material e texturas para o Castelo
 const useCastleMaterial = () => {
@@ -74,30 +103,23 @@ const useCastleMaterial = () => {
 }
 
 const CastleModel = ({ onCastleClick }) => {
-  const { nodes } = useGLTF("/models/project6/Castle.glb")
+  const { nodes } = useGLTF("/models/Castle.glb")
   const material = useCastleMaterial()
 
   return (
     <group dispose={null}>
       <mesh
-        geometry={nodes.castleUV_Baked.geometry}
-        material={material}
+        geometry={nodes.Castle.geometry}
+        material={nodes.Castle.material}
         position={[0, 0, 0]}
         rotation={[0, 0, 0]}
         scale={1}
-        // onClick={() => onCastleClick("token")}
-        // onPointerEnter={() => {
-        //   document.body.style.cursor = "pointer"
-        // }}
-        // onPointerLeave={() => {
-        //   document.body.style.cursor = "default"
-        // }}
       />
     </group>
   )
 }
 
-useGLTF.preload("/models/project6/Castle.glb")
+useGLTF.preload("/models/Castle.glb")
 
 // Componente Principal
 const Castle = ({ activeSection }) => {
@@ -121,7 +143,11 @@ const Castle = ({ activeSection }) => {
   })
 
   const playTransition = sectionName => {
-    const targetPosition = cameraPositions[sectionName]
+    const isSmallScreen = window.innerWidth < SMALL_SCREN_THRESHOLD
+    const targetPosition = isSmallScreen
+      ? cameraPositionsSmallScreen[sectionName]
+      : cameraPositions[sectionName]
+
     if (controls.current && targetPosition) {
       controls.current.setLookAt(...targetPosition, true)
     }
@@ -135,7 +161,6 @@ const Castle = ({ activeSection }) => {
 
   return (
     <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
-      <StatsPanel />
       <CameraControls ref={controls} />
       <Suspense fallback={<Modeload />}>
         <CastleModel onCastleClick={playTransition} />

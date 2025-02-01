@@ -33,14 +33,14 @@ function CloudsD() {
   return (
     <group>
       {/* Luz Direcional - Fixa e não muda com a intensidade aleatória */}
-      <directionalLight
+      {/* <directionalLight
         position={[10, 10, 10]}
         intensity={0.2}
         castShadow={true}
-      />
+      /> */}
 
       {/* Luz Vermelha com Intensidade Variável */}
-      <spotLight
+      {/* <spotLight
         ref={lightRefRed}
         color="#fb6f92"
         position={[5, 6, 5]}
@@ -50,10 +50,10 @@ function CloudsD() {
         penumbra={-1}
         intensity={intensity}
         castShadow={true}
-      />
+      /> */}
 
       {/* Luz Azul com Intensidade Variável */}
-      <spotLight
+      {/* <spotLight
         ref={lightRefBlue}
         position={[0, -6, 0]}
         color="blue"
@@ -63,7 +63,7 @@ function CloudsD() {
         penumbra={4}
         intensity={intensity}
         castShadow={true}
-      />
+      /> */}
 
       {/* Nuvens com Efeito de Raio e Outras Configurações */}
       <Cloud
