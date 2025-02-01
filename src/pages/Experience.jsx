@@ -35,7 +35,7 @@ function Experience() {
         <OrbitControls />
         <Suspense fallback={<Modeload />}>
           <Castle activeSection={activeSection} receiveShadow />
-          {/* <CoudsD /> */}
+          <CoudsD />
           <Pole
             position={[-1, 0, 4]}
             scale={[1, 1, 1]}

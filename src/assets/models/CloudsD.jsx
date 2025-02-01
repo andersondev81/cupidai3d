@@ -9,8 +9,8 @@ function CloudsD() {
 
   // Atualiza a intensidade da luz a cada intervalo aleatório
   useEffect(() => {
-    const minIntensity = 0.1
-    const maxIntensity = 1
+    const minIntensity = 0.6
+    const maxIntensity = 3
     const interval = setInterval(() => {
       const newIntensity =
         Math.random() * (maxIntensity - minIntensity) + minIntensity
@@ -40,7 +40,7 @@ function CloudsD() {
       /> */}
 
       {/* Luz Vermelha com Intensidade Variável */}
-      {/* <spotLight
+      <spotLight
         ref={lightRefRed}
         color="#fb6f92"
         position={[5, 6, 5]}
@@ -50,34 +50,34 @@ function CloudsD() {
         penumbra={-1}
         intensity={intensity}
         castShadow={true}
-      /> */}
+      />
 
       {/* Luz Azul com Intensidade Variável */}
-      {/* <spotLight
+      <spotLight
         ref={lightRefBlue}
         position={[0, -6, 0]}
-        color="blue"
+        color="#fb6f92"
         angle={0.4}
         decay={0.55}
         distance={85}
         penumbra={4}
         intensity={intensity}
         castShadow={true}
-      /> */}
+      />
 
       {/* Nuvens com Efeito de Raio e Outras Configurações */}
       <Cloud
-        position={[0, -5, 0]}
+        position={[0, -2, 0]}
         speed={0.5}
-        opacity={0.2}
+        opacity={0.8}
         width={1}
         depth={1}
         segments={26}
-        color={"#f0f0f0"}
+        color={"#fff"}
         lightning={true}
         rayleigh={0.01}
         noise={4}
-        bounds={[16, 2, 12]}
+        bounds={[16, 1, 12]}
         fade={40}
         growth={4}
         scale={[1, 1, 1]}
