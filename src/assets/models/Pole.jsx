@@ -12,11 +12,11 @@ import {
 // Componente de material e texturas para o Castelo
 const usePoleMaterial = () => {
   const textures = useTexture({
-    map: "/texture/PoleColor2.jpg",
-    Displacement: "/texture/PoleHeight.jpg",
-    Metalness: "/texture/PoleMetalness.jpg",
-    normalMap: "/texture/PoleNormal.jpg",
-    Roughness: "/texture/PoleRoughness.jpg",
+    map: "/texture/Pole_Color.webp",
+    Displacement: "/texture/Pole_Height.webp",
+    Metalness: "/texture/Pole_Metalness.webp",
+    normalMap: "/texture/Pole_Normal.webp",
+    Roughness: "/texture/Pole_Roughness.webp",
   })
 
   useMemo(() => {
@@ -40,7 +40,8 @@ const usePoleMaterial = () => {
       side: DoubleSide,
       blending: NormalBlending,
       displacementScale: 0.001,
-      roughness: 0.1,
+      roughness: 0,
+      metalness: 0.6,
     })
   }, [textures])
 }
@@ -52,7 +53,7 @@ export function Pole({ onSectionChange, section, ...props }) {
     <group {...props} dispose={null}>
       <group position={[0.1, 0, -0.2]} rotation={[0, Math.PI + 4.5, 0]}>
         <mesh
-          geometry={nodes.Pole.geometry}
+          geometry={nodes.pole.geometry}
           material={material}
           rotation={[0, 0, 0]}
         />
