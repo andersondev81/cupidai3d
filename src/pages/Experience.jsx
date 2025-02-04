@@ -20,7 +20,7 @@ function Experience() {
 
   return (
     <div className="absolute top-0 left-0 w-full h-screen bg-gradient-to-b from-[#bde0fe] to-[#ffafcc] z-0">
-      <Canvas camera={{ position: [0, 0, 20], fov: 45 }} shadows>
+      <Canvas camera={{ position: [0, 0, 20], fov: 85 }} shadows>
         {/* <fog attach="fog" args={["#272730", 10, 90]} /> */}
         <Environment
           files="/images/Panorama.hdr"
@@ -34,11 +34,15 @@ function Experience() {
         <Perf position="top-left" />
         <OrbitControls />
         <Suspense fallback={<Modeload />}>
-          <Castle activeSection={activeSection} receiveShadow />
+          <Castle
+            activeSection={activeSection}
+            receiveShadow
+            scale={[2, 2, 2]}
+          />
           <CoudsD />
           <Pole
-            position={[-1, 0, 4]}
-            scale={[1, 1, 1]}
+            position={[-0.8, 0, 6]}
+            scale={[0.6, 0.6, 0.6]}
             onSectionChange={handleSectionChange}
             section={section}
           />

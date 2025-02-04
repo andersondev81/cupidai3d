@@ -67,7 +67,7 @@ function CloudsD() {
 
       {/* Nuvens com Efeito de Raio e Outras Configurações */}
       <Cloud
-        position={[0, -2, 0]}
+        position={[0, -3, 0]}
         speed={0.5}
         opacity={0.8}
         width={1}
