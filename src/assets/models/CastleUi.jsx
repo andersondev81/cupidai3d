@@ -2,7 +2,7 @@
 import React from "react"
 
 export const sections = [
-  "intro",
+  "nav",
   "about",
   "aidatingcoach",
   "download",
@@ -12,17 +12,15 @@ export const sections = [
 
 export const CastleUi = ({ section = 0, onSectionChange }) => {
   return (
-    <main className="relative w-full h-full flex flex-col items-center justify-center">
+    <main className="absolute w-full h-full flex flex-col items-center justify-center">
       <div>
         {/* Intro */}
         <section
           className={`absolute inset-4 flex flex-col justify-center text-center transition-opacity duration-1000 ${
-            sections[section] === "intro" ? "" : "opacity-0"
+            sections[section] === "Nav" ? "" : "opacity-0"
           }`}
         >
-          <h1 className="text-2xl font-medium text-stone-100">
-            Intro to the project
-          </h1>
+          <h1 className="text-2xl font-medium text-stone-100">NavBar</h1>
         </section>
         {/* About */}
         <section
@@ -33,6 +31,16 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
           <h1 className="text-3xl text-center font-medium text-stone-100 drop-shadow-md pt-48 ">
             About this project
           </h1>
+          <button
+            onClick={() => onSectionChange(0, "nav")}
+            className={`px-4 py-2 rounded-md ${
+              section === 0
+                ? "bg-pink-400 text-white"
+                : "bg-gray-300 text-black"
+            }`}
+          >
+            X
+          </button>
         </section>
         {/* AIDatingCoach */}
         <section
@@ -43,6 +51,16 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
           <h1 className="text-2xl font-medium text-stone-100 pt-60">
             A IDating Coach
           </h1>
+          <button
+            onClick={() => onSectionChange(0, "nav")}
+            className={`px-4 py-2 rounded-md ${
+              section === 0
+                ? "bg-pink-400 text-white"
+                : "bg-gray-300 text-black"
+            }`}
+          >
+            X
+          </button>
         </section>
         {/* Download */}
         <section
@@ -53,6 +71,16 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
           <h1 className="text-2xl font-medium text-stone-100 pt-60">
             Donload the app
           </h1>
+          <button
+            onClick={() => onSectionChange(0, "nav")}
+            className={`px-4 py-2 rounded-md ${
+              section === 0
+                ? "bg-pink-400 text-white"
+                : "bg-gray-300 text-black"
+            }`}
+          >
+            X
+          </button>
         </section>
         {/* Token */}
         <section
@@ -62,6 +90,14 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
         >
           <h1 className="text-2xl font-medium text-stone-100 pt-60">Token</h1>
         </section>
+        <button
+          onClick={() => onSectionChange(0, "nav")}
+          className={`px-4 py-2 rounded-md ${
+            section === 0 ? "bg-pink-400 text-white" : "bg-gray-300 text-black"
+          }`}
+        >
+          X
+        </button>
         {/* Roadmap */}
         <section
           className={`absolute inset-4 flex flex-col justify-center text-center transition-opacity duration-1000 ${
@@ -69,21 +105,23 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
           }`}
         >
           <h1 className="text-2xl font-medium text-stone-100 pt-60">Roadmap</h1>
+          <button
+            onClick={() => onSectionChange(0, "nav")}
+            className={`px-4 py-2 rounded-md ${
+              section === 0
+                ? "bg-pink-400 text-white"
+                : "bg-gray-300 text-black"
+            }`}
+          >
+            X
+          </button>
         </section>
       </div>
 
       {/* -------- Butons -------- */}
 
-      <div className="absolute top-4 flex gap-4 pt-16">
-        <button
-          onClick={() => onSectionChange(0, "intro")}
-          className={`px-4 py-2 rounded-md ${
-            section === 0 ? "bg-pink-400 text-white" : "bg-gray-300 text-black"
-          }`}
-        >
-          X
-        </button>
-        {/* <button
+      {/* <div className="absolute top-4 flex gap-4 pt-16">
+       <button
           onClick={() => onSectionChange(1, "about")}
           className={`px-4 py-2 rounded-md ${
             section === 1 ? "bg-blue-500 text-white" : "bg-gray-300 text-black"
@@ -102,7 +140,7 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
         <button
           onClick={() => onSectionChange(3, "download")}
           className={`px-4 py-2 rounded-md ${
-            section === 3 ? "bg-blue-500 text-white" : "bg-gray-300 text-black"
+            section === 3 ? "bg -blue-500 text-white" : "bg-gray-300 text-black"
           }`}
         >
           Download
@@ -122,8 +160,8 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
           }`}
         >
           RoadMap
-        </button> */}
-      </div>
+        </button>
+      </div> */}
     </main>
   )
 }
