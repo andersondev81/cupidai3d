@@ -1,45 +1,20 @@
-import React, { useRef, useState, useEffect } from "react"
+import React, { useRef } from "react"
 import { Cloud } from "@react-three/drei"
-import { useFrame } from "@react-three/fiber"
 
 function CloudsD() {
-  const [intensity, setIntensity] = useState(120)
   const lightRefRed = useRef()
   const lightRefBlue = useRef()
 
-  // Atualiza a intensidade da luz a cada intervalo aleatório
-  useEffect(() => {
-    const minIntensity = 0.6
-    const maxIntensity = 3
-    const interval = setInterval(() => {
-      const newIntensity =
-        Math.random() * (maxIntensity - minIntensity) + minIntensity
-      setIntensity(newIntensity)
-    }, Math.random() * (500 - 200) + 200) // Intervalo entre 200ms e 500ms
-
-    return () => clearInterval(interval) // Limpa o intervalo quando o componente for desmontado
-  }, [])
-
-  // Aplica a intensidade da luz no frame atual
-  useFrame(() => {
-    if (lightRefRed.current) {
-      lightRefRed.current.intensity = intensity
-    }
-    if (lightRefBlue.current) {
-      lightRefBlue.current.intensity = intensity
-    }
-  })
-
   return (
     <group>
-      {/* Luz Direcional - Fixa e não muda com a intensidade aleatória */}
-      {/* <directionalLight
+      {/* Luz Direcional - Fixa */}
+      <directionalLight
         position={[10, 10, 10]}
         intensity={0.2}
         castShadow={true}
-      /> */}
+      />
 
-      {/* Luz Vermelha com Intensidade Variável */}
+      {/* Luz Vermelha - Intensidade fixa */}
       <spotLight
         ref={lightRefRed}
         color="#fb6f92"
@@ -48,43 +23,40 @@ function CloudsD() {
         decay={0.85}
         distance={55}
         penumbra={-1}
-        intensity={intensity}
+        intensity={1.2} // Intensidade fixa
         castShadow={true}
       />
 
-      {/* Luz Azul com Intensidade Variável */}
+      {/* Luz Azul - Intensidade fixa */}
       <spotLight
         ref={lightRefBlue}
-        position={[0, -6, 0]}
-        color="#fb6f92"
+        position={[0, -3, 0]}
+        color="#fb6f60"
         angle={0.4}
         decay={0.55}
         distance={85}
         penumbra={4}
-        intensity={intensity}
+        intensity={1.2} // Intensidade fixa
         castShadow={true}
       />
 
-      {/* Nuvens com Efeito de Raio e Outras Configurações */}
-      <Cloud
-        position={[0, -3, 0]}
-        speed={0.5}
-        opacity={0.8}
-        width={1}
-        depth={1}
-        segments={26}
-        color={"#fff"}
-        lightning={true}
-        rayleigh={0.01}
-        noise={4}
-        bounds={[16, 1, 12]}
-        fade={40}
-        growth={4}
-        scale={[1, 1, 1]}
-        seed={8}
-        concentrate="center"
-        receiveShadow={true}
-      />
+      {/* Chão de Nuvens */}
+      {[...Array(50)].map((_, i) => (
+        <Cloud
+          key={i}
+          position={[Math.random() * 14 - 7, -1, Math.random() * 14 - 7]}
+          speed={0.1}
+          opacity={1}
+          segments={40}
+          color={"#fff"}
+          lightning={true}
+          bounds={[26, 4, 16]}
+          fade={30}
+          growth={4}
+          scale={[0.2, 0.2, 0.2]}
+          seed={i * 20}
+        />
+      ))}
     </group>
   )
 }
