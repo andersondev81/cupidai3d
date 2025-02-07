@@ -23,7 +23,6 @@ function Experience() {
     setSection(index)
     setActiveSection(sectionName)
 
-    // Lock buttons for 1.5 seconds during transition
     await sleep(1500)
     setButtonsLocked(false)
   }
@@ -88,7 +87,6 @@ function Experience() {
             />
           </Suspense>
 
-          {/* Post Processing Effects */}
           <EffectsTree />
         </Canvas>
       </div>

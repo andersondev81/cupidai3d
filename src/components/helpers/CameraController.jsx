@@ -6,29 +6,24 @@ export function CameraController({ section, activeSection }) {
   const controlsRef = useRef();
   const { camera } = useThree();
 
-  // Configurar câmera inicial
   useEffect(() => {
     if (!controlsRef.current) return;
 
-    // Configurações iniciais da câmera
     camera.position.set(15.9, 6.8, -11.4);
     camera.updateProjectionMatrix();
 
-    // Configurações iniciais dos controles
     controlsRef.current.setLookAt(
-      15.9, 6.8, -11.4, // posição inicial da câmera
-      0, 0, -1,         // target inicial
-      true              // animate
+      15.9, 6.8, -11.4,
+      0, 0, -1,
+      true
     );
 
-    // Configurações dos controles
     controlsRef.current.minDistance = 7;
     controlsRef.current.maxDistance = 16;
     controlsRef.current.minPolarAngle = Math.PI * 0.2;
     controlsRef.current.maxPolarAngle = Math.PI * 0.55;
   }, []);
 
-  // Atualizar FOV baseado na seção
   useEffect(() => {
     if (section !== 0) {
       camera.fov = 50;
@@ -38,7 +33,6 @@ export function CameraController({ section, activeSection }) {
     camera.updateProjectionMatrix();
   }, [section]);
 
-  // Gerenciar transições baseadas na seção ativa
   useEffect(() => {
     if (!controlsRef.current || !activeSection) return;
 
@@ -74,7 +68,7 @@ export function CameraController({ section, activeSection }) {
       controlsRef.current.setLookAt(
         ...position.camera,
         ...position.target,
-        true // animate
+        true
       );
     }
   }, [activeSection]);

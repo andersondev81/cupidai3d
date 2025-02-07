@@ -138,8 +138,6 @@ export function Camera() {
     setInstance();
     const angles = setCamAngles();
     angles.default();
-
-    // Debug controls
     if (debug) {
       console.log('Camera position:', camera.position);
       console.log('Camera target:', controls.current.target);
