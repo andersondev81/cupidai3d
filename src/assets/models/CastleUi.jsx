@@ -104,7 +104,7 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
             sections[section] === "roadmap" ? "" : "opacity-0"
           }`}
         >
-          <h1 className="text-2xl font-medium text-stone-100 pt-60">Roadmap</h1>
+          <h1 className="text-2xl font-medium text-stone-100 pt-60">ROLA</h1>
           <button
             onClick={() => onSectionChange(0, "nav")}
             className={`px-4 py-2 rounded-md ${
