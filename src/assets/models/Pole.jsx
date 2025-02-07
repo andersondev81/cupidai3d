@@ -1,125 +1,130 @@
-import React, { Suspense, useEffect, useMemo, useRef } from "react"
+import React, { useMemo, useEffect } from "react"
 import { useGLTF, useTexture } from "@react-three/drei"
+import { useLoader } from "@react-three/fiber"
+
+import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader"
 import RotateAxis from "../../components/helpers/RotateAxis"
 import {
-  MeshStandardMaterial,
   MeshPhysicalMaterial,
   DoubleSide,
   NormalBlending,
   NearestFilter,
+  EquirectangularReflectionMapping,
 } from "three"
 
-// Componente de material e texturas para o Castelo
 const usePoleMaterial = () => {
+  // Carregar texturas do Pole
   const textures = useTexture({
     map: "/texture/Pole_Color.webp",
-    Displacement: "/texture/Pole_Height.webp",
-    Metalness: "/texture/Pole_Metalness.webp",
+    displacementMap: "/texture/Pole_Height.webp",
+    metalnessMap: "/texture/Pole_Metalness.webp",
     normalMap: "/texture/Pole_Normal.webp",
-    Roughness: "/texture/Pole_Roughness.webp",
+    roughnessMap: "/texture/Pole_Roughness.webp",
   })
+
+  // Carregar HDR específico para o Pole
+  const envMap = useLoader(RGBELoader, "/images/PanoramaV1.hdr")
+  envMap.mapping = EquirectangularReflectionMapping
 
   useMemo(() => {
     Object.values(textures).forEach(texture => {
       if (texture) {
         texture.flipY = false
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.minFilter = NearestFilter
+        texture.magFilter = NearestFilter
       }
     })
   }, [textures])
 
-  return useMemo(() => {
-    return new MeshPhysicalMaterial({
-      map: textures.map,
-      displacementMap: textures.Displacement,
-      roughnessMap: textures.Roughness,
-      metalnessMap: textures.Metalness,
-      normalMap: textures.normalMap,
-      transparent: false,
-      alphaTest: 0.5,
-      side: DoubleSide,
-      blending: NormalBlending,
-      displacementScale: 0.001,
-      roughness: 0,
-      metalness: 0.6,
-    })
-  }, [textures])
+  const material = useMemo(
+    () =>
+      new MeshPhysicalMaterial({
+        ...textures,
+        transparent: false,
+        alphaTest: 0.5,
+        side: DoubleSide,
+        blending: NormalBlending,
+        displacementScale: 0.001,
+        roughness: 0.1,
+        metalness: 1,
+        envMap: envMap,
+        envMapIntensity: 1.2, // Ajuste para melhor reflexo
+      }),
+    [textures, envMap]
+  )
+
+  // Força atualização quando o HDR for carregado
+  useEffect(() => {
+    if (envMap) {
+      material.needsUpdate = true
+    }
+  }, [envMap, material])
+
+  return material
 }
 
-export function Pole({ onSectionChange, section, ...props }) {
-  const { nodes, materials } = useGLTF("/models/Pole.glb")
+export function Pole({ onSectionChange, ...props }) {
+  const { nodes } = useGLTF("/models/Pole.glb")
   const material = usePoleMaterial()
+
+  // Função para eventos de clique
+  const createClickHandler = (sectionIndex, sectionName) => e => {
+    e.stopPropagation()
+    onSectionChange(sectionIndex, sectionName)
+  }
+
+  const pointerHandlers = {
+    onPointerEnter: e => {
+      e.stopPropagation()
+      document.body.style.cursor = "pointer"
+    },
+    onPointerLeave: e => {
+      e.stopPropagation()
+      document.body.style.cursor = "default"
+    },
+  }
+
   return (
     <group {...props} dispose={null}>
       <group position={[0.1, 0, -0.2]} rotation={[0, Math.PI + 4.5, 0]}>
-        <mesh
-          geometry={nodes.pole.geometry}
-          material={material}
-          rotation={[0, 0, 0]}
-        />
+        <mesh geometry={nodes.pole.geometry} material={material} />
         <mesh geometry={nodes.flowers.geometry} material={material} scale={1} />
+
         <mesh
           geometry={nodes.aidatingcoach.geometry}
           material={material}
-          position={[0, 0, 0]}
-          onClick={() => onSectionChange(2, "aidatingcoach")}
-          onPointerEnter={() => {
-            document.body.style.cursor = "pointer"
-          }}
-          onPointerLeave={() => {
-            document.body.style.cursor = "default"
-          }}
+          onClick={createClickHandler(2, "aidatingcoach")}
+          {...pointerHandlers}
         />
+
         <mesh
           geometry={nodes.roadmap.geometry}
           material={material}
-          position={[0, 0, 0]}
-          onClick={() => onSectionChange(5, "roadmap")}
-          onPointerEnter={() => {
-            document.body.style.cursor = "pointer"
-          }}
-          onPointerLeave={() => {
-            document.body.style.cursor = "default"
-          }}
+          onClick={createClickHandler(5, "roadmap")}
+          {...pointerHandlers}
         />
+
         <mesh
           geometry={nodes.download.geometry}
           material={material}
-          position={[0, 0, 0]}
-          onClick={() => onSectionChange(3, "download")}
-          onPointerEnter={() => {
-            document.body.style.cursor = "pointer"
-          }}
-          onPointerLeave={() => {
-            document.body.style.cursor = "default"
-          }}
+          onClick={createClickHandler(3, "download")}
+          {...pointerHandlers}
         />
+
         <mesh
           geometry={nodes.about.geometry}
           material={material}
-          position={[0, 0, 0]}
-          onClick={() => onSectionChange(3, "download")}
-          onPointerEnter={() => {
-            document.body.style.cursor = "pointer"
-          }}
-          onPointerLeave={() => {
-            document.body.style.cursor = "default"
-          }}
+          onClick={createClickHandler(1, "about")}
+          {...pointerHandlers}
         />
+
         <group position={[-0.014, 2.547, -0.003]}>
-          <RotateAxis axis="y" speed={1} rotationType="euler">
+          <RotateAxis axis="y" speed={1}>
             <mesh
               geometry={nodes.token.geometry}
-              position={[0, 0, 0]}
-              rotation={[0, 0, 0]}
               material={material}
-              onClick={() => onSectionChange(4, "token")}
-              onPointerEnter={() => {
-                document.body.style.cursor = "pointer"
-              }}
-              onPointerLeave={() => {
-                document.body.style.cursor = "default"
-              }}
+              onClick={createClickHandler(4, "token")}
+              {...pointerHandlers}
             />
           </RotateAxis>
         </group>

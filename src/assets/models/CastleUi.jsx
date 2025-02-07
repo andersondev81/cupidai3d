@@ -1,4 +1,3 @@
-// CastleUi.jsx (em um arquivo separado)
 import React from "react"
 
 export const sections = [
@@ -10,158 +9,126 @@ export const sections = [
   "roadmap",
 ]
 
+const Section = ({ children, isActive, className = "" }) => (
+  <section
+    className={`absolute inset-4 flex flex-col justify-center text-center transition-opacity duration-1000 ${className} ${
+      isActive ? "opacity-100" : "opacity-0 pointer-events-none"
+    }`}
+  >
+    {children}
+  </section>
+)
+
+const NavigationButton = ({ onClick, children, className }) => (
+  <button
+    onClick={onClick}
+    className={`flex items-center justify-center rounded-md px-6 py-3 transition-all ${className}`}
+  >
+    {children}
+  </button>
+)
+
 export const CastleUi = ({ section = 0, onSectionChange }) => {
+  const currentSectionKey = sections[section]
+
   return (
-    <main className="absolute w-full h-full flex flex-col items-center justify-center">
-      <div>
-        {/* Intro */}
-        <section
-          className={`absolute inset-4 flex flex-col justify-center text-center transition-opacity duration-1000 ${
-            sections[section] === "Nav" ? "" : "opacity-0"
-          }`}
-        >
-          <h1 className="text-2xl font-medium text-stone-100">NavBar</h1>
-        </section>
-        {/* About */}
-        <section
-          className={`absolute inset-4 flex flex-col justify-center text-center transition-opacity duration-1000 ${
-            sections[section] === "about" ? "" : "opacity-0"
-          }`}
-        >
-          <h1 className="text-3xl text-center font-medium text-stone-100 drop-shadow-md pt-48 ">
-            About this project
+    <main className="relative h-full w-full">
+      {/* Seção About */}
+      <Section isActive={currentSectionKey === "about"}>
+        <div className="flex flex-col items-center gap-6">
+          <h1 className="text-4xl font-bold text-stone-100">
+            About this Project
           </h1>
-          <button
+          <p className="text-stone-200 max-w-2xl text-lg">
+            Discover the innovative features behind our castle-inspired
+            platform...
+          </p>
+          <NavigationButton
             onClick={() => onSectionChange(0, "nav")}
-            className={`px-4 py-2 rounded-md ${
-              section === 0
-                ? "bg-pink-400 text-white"
-                : "bg-gray-300 text-black"
-            }`}
+            className="bg-gray-500 hover:bg-gray-600 text-white"
           >
-            X
-          </button>
-        </section>
-        {/* AIDatingCoach */}
-        <section
-          className={`absolute inset-4 flex flex-col justify-center text-center transition-opacity duration-1000 ${
-            sections[section] === "aidatingcoach" ? "" : "opacity-0"
-          }`}
-        >
-          <h1 className="text-2xl font-medium text-stone-100 pt-60">
-            A IDating Coach
-          </h1>
-          <button
-            onClick={() => onSectionChange(0, "nav")}
-            className={`px-4 py-2 rounded-md ${
-              section === 0
-                ? "bg-pink-400 text-white"
-                : "bg-gray-300 text-black"
-            }`}
-          >
-            X
-          </button>
-        </section>
-        {/* Download */}
-        <section
-          className={`absolute inset-4 flex flex-col justify-center text-center transition-opacity duration-1000 ${
-            sections[section] === "download" ? "" : "opacity-0"
-          }`}
-        >
-          <h1 className="text-2xl font-medium text-stone-100 pt-60">
-            Donload the app
-          </h1>
-          <button
-            onClick={() => onSectionChange(0, "nav")}
-            className={`px-4 py-2 rounded-md ${
-              section === 0
-                ? "bg-pink-400 text-white"
-                : "bg-gray-300 text-black"
-            }`}
-          >
-            X
-          </button>
-        </section>
-        {/* Token */}
-        <section
-          className={`absolute inset-4 flex flex-col justify-center text-center transition-opacity duration-1000 ${
-            sections[section] === "token" ? "" : "opacity-0"
-          }`}
-        >
-          <h1 className="text-2xl font-medium text-stone-100 pt-60">Token</h1>
-        </section>
-        <button
-          onClick={() => onSectionChange(0, "nav")}
-          className={`px-4 py-2 rounded-md ${
-            section === 0 ? "bg-pink-400 text-white" : "bg-gray-300 text-black"
-          }`}
-        >
-          X
-        </button>
-        {/* Roadmap */}
-        <section
-          className={`absolute inset-4 flex flex-col justify-center text-center transition-opacity duration-1000 ${
-            sections[section] === "roadmap" ? "" : "opacity-0"
-          }`}
-        >
-          <h1 className="text-2xl font-medium text-stone-100 pt-60">Roadmap</h1>
-          <button
-            onClick={() => onSectionChange(0, "nav")}
-            className={`px-4 py-2 rounded-md ${
-              section === 0
-                ? "bg-pink-400 text-white"
-                : "bg-gray-300 text-black"
-            }`}
-          >
-            X
-          </button>
-        </section>
-      </div>
+            Back to Main
+          </NavigationButton>
+        </div>
+      </Section>
 
-      {/* -------- Butons -------- */}
+      {/* Seção AI Dating Coach */}
+      <Section isActive={currentSectionKey === "aidatingcoach"}>
+        <div className="flex flex-col items-center gap-6">
+          <h1 className="text-4xl font-bold text-stone-100">AI Dating Coach</h1>
+          <div className="flex gap-4">
+            <NavigationButton
+              onClick={() => onSectionChange(0, "nav")}
+              className="bg-gray-500 hover:bg-gray-600 text-white"
+            >
+              Back to Main
+            </NavigationButton>
+          </div>
+        </div>
+      </Section>
 
-      {/* <div className="absolute top-4 flex gap-4 pt-16">
-       <button
-          onClick={() => onSectionChange(1, "about")}
-          className={`px-4 py-2 rounded-md ${
-            section === 1 ? "bg-blue-500 text-white" : "bg-gray-300 text-black"
-          }`}
-        >
-          About
-        </button>
-        <button
-          onClick={() => onSectionChange(2, "aidatingcoach")}
-          className={`px-4 py-2 rounded-md ${
-            section === 2 ? "bg-blue-500 text-white" : "bg-gray-300 text-black"
-          }`}
-        >
-          AI Dating Coach
-        </button>
-        <button
-          onClick={() => onSectionChange(3, "download")}
-          className={`px-4 py-2 rounded-md ${
-            section === 3 ? "bg -blue-500 text-white" : "bg-gray-300 text-black"
-          }`}
-        >
-          Download
-        </button>
-        <button
-          onClick={() => onSectionChange(4, "token")}
-          className={`px-4 py-2 rounded-md ${
-            section === 4 ? "bg-blue-500 text-white" : "bg-gray-300 text-black"
-          }`}
-        >
-          Token
-        </button>
-        <button
-          onClick={() => onSectionChange(5, "roadmap")}
-          className={`px-4 py-2 rounded-md ${
-            section === 5 ? "bg-blue-500 text-white" : "bg-gray-300 text-black"
-          }`}
-        >
-          RoadMap
-        </button>
-      </div> */}
+      {/* Seção Download */}
+      <Section isActive={currentSectionKey === "download"}>
+        <div className="flex flex-col items-center gap-6">
+          <h1 className="text-4xl font-bold text-stone-100">
+            Download the App
+          </h1>
+          <div className="flex gap-4">
+            <NavigationButton
+              onClick={() => window.open("#download-link", "_blank")}
+              className="bg-green-500 hover:bg-green-600 text-white"
+            >
+              iOS Version
+            </NavigationButton>
+            <NavigationButton
+              onClick={() => window.open("#download-link", "_blank")}
+              className="bg-green-500 hover:bg-green-600 text-white"
+            >
+              Android Version
+            </NavigationButton>
+            <NavigationButton
+              onClick={() => onSectionChange(0, "nav")}
+              className="bg-gray-500 hover:bg-gray-600 text-white"
+            >
+              Back
+            </NavigationButton>
+          </div>
+        </div>
+      </Section>
+
+      {/* Seção Token */}
+      <Section isActive={currentSectionKey === "token"}>
+        <div className="flex flex-col items-center gap-6">
+          <h1 className="text-4xl font-bold text-stone-100">
+            Token Information
+          </h1>
+          <div className="flex gap-4">
+            <NavigationButton
+              onClick={() => onSectionChange(0, "nav")}
+              className="bg-gray-500 hover:bg-gray-600 text-white"
+            >
+              Back to Main
+            </NavigationButton>
+          </div>
+        </div>
+      </Section>
+
+      {/* Seção Roadmap */}
+      <Section isActive={currentSectionKey === "roadmap"}>
+        <div className="flex flex-col items-center gap-6">
+          <h1 className="text-4xl font-bold text-stone-100">
+            Development Roadmap
+          </h1>
+          <div className="flex gap-4">
+            <NavigationButton
+              onClick={() => onSectionChange(0, "nav")}
+              className="bg-gray-500 hover:bg-gray-600 text-white"
+            >
+              Main Menu
+            </NavigationButton>
+          </div>
+        </div>
+      </Section>
     </main>
   )
 }
