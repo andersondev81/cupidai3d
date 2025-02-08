@@ -8,14 +8,12 @@ export function CameraController({ section, activeSection, setControlRef }) {
   const { camera } = useThree();
   const transitionInProgress = useRef(false);
 
-  // Default position and settings
   const defaultPosition = {
     position: [15.9, 6.8, -11.4],
     target: [0, 0, -1],
     fov: 85
   };
 
-  // Camera positions for each section
   const positions = {
     nav: {
       position: [-0.2103522192481445, 1.2574828480413, 6.6116302965978795],
@@ -43,16 +41,17 @@ export function CameraController({ section, activeSection, setControlRef }) {
       fov: 50
     },
     roadmap: {
-      position: [-2.025201516379411, 1.0672926837870658, 1.0222135061686681],
-      target: [0.03299806883202455, 0.8587359231417601, -0.08269801064024146],
-      fov: 50
+      // Nova posição mais afastada para o roadmap
+      position: [-3.5, 1.5, 3.0],
+      // Ajustando o target para manter o foco no objeto
+      target: [0, 0.8, 0],
+      fov: 60  // FOV um pouco maior para melhor visualização
     }
   };
 
   const lockCamera = () => {
     if (!controlsRef.current) return;
     
-    // Desabilita todos os controles possíveis
     controlsRef.current.dispose();
     controlsRef.current.enabled = false;
     controlsRef.current.enableRotate = false;
@@ -60,15 +59,12 @@ export function CameraController({ section, activeSection, setControlRef }) {
     controlsRef.current.enablePan = false;
     controlsRef.current.enableDamping = false;
     
-    // Remove todos os event listeners
     controlsRef.current.removeAllEventListeners?.();
     
-    // Define ângulos fixos
     controlsRef.current.minDistance = controlsRef.current.maxDistance = 1;
     controlsRef.current.minPolarAngle = controlsRef.current.maxPolarAngle = Math.PI / 2;
     controlsRef.current.minAzimuthAngle = controlsRef.current.maxAzimuthAngle = 0;
     
-    // Desativa todos os botões e toques
     controlsRef.current.mouseButtons = {
       left: null,
       middle: null,
@@ -89,10 +85,8 @@ export function CameraController({ section, activeSection, setControlRef }) {
     const position = positions[sectionName] || defaultPosition;
     transitionInProgress.current = true;
 
-    // Bloqueia a câmera antes da transição
     lockCamera();
 
-    // Anima o FOV
     gsap.to(camera, {
       fov: position.fov,
       duration: 1,
@@ -102,7 +96,6 @@ export function CameraController({ section, activeSection, setControlRef }) {
       }
     });
 
-    // Anima a posição
     gsap.to(camera.position, {
       duration: 1.5,
       x: position.position[0],
@@ -142,7 +135,7 @@ export function CameraController({ section, activeSection, setControlRef }) {
 
     lockCamera();
 
-    const interval = setInterval(lockCamera, 16); // 60fps
+    const interval = setInterval(lockCamera, 16);
 
     setControlRef({
       goToHome: () => {

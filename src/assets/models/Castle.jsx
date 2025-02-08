@@ -10,14 +10,14 @@ import {
 } from "three"
 import Modeload from "../../components/helpers/Modeload"
 
-// Posições da câmera para cada seção
+
 const cameraPositions = {
   nav: [
     -0.2103522192481445, 1.2574828480413, 6.6116302965978795,
     -0.9890312015091309, 0.4268755440775639, 0.9932335568532257,
   ],
   about: [
-    1.8294030001912027, 1.1241952974854004, -0.9268222253732308,
+    2.2263203863364316, 1.1123184485748063, -1.126619437751379,
     0.1723786308639481, 1.0468291516427397, -0.08072363062511172,
   ],
   aidatingcoach: [
@@ -33,12 +33,11 @@ const cameraPositions = {
     -1.2102179925739383, 0.8585880494001786, -0.5986556331928229,
   ],
   roadmap: [
-    -2.025201516379411, 1.0672926837870658, 1.0222135061686681,
+    -2.685201516379411, 1.1672926837870658, 1.3222135061686681,
     0.03299806883202455, 0.8587359231417601, -0.08269801064024146,
   ],
 }
 
-// Posições da câmera para cada seção (telas pequenas)
 const cameraPositionsSmallScreen = {
   intro: [
     -0.47993818136505073, 1.13917177154802, 6.743922666460792,
@@ -68,7 +67,6 @@ const cameraPositionsSmallScreen = {
 
 const SMALL_SCREEN_THRESHOLD = 768
 
-// Componente de material e texturas para o Castelo
 const useCastleMaterial = () => {
   const textures = useTexture({
     map: "/texture/project6/CastleColorB.jpg",
@@ -121,7 +119,6 @@ const CastleModel = ({ onCastleClick }) => {
 
 useGLTF.preload("/models/Castle.glb")
 
-// Componente Principal
 const Castle = ({ activeSection }) => {
   const controls = useRef()
   const statsRef = useRef()
@@ -154,7 +151,6 @@ const Castle = ({ activeSection }) => {
   }
 
   useEffect(() => {
-    // Posição inicial da câmera (camGo)
     controls.current.setLookAt(
       132.95512091806918,
       87.33269746995288,
@@ -165,7 +161,6 @@ const Castle = ({ activeSection }) => {
       false
     )
 
-    // After "0" secconds go to the 'nav' section
     setTimeout(() => {
       playTransition("nav")
     }, 0)
