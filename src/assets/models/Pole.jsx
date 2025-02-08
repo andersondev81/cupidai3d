@@ -86,7 +86,7 @@ export function Pole({ onSectionChange, ...props }) {
 
   return (
     <group {...props} dispose={null}>
-      <group position={[0.1, 0, -0.2]} rotation={[0, Math.PI + 4.5, 0]}>
+      <group position={[0.2, -0.35, -0.2]} rotation={[0, Math.PI + 5, 0]}>
         <mesh geometry={nodes.pole.geometry} material={material} />
         <mesh geometry={nodes.flowers.geometry} material={material} scale={1} />
 

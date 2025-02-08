@@ -1,7 +1,8 @@
-import React, { Suspense, useState } from "react"
+import React, { Suspense, useState, useRef, useEffect } from "react"
 import { Canvas, useThree } from "@react-three/fiber"
 import { Sky, Environment } from "@react-three/drei"
 import * as THREE from "three"
+import { CAMERA_CONFIG } from "../components/cameraConfig"
 import Castle from "../assets/models/Castle"
 import CoudsD from "../assets/models/CloudsD"
 import { CastleUi } from "../assets/models/CastleUi"
@@ -9,84 +10,77 @@ import { Pole } from "../assets/models/Pole"
 import { Perf } from "r3f-perf"
 import Modeload from "../components/helpers/Modeload"
 
-// Configurações de câmera para diferentes seções
-const CAMERA_SECTIONS = {
-  intro: {
-    position: new THREE.Vector3(0, 0, 20),
-    fov: 85,
-    lerpFactor: 0.1,
-  },
-  section1: {
-    position: new THREE.Vector3(-5, 3, 15),
-    fov: 50,
-    lerpFactor: 0.1,
-  },
-  section2: {
-    position: new THREE.Vector3(5, 2, 20),
-    fov: 50,
-    lerpFactor: 0.1,
-  },
-}
-
-// Hook customizado para animação da câmera
 const useCameraAnimation = section => {
   const { camera } = useThree()
-  const target = React.useRef({
-    position: new THREE.Vector3(),
-    fov: camera.fov,
+  const animationRef = useRef({
+    progress: 0,
+    isActive: false,
+    startPosition: new THREE.Vector3(),
+    startFov: 50,
   })
-  const animation = React.useRef({ frame: null, isAnimating: false })
 
-  React.useEffect(() => {
-    const sectionKey = `section${section}` || "intro"
-    const config = CAMERA_SECTIONS[sectionKey] || CAMERA_SECTIONS.intro
+  useEffect(() => {
+    const sectionKey =
+      `section${section}` in CAMERA_CONFIG.sections
+        ? `section${section}`
+        : "intro"
 
-    target.current.position.copy(config.position)
-    target.current.fov = config.fov
+    const config = CAMERA_CONFIG.sections[sectionKey]
+    const { intensity, curve } = CAMERA_CONFIG.transitions
+
+    animationRef.current = {
+      ...animationRef.current,
+      isActive: true,
+      startPosition: camera.position.clone(),
+      startFov: camera.fov,
+      config,
+    }
 
     const animate = () => {
-      // Interpolação da posição
-      camera.position.lerp(target.current.position, config.lerpFactor)
+      if (!animationRef.current.isActive) return
 
-      // Interpolação do FOV
-      camera.fov = THREE.MathUtils.lerp(
-        camera.fov,
-        target.current.fov,
-        config.lerpFactor
-      )
+      animationRef.current.progress += intensity
+      const t = Math.min(animationRef.current.progress, 1)
+      const { config, startPosition, startFov } = animationRef.current
 
+      // Calculate transition values
+      const curveValue = curve(t)
+      const offsetZ = curveValue * config.transition.zOffset
+      const targetFovOffset =
+        curveValue * config.fov * config.transition.fovMultiplier
+
+      // Interpolate position with Z offset
+      const targetPosition = new THREE.Vector3()
+        .lerpVectors(startPosition, config.position, t)
+        .add(new THREE.Vector3(0, 0, offsetZ))
+
+      // Interpolate FOV with dynamic offset
+      const targetFov =
+        THREE.MathUtils.lerp(startFov, config.fov, t) - targetFovOffset
+
+      // Apply values
+      camera.position.copy(targetPosition)
+      camera.fov = targetFov
       camera.updateProjectionMatrix()
 
-      // Verificar se precisa continuar animando
-      const positionDistance = camera.position.distanceTo(
-        target.current.position
-      )
-      const fovDifference = Math.abs(camera.fov - target.current.fov)
-
-      if (positionDistance > 0.01 || fovDifference > 0.1) {
-        animation.current.frame = requestAnimationFrame(animate)
+      if (t < 1) {
+        requestAnimationFrame(animate)
       } else {
-        animation.current.isAnimating = false
+        animationRef.current.isActive = false
+        animationRef.current.progress = 0
       }
     }
 
-    if (!animation.current.isAnimating) {
-      animation.current.isAnimating = true
-      animation.current.frame = requestAnimationFrame(animate)
-    }
+    animate()
 
     return () => {
-      if (animation.current.frame) {
-        cancelAnimationFrame(animation.current.frame)
-        animation.current.isAnimating = false
-      }
+      animationRef.current.isActive = false
     }
   }, [section, camera])
 
   return null
 }
 
-// Componente principal da experiência
 const Experience = () => {
   const [currentSection, setCurrentSection] = useState(0)
   const [activeSection, setActiveSection] = useState("intro")
@@ -106,19 +100,12 @@ const Experience = () => {
         />
       </div>
 
-      <Canvas
-        camera={{
-          position: CAMERA_SECTIONS.intro.position,
-          fov: CAMERA_SECTIONS.intro.fov,
-        }}
-        className="w-full h-full"
-      >
+      <Canvas camera={CAMERA_CONFIG.sections.intro} className="w-full h-full">
         <SceneController section={currentSection} />
 
         <Suspense fallback={<Modeload />}>
           <SceneContent
             activeSection={activeSection}
-            currentSection={currentSection}
             onSectionChange={handleSectionChange}
           />
         </Suspense>
@@ -127,7 +114,6 @@ const Experience = () => {
   )
 }
 
-// Componente de controle de cena
 const SceneController = ({ section }) => {
   useCameraAnimation(section)
   return (
@@ -144,26 +130,22 @@ const SceneController = ({ section }) => {
   )
 }
 
-// Componente de conteúdo da cena
-const SceneContent = React.memo(
-  ({ activeSection, currentSection, onSectionChange }) => (
-    <>
-      <Castle activeSection={activeSection} receiveShadow scale={[2, 2, 2]} />
-      <CoudsD />
-      <Pole
-        position={[-0.8, 0, 6]}
-        scale={[0.6, 0.6, 0.6]}
-        onSectionChange={onSectionChange}
-        section={currentSection}
-      />
-      <Sky
-        distance={450000}
-        sunPosition={[0, 1, 0]}
-        inclination={0}
-        azimuth={0.25}
-      />
-    </>
-  )
-)
+const SceneContent = React.memo(({ activeSection, onSectionChange }) => (
+  <>
+    <Castle activeSection={activeSection} receiveShadow scale={[2, 2, 2]} />
+    <CoudsD />
+    <Pole
+      position={[-0.8, 0, 5.8]}
+      scale={[0.6, 0.6, 0.6]}
+      onSectionChange={onSectionChange}
+    />
+    <Sky
+      distance={450000}
+      sunPosition={[0, 1, 0]}
+      inclination={0}
+      azimuth={0.25}
+    />
+  </>
+))
 
 export default Experience
