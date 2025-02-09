@@ -98,18 +98,10 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
 
       {/* Seção Token */}
       <Section isActive={currentSectionKey === "token"}>
-        <div className="flex flex-col items-center gap-6">
+        <div className="flex flex-col items-center gap-6 pb-60">
           <h1 className="text-4xl font-bold text-stone-100">
             Token Information
           </h1>
-          <div className="flex gap-4">
-            <NavigationButton
-              onClick={() => onSectionChange(0, "nav")}
-              className="bg-gray-500 hover:bg-gray-600 text-white"
-            >
-              Back to Main
-            </NavigationButton>
-          </div>
         </div>
       </Section>
 
