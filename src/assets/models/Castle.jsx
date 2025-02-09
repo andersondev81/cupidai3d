@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useMemo, useRef } from "react"
-import { useGLTF, useTexture, CameraControls } from "@react-three/drei"
+import { useGLTF, useTexture, CameraControls, Html } from "@react-three/drei"
 import { useControls, button, monitor } from "leva"
 import {
   Color,
@@ -108,13 +108,34 @@ const CastleModel = ({ onCastleClick }) => {
 
   return (
     <group dispose={null}>
-      <mesh
-        geometry={nodes.Castle.geometry}
-        material={nodes.Castle.material}
-        position={[0, 0, 0]}
-        rotation={[0, 0, 0]}
-        scale={1}
-      />
+      <mesh geometry={nodes.Castle.geometry} material={nodes.Castle.material} />
+      <group
+        position={[1.663, 1.113, 0.851]}
+        rotation={[Math.PI / 1, 1.919, Math.PI]}
+        scale={[0.08, 0.08, 0.08]}
+      >
+        <Html
+          position={[0, 0, 0]}
+          transform
+          distanceFactor={1.16}
+          className=" p-2"
+        >
+          <iframe src="https://getcupid.ai/Blogs" />
+          {/* Botão de voltar adicionado aqui */}
+          <button
+            onClick={() => onCastleClick("nav")}
+            style={{
+              position: "absolute",
+              bottom: "-40px",
+              left: "50%",
+              transform: "translateX(-50%)",
+            }}
+            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors"
+          >
+            MENU
+          </button>
+        </Html>
+      </group>
     </group>
   )
 }
