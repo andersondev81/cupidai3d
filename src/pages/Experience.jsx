@@ -11,7 +11,7 @@ import { Perf } from "r3f-perf"
 import Modeload from "../components/helpers/Modeload"
 import Orb from "../assets/models/Orb"
 
-const useCameraAnimation = section => {
+const useCameraAnimation = (section, cameraRef) => {
   const { camera } = useThree()
   const animationRef = useRef({
     progress: 0,
@@ -74,10 +74,22 @@ const useCameraAnimation = section => {
 
     animate()
 
+    // Expose goToHome method
+    if (cameraRef) {
+      cameraRef.current = {
+        goToHome: () => {
+          camera.position.set(15.9, 6.8, -11.4)
+          camera.updateProjectionMatrix()
+          animationRef.current.isActive = false
+          animationRef.current.progress = 0
+        }
+      }
+    }
+
     return () => {
       animationRef.current.isActive = false
     }
-  }, [section, camera])
+  }, [section, camera, cameraRef])
 
   return null
 }
@@ -85,6 +97,7 @@ const useCameraAnimation = section => {
 const Experience = () => {
   const [currentSection, setCurrentSection] = useState(0)
   const [activeSection, setActiveSection] = useState("intro")
+  const cameraRef = useRef(null)
 
   const handleSectionChange = (index, sectionName) => {
     setCurrentSection(index)
@@ -92,31 +105,39 @@ const Experience = () => {
   }
 
   return (
-    <div className="bg-gradient-to-b from-[#bde0fe] to-[#ffafcc] h-screen relative">
-      <div className="absolute inset-0 pointer-events-none z-10">
-        <CastleUi
-          section={currentSection}
-          onSectionChange={handleSectionChange}
-          className="pointer-events-auto"
-        />
+    <div className="relative w-full h-screen">
+      {/* Canvas Container */}
+      <div className="absolute inset-0 z-0">
+        <Canvas
+          camera={CAMERA_CONFIG.sections.intro}
+          className="w-full h-full"
+        >
+          <SceneController section={currentSection} cameraRef={cameraRef} />
+          <Suspense fallback={<Modeload />}>
+            <SceneContent
+              activeSection={activeSection}
+              onSectionChange={handleSectionChange}
+            />
+          </Suspense>
+        </Canvas>
       </div>
 
-      <Canvas camera={CAMERA_CONFIG.sections.intro} className="w-full h-full">
-        <SceneController section={currentSection} />
-
-        <Suspense fallback={<Modeload />}>
-          <SceneContent
-            activeSection={activeSection}
+      <div className="absolute inset-0 z-10 pointer-events-none">
+        <div className="w-full h-full">
+          <CastleUi
+            section={currentSection}
             onSectionChange={handleSectionChange}
+            cameraRef={cameraRef.current}
+            className="pointer-events-auto"
           />
-        </Suspense>
-      </Canvas>
+        </div>
+      </div>
     </div>
   )
 }
 
-const SceneController = ({ section }) => {
-  useCameraAnimation(section)
+const SceneController = ({ section, cameraRef }) => {
+  useCameraAnimation(section, cameraRef)
   return (
     <>
       <fog attach="fog" args={["#ffff", 0, 40]} />
@@ -131,25 +152,33 @@ const SceneController = ({ section }) => {
   )
 }
 
-const SceneContent = React.memo(({ activeSection, onSectionChange }) => (
-  <>
-    <Castle activeSection={activeSection} receiveShadow scale={[2, 2, 2]} />
+const SceneContent = React.memo(({ activeSection, onSectionChange }) => {
+  const [isLocked, setIsLocked] = useState(false)
 
-    <CoudsD />
-    <Pole
-      position={[-0.8, 0, 5.8]}
-      scale={[0.6, 0.6, 0.6]}
-      onSectionChange={onSectionChange}
-    />
-
-    <Orb />
-    <Sky
-      distance={450000}
-      sunPosition={[0, 1, 0]}
-      inclination={0}
-      azimuth={0.25}
-    />
-  </>
-))
+  return (
+    <>
+      <Castle
+        activeSection={activeSection}
+        receiveShadow
+        scale={[2, 2, 2]}
+        isLocked={isLocked}
+        setIsLocked={setIsLocked}
+      />
+      <CoudsD />
+      <Pole
+        position={[-0.8, 0, 5.8]}
+        scale={[0.6, 0.6, 0.6]}
+        onSectionChange={onSectionChange}
+        setIsLocked={setIsLocked}
+      />
+      <Sky
+        distance={450000}
+        sunPosition={[0, 1, 0]}
+        inclination={0}
+        azimuth={0.25}
+      />
+    </>
+  )
+})
 
 export default Experience

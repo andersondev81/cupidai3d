@@ -10,6 +10,15 @@ import {
 } from "three"
 import Modeload from "../../components/helpers/Modeload"
 
+const defaultCameraPosition = [
+  132.95512091806918,
+  87.33269746995288,
+  188.3864842177005,
+  -0.1823668021901385,
+  -0.24424001987657776,
+  0.22391277970336168,
+]
+
 // Posições da câmera para cada seção
 const cameraPositions = {
   nav: [
@@ -100,7 +109,10 @@ useGLTF.preload("/models/Castle.glb")
 
 const Castle = ({ activeSection }) => {
   const controls = useRef()
-  const statsRef = useRef()
+
+  useEffect(() => {
+    window.controls = controls
+  }, [])
 
   useControls("settings", {
     fps: monitor(() => performance.now()),
@@ -120,7 +132,14 @@ const Castle = ({ activeSection }) => {
 
   const playTransition = sectionName => {
     const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD
-    const targetPosition = cameraPositions[sectionName]
+    if (sectionName === "default") {
+      controls.current.setLookAt(...defaultCameraPosition, true)
+      return
+    }
+
+    const targetPosition = isSmallScreen
+      ? cameraPositionsSmallScreen[sectionName]
+      : cameraPositions[sectionName]
 
     if (controls.current && targetPosition) {
       controls.current.setLookAt(...targetPosition, true)
@@ -128,19 +147,13 @@ const Castle = ({ activeSection }) => {
   }
 
   useEffect(() => {
-    controls.current.setLookAt(
-      132.95512091806918,
-      87.33269746995288,
-      188.3864842177005,
-      -0.1823668021901385,
-      -0.24424001987657776,
-      0.22391277970336168,
-      false
-    )
+    // Set initial camera position
+    controls.current.setLookAt(...defaultCameraPosition, false)
 
+    // After a short delay, transition to the nav section
     setTimeout(() => {
       playTransition("nav")
-    }, 0)
+    }, 100)
   }, [])
 
   useEffect(() => {
