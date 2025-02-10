@@ -98,11 +98,11 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
 
       {/* Seção Token */}
       <Section isActive={currentSectionKey === "token"}>
-        <div className="flex flex-col items-center gap-6 pb-60">
+        {/* <div className="flex flex-col items-center gap-6 pb-60">
           <h1 className="text-4xl font-bold text-stone-100">
             Token Information
           </h1>
-        </div>
+        </div> */}
       </Section>
 
       {/* Seção Roadmap */}

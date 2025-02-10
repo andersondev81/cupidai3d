@@ -15,10 +15,10 @@ import {
 const usePoleMaterial = () => {
   // Carregar texturas do Pole
   const textures = useTexture({
-    map: "/texture/Pole_Color.webp",
+    map: "/texture/Pole_ColorV3AO.webp",
     displacementMap: "/texture/Pole_Height.webp",
     metalnessMap: "/texture/Pole_Metalness.webp",
-    normalMap: "/texture/Pole_Normal.webp",
+    normalMap: "/texture/Pole_NormalV3.webp",
     roughnessMap: "/texture/Pole_Roughness.webp",
   })
 

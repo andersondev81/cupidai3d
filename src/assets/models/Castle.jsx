@@ -118,9 +118,12 @@ const CastleModel = ({ onCastleClick }) => {
           position={[0, 0, 0]}
           transform
           distanceFactor={1.16}
-          className=" p-2"
+          className=" p-2 "
         >
-          <iframe src="https://getcupid.ai/Blogs" />
+          <iframe
+            src="https://getcupid.ai/Blogs"
+            className="rounded-md shadow-lg"
+          />
           {/* Botão de voltar adicionado aqui */}
           <button
             onClick={() => onCastleClick("nav")}
