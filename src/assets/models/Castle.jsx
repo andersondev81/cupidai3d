@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useMemo, useRef } from "react"
-import { useGLTF, useTexture, CameraControls, Html } from "@react-three/drei"
+import { useGLTF, CameraControls, Html } from "@react-three/drei"
 import { useControls, button, monitor } from "leva"
 import {
   Color,
@@ -38,60 +38,14 @@ const cameraPositions = {
   ],
 }
 
-// Posições da câmera para cada seção (telas pequenas)
-const cameraPositionsSmallScreen = {
-  intro: [
-    -0.47993818136505073, 1.13917177154802, 6.743922666460792,
-    -1.3224149774642704, 1.6753152120757284, 1.0989767468615808,
-  ],
-  about: [
-    1.8562259954731093, 1.1626020325030495, -0.926552435064171,
-    1.3674383110764547, 1.1705903196566405, -0.662785847191283,
-  ],
-  aidatingcoach: [
-    -2.3148021101664606, 1.1024327055391172, -1.1063841608771088,
-    -0.1820891855994354, 1.1199307653182649, -0.05437741521465597,
-  ],
-  download: [
-    1.8562259954731093, 1.1626020325030495, -0.926552435064171,
-    1.3674383110764547, 1.1705903196566405, -0.662785847191283,
-  ],
-  token: [
-    2.118405773953273, 1.2172470657362846, 1.0635730429142927,
-    0.04723852527162822, 0.585365963592996, 0.11077814711949062,
-  ],
-  roadmap: [
-    -2.194447186898329, 1.1074291907861749, 1.1461923290680842,
-    -0.3644950377073637, 0.9540178555386187, 0.18714237486758786,
-  ],
-}
-
 const SMALL_SCREEN_THRESHOLD = 768
 
-// Componente de material e texturas para o Castelo
 const useCastleMaterial = () => {
-  const textures = useTexture({
-    map: "/texture/project6/CastleColorB.jpg",
-    normalMap: "/texture/project6/CastleNormal.jpg",
-    emissiveMap: "/texture/project6/CastleEmissive.jpg",
-  })
-
-  useMemo(() => {
-    Object.values(textures).forEach(texture => {
-      if (texture) {
-        texture.flipY = false
-        texture.minFilter = texture.magFilter = NearestFilter
-      }
-    })
-  }, [textures])
-
   return useMemo(() => {
     return new MeshStandardMaterial({
-      map: textures.map,
-      normalMap: textures.normalMap,
-      emissiveMap: textures.emissiveMap,
-      emissive: new Color(0xffffff),
-      emissiveIntensity: 16,
+      color: new Color(0xaaaaaa), // Cor neutra em vez de textura
+      emissive: new Color(0x000000),
+      emissiveIntensity: 0,
       transparent: false,
       alphaTest: 0.5,
       side: DoubleSide,
@@ -99,7 +53,7 @@ const useCastleMaterial = () => {
       roughness: 0.5,
       metalness: 0,
     })
-  }, [textures])
+  }, [])
 }
 
 const CastleModel = ({ onCastleClick }) => {
@@ -108,7 +62,7 @@ const CastleModel = ({ onCastleClick }) => {
 
   return (
     <group dispose={null}>
-      <mesh geometry={nodes.Castle.geometry} material={nodes.Castle.material} />
+      <mesh geometry={nodes.Castle.geometry} material={material} />
       <group
         position={[1.663, 1.113, 0.851]}
         rotation={[Math.PI / 1, 1.919, Math.PI]}
@@ -124,7 +78,6 @@ const CastleModel = ({ onCastleClick }) => {
             src="https://getcupid.ai/Blogs"
             className="rounded-md shadow-lg"
           />
-          {/* Botão de voltar adicionado aqui */}
           <button
             onClick={() => onCastleClick("nav")}
             style={{
@@ -145,7 +98,6 @@ const CastleModel = ({ onCastleClick }) => {
 
 useGLTF.preload("/models/Castle.glb")
 
-// Componente Principal
 const Castle = ({ activeSection }) => {
   const controls = useRef()
   const statsRef = useRef()
@@ -168,9 +120,7 @@ const Castle = ({ activeSection }) => {
 
   const playTransition = sectionName => {
     const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD
-    const targetPosition = isSmallScreen
-      ? cameraPositionsSmallScreen[sectionName]
-      : cameraPositions[sectionName]
+    const targetPosition = cameraPositions[sectionName]
 
     if (controls.current && targetPosition) {
       controls.current.setLookAt(...targetPosition, true)
@@ -178,7 +128,6 @@ const Castle = ({ activeSection }) => {
   }
 
   useEffect(() => {
-    // Posição inicial da câmera (camGo)
     controls.current.setLookAt(
       132.95512091806918,
       87.33269746995288,
@@ -189,7 +138,6 @@ const Castle = ({ activeSection }) => {
       false
     )
 
-    // After "0" secconds go to the 'nav' section
     setTimeout(() => {
       playTransition("nav")
     }, 0)
