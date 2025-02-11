@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@react-three/drei": "^9.74.15",
-    "@react-three/fiber": "^8.17.12",
+    "@react-three/fiber": "^8.17.14",
     "@react-three/postprocessing": "^2.19.1",
     "@theatre/core": "0.7.0",
     "@theatre/r3f": "0.7.0",
@@ -19,6 +19,7 @@
     "@types/three": "^0.152.1",
     "framer-motion": "^10.16.4",
     "gsap": "^3.12.7",
+    "howler": "^2.2.4",
     "leva": "^0.9.35",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
