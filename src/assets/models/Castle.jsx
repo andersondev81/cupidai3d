@@ -109,9 +109,39 @@ useGLTF.preload("/models/Castle.glb")
 
 const Castle = ({ activeSection }) => {
   const controls = useRef()
+  const audioContext = useRef(null)
+  const audioElement = useRef(null)
+  const source = useRef(null)
+  const panner = useRef(null)
 
   useEffect(() => {
     window.controls = controls
+
+    audioElement.current = new Audio('/src/assets/sounds/videoplayback.mp4')
+    audioElement.current.loop = true
+
+    audioContext.current = new (window.AudioContext || window.webkitAudioContext)()
+    source.current = audioContext.current.createMediaElementSource(audioElement.current)
+    panner.current = audioContext.current.createPanner()
+    panner.current.panningModel = 'HRTF'
+    panner.current.distanceModel = 'inverse'
+    panner.current.refDistance = 1
+    panner.current.maxDistance = 100
+    panner.current.rolloffFactor = 1
+    panner.current.setPosition(0, 0, 0)
+
+    // Connect nodes
+    source.current.connect(panner.current)
+    panner.current.connect(audioContext.current.destination)
+
+    return () => {
+      if (audioElement.current) {
+        audioElement.current.pause()
+      }
+      if (audioContext.current) {
+        audioContext.current.close()
+      }
+    }
   }, [])
 
   useControls("settings", {
@@ -130,10 +160,30 @@ const Castle = ({ activeSection }) => {
     }),
   })
 
+  const playSound = () => {
+    if (audioContext.current.state === 'suspended') {
+      audioContext.current.resume()
+    }
+    audioElement.current.play()
+  }
+
+  const stopSound = () => {
+    audioElement.current.pause()
+    audioElement.current.currentTime = 0
+  }
+
+  const updateListenerPosition = (position) => {
+    if (audioContext.current && position) {
+      const [x, y, z] = position
+      audioContext.current.listener.setPosition(x, y, z)
+    }
+  }
+
   const playTransition = sectionName => {
     const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD
     if (sectionName === "default") {
       controls.current.setLookAt(...defaultCameraPosition, true)
+      stopSound()
       return
     }
 
@@ -143,14 +193,18 @@ const Castle = ({ activeSection }) => {
 
     if (controls.current && targetPosition) {
       controls.current.setLookAt(...targetPosition, true)
+      updateListenerPosition(targetPosition.slice(0, 3))
+
+      if (sectionName === 'nav') {
+        playSound()
+      } else {
+        stopSound()
+      }
     }
   }
 
   useEffect(() => {
-    // Set initial camera position
     controls.current.setLookAt(...defaultCameraPosition, false)
-
-    // After a short delay, transition to the nav section
     setTimeout(() => {
       playTransition("nav")
     }, 100)

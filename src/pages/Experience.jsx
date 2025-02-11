@@ -97,23 +97,38 @@ const useCameraAnimation = (section, cameraRef) => {
 const Experience = () => {
   const [currentSection, setCurrentSection] = useState(0)
   const [activeSection, setActiveSection] = useState("intro")
+  const [isStarted, setIsStarted] = useState(false)
   const cameraRef = useRef(null)
+
+  const handleStart = () => {
+    setIsStarted(true)
+  }
 
   const handleSectionChange = (index, sectionName) => {
     setCurrentSection(index)
     setActiveSection(sectionName)
   }
 
+  if (!isStarted) {
+    return (
+      <div className="relative w-full h-screen">
+        <Canvas>
+          <color attach="background" args={['#000']} />
+          <Modeload onStart={handleStart} />
+        </Canvas>
+      </div>
+    )
+  }
+
   return (
     <div className="relative w-full h-screen">
-      {/* Canvas Container */}
       <div className="absolute inset-0 z-0">
-        <Canvas
+      <Canvas
           camera={CAMERA_CONFIG.sections.intro}
           className="w-full h-full"
         >
           <SceneController section={currentSection} cameraRef={cameraRef} />
-          <Suspense fallback={<Modeload />}>
+          <Suspense fallback={null}>
             <SceneContent
               activeSection={activeSection}
               onSectionChange={handleSectionChange}
@@ -123,7 +138,7 @@ const Experience = () => {
       </div>
 
       <div className="absolute inset-0 z-10 pointer-events-none">
-        <div className="w-full h-full">
+      <div className="w-full h-full">
           <CastleUi
             section={currentSection}
             onSectionChange={handleSectionChange}
@@ -147,38 +162,27 @@ const SceneController = ({ section, cameraRef }) => {
         blur={0.6}
         envMapIntensity={0.5}
       />
-      <Perf position="top-left" />
+      {process.env.NODE_ENV === 'development' && <Perf position="top-left" />}
     </>
   )
 }
 
-const SceneContent = React.memo(({ activeSection, onSectionChange }) => {
-  const [isLocked, setIsLocked] = useState(false)
-
-  return (
-    <>
-      <Castle
-        activeSection={activeSection}
-        receiveShadow
-        scale={[2, 2, 2]}
-        isLocked={isLocked}
-        setIsLocked={setIsLocked}
-      />
-      <CoudsD />
-      <Pole
-        position={[-0.8, 0, 5.8]}
-        scale={[0.6, 0.6, 0.6]}
-        onSectionChange={onSectionChange}
-        setIsLocked={setIsLocked}
-      />
-      <Sky
-        distance={450000}
-        sunPosition={[0, 1, 0]}
-        inclination={0}
-        azimuth={0.25}
-      />
-    </>
-  )
-})
+const SceneContent = React.memo(({ activeSection, onSectionChange }) => (
+  <>
+    <Castle activeSection={activeSection} receiveShadow scale={[2, 2, 2]} />
+    <CoudsD />
+    <Pole
+      position={[-0.8, 0, 5.8]}
+      scale={[0.6, 0.6, 0.6]}
+      onSectionChange={onSectionChange}
+    />
+    <Sky
+      distance={450000}
+      sunPosition={[0, 1, 0]}
+      inclination={0}
+      azimuth={0.25}
+    />
+  </>
+))
 
 export default Experience
