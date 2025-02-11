@@ -9,6 +9,7 @@ import { CastleUi } from "../assets/models/CastleUi"
 import { Pole } from "../assets/models/Pole"
 import { Perf } from "r3f-perf"
 import Modeload from "../components/helpers/Modeload"
+import Orb from "../assets/models/Orb"
 
 const useCameraAnimation = section => {
   const { camera } = useThree()
@@ -133,12 +134,15 @@ const SceneController = ({ section }) => {
 const SceneContent = React.memo(({ activeSection, onSectionChange }) => (
   <>
     <Castle activeSection={activeSection} receiveShadow scale={[2, 2, 2]} />
+
     <CoudsD />
     <Pole
       position={[-0.8, 0, 5.8]}
       scale={[0.6, 0.6, 0.6]}
       onSectionChange={onSectionChange}
     />
+
+    <Orb />
     <Sky
       distance={450000}
       sunPosition={[0, 1, 0]}
