@@ -1,4 +1,4 @@
-import React from "react"
+import React from "react";
 
 export const sections = [
   "nav",
@@ -7,7 +7,7 @@ export const sections = [
   "download",
   "token",
   "roadmap",
-]
+];
 
 const Section = ({ children, isActive, className = "" }) => (
   <section
@@ -17,7 +17,7 @@ const Section = ({ children, isActive, className = "" }) => (
   >
     {children}
   </section>
-)
+);
 
 const NavigationButton = ({ onClick, children, className }) => (
   <button
@@ -26,10 +26,17 @@ const NavigationButton = ({ onClick, children, className }) => (
   >
     {children}
   </button>
-)
+);
 
-export const CastleUi = ({ section = 0, onSectionChange }) => {
-  const currentSectionKey = sections[section]
+export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
+  const currentSectionKey = sections[section];
+
+  const handleHomeNavigation = () => {
+    if (cameraRef) {
+      cameraRef.goToHome();
+      onSectionChange(0, "nav");
+    }
+  };
 
   return (
     <main className="relative h-full w-full">
@@ -44,8 +51,8 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
             platform...
           </p>
           <NavigationButton
-            onClick={() => onSectionChange(0, "nav")}
-            className="bg-gray-500 hover:bg-gray-600 text-white"
+            onClick={handleHomeNavigation}
+            className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
           >
             Back to Main
           </NavigationButton>
@@ -58,8 +65,8 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
           <h1 className="text-4xl font-bold text-stone-100">AI Dating Coach</h1>
           <div className="flex gap-4">
             <NavigationButton
-              onClick={() => onSectionChange(0, "nav")}
-              className="bg-gray-500 hover:bg-gray-600 text-white"
+              onClick={handleHomeNavigation}
+              className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
             >
               Back to Main
             </NavigationButton>
@@ -76,19 +83,19 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
           <div className="flex gap-4">
             <NavigationButton
               onClick={() => window.open("#download-link", "_blank")}
-              className="bg-green-500 hover:bg-green-600 text-white"
+              className="bg-green-500 hover:bg-green-600 text-white pointer-events-auto"
             >
               iOS Version
             </NavigationButton>
             <NavigationButton
               onClick={() => window.open("#download-link", "_blank")}
-              className="bg-green-500 hover:bg-green-600 text-white"
+              className="bg-green-500 hover:bg-green-600 text-white pointer-events-auto"
             >
               Android Version
             </NavigationButton>
             <NavigationButton
-              onClick={() => onSectionChange(0, "nav")}
-              className="bg-gray-500 hover:bg-gray-600 text-white"
+              onClick={handleHomeNavigation}
+              className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
             >
               Back
             </NavigationButton>
@@ -98,11 +105,17 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
 
       {/* Seção Token */}
       <Section isActive={currentSectionKey === "token"}>
-        {/* <div className="flex flex-col items-center gap-6 pb-60">
+        <div className="flex flex-col items-center gap-6 pb-60">
           <h1 className="text-4xl font-bold text-stone-100">
             Token Information
           </h1>
-        </div> */}
+          <NavigationButton
+            onClick={handleHomeNavigation}
+            className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
+          >
+            Back to Main
+          </NavigationButton>
+        </div>
       </Section>
 
       {/* Seção Roadmap */}
@@ -113,8 +126,8 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
           </h1>
           <div className="flex gap-4">
             <NavigationButton
-              onClick={() => onSectionChange(0, "nav")}
-              className="bg-gray-500 hover:bg-gray-600 text-white"
+              onClick={handleHomeNavigation}
+              className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
             >
               Main Menu
             </NavigationButton>
@@ -122,5 +135,5 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
         </div>
       </Section>
     </main>
-  )
-}
+  );
+};
