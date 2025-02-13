@@ -117,30 +117,30 @@ const OrbMesh = props => {
       <RotateAxis axis="y" speed={1} rotationType="euler">
         <mesh geometry={nodes.lineC?.geometry} material={materialLines} />
       </RotateAxis>
-      <RotateAxis axis="z" speed={1} rotationType="euler">
+      <RotateAxis axis="z" speed={6} rotationType="euler">
         <mesh geometry={nodes.lineB?.geometry} material={materialLines} />
       </RotateAxis>
-      <RotateAxis axis="x" speed={1} rotationType="euler">
+      <RotateAxis axis="x" speed={8} rotationType="euler">
         <mesh geometry={nodes.lineA?.geometry} material={materialLines} />
       </RotateAxis>
 
       {/* Center */}
-      <RotateAxis axis="y" speed={2} rotationType="euler">
+      <RotateAxis axis="y" speed={8} rotationType="euler">
         <mesh geometry={nodes.center?.geometry} material={materialCenter} />
       </RotateAxis>
 
       {/* Bolas */}
-      <RotateAxis axis="x" speed={0.5} rotationType="euler">
+      <RotateAxis axis="x" speed={6} rotationType="euler">
         <mesh geometry={nodes.ballC?.geometry} material={materialBalls} />
       </RotateAxis>
-      <RotateAxis axis="y" speed={1} rotationType="euler">
+      <RotateAxis axis="y" speed={8} rotationType="euler">
         <mesh
           geometry={nodes.ballA?.geometry}
           material={materialBalls}
           scale={0.993}
         />
       </RotateAxis>
-      <RotateAxis axis="y" speed={2} rotationType="euler">
+      <RotateAxis axis="z" speed={2} rotationType="euler">
         <mesh
           geometry={nodes.ballB?.geometry}
           material={materialBalls}
@@ -166,16 +166,16 @@ const OrbMesh = props => {
           opacity={0.5}
           transparent={true}
         />
-        {/* Ajuste do Sparkles para envolver a esfera */}
-        <Sparkles
-          count={50}
-          scale={0.1}
-          size={0.4}
-          speed={0.2}
-          position={[0, 0, 0]}
-          rotation={[MathUtils.degToRad(90), 0, MathUtils.degToRad(90)]}
-        />
       </mesh>
+      <RotateAxis axis="y" speed={-0.5} rotationType="euler">
+        <mesh
+          geometry={nodes.particles.geometry}
+          material={nodes.particles.material}
+          color={new Color(0.678, 0.933, 0.953)}
+          rotation={[Math.PI / 2, 0, 0]}
+          scale={0.01}
+        />
+      </RotateAxis>
     </group>
   )
 }
