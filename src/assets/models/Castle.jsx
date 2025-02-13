@@ -151,6 +151,7 @@ const CastleModel = ({ onCastleClick }) => {
 
 useGLTF.preload("/models/Castle.glb")
 
+
 const Castle = ({ activeSection }) => {
   const controls = useRef()
   const audioContext = useRef(null)
@@ -158,6 +159,7 @@ const Castle = ({ activeSection }) => {
   const source = useRef(null)
   const panner = useRef(null)
 
+  // Audio setup
   useEffect(() => {
     window.controls = controls
 
@@ -174,7 +176,6 @@ const Castle = ({ activeSection }) => {
     panner.current.rolloffFactor = 1
     panner.current.setPosition(0, 0, 0)
 
-    // Connect nodes
     source.current.connect(panner.current)
     panner.current.connect(audioContext.current.destination)
 
@@ -187,22 +188,6 @@ const Castle = ({ activeSection }) => {
       }
     }
   }, [])
-
-  useControls("settings", {
-    fps: monitor(() => performance.now()),
-    smoothTime: {
-      value: 0.6,
-      min: 0.1,
-      max: 2,
-      step: 0.1,
-      onChange: v => (controls.current.smoothTime = v),
-    },
-    getLookAt: button(() => {
-      const position = controls.current.getPosition()
-      const target = controls.current.getTarget()
-      console.log([...position, ...target])
-    }),
-  })
 
   const playSound = () => {
     if (audioContext.current.state === 'suspended') {
@@ -225,8 +210,16 @@ const Castle = ({ activeSection }) => {
 
   const playTransition = sectionName => {
     const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD
+
+    // Temporariamente habilita a câmera para a transição
+    if (controls.current) {
+      controls.current.enabled = true
+    }
+
     if (sectionName === "default") {
-      controls.current.setLookAt(...defaultCameraPosition, true)
+      controls.current.setLookAt(...defaultCameraPosition, true).then(() => {
+        controls.current.enabled = true
+      })
       stopSound()
       return
     }
@@ -236,7 +229,11 @@ const Castle = ({ activeSection }) => {
       : cameraPositions[sectionName]
 
     if (controls.current && targetPosition) {
-      controls.current.setLookAt(...targetPosition, true)
+      // Executa a transição e depois trava a câmera se necessário
+      controls.current.setLookAt(...targetPosition, true).then(() => {
+        controls.current.enabled = sectionName === 'nav'
+      })
+
       updateListenerPosition(targetPosition.slice(0, 3))
 
       if (sectionName === 'nav') {
@@ -248,7 +245,11 @@ const Castle = ({ activeSection }) => {
   }
 
   useEffect(() => {
+    if (!controls.current) return
+
+    controls.current.enabled = true
     controls.current.setLookAt(...defaultCameraPosition, false)
+
     setTimeout(() => {
       playTransition("nav")
     }, 100)
@@ -260,9 +261,29 @@ const Castle = ({ activeSection }) => {
     }
   }, [activeSection])
 
+  useControls("settings", {
+    fps: monitor(() => performance.now()),
+    smoothTime: {
+      value: 0.6,
+      min: 0.1,
+      max: 2,
+      step: 0.1,
+      onChange: v => (controls.current.smoothTime = v),
+    },
+    getLookAt: button(() => {
+      const position = controls.current.getPosition()
+      const target = controls.current.getTarget()
+      console.log([...position, ...target])
+    }),
+  })
+
   return (
     <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
-      <CameraControls ref={controls} />
+      <CameraControls
+        ref={controls}
+        makeDefault
+        smoothTime={0.6}
+      />
       <Suspense fallback={<Modeload />}>
         <CastleModel onCastleClick={playTransition} />
       </Suspense>
