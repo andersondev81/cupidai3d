@@ -1,4 +1,4 @@
-import React from "react";
+import React from "react"
 
 export const sections = [
   "nav",
@@ -7,7 +7,7 @@ export const sections = [
   "download",
   "token",
   "roadmap",
-];
+]
 
 const Section = ({ children, isActive, className = "" }) => (
   <section
@@ -17,7 +17,7 @@ const Section = ({ children, isActive, className = "" }) => (
   >
     {children}
   </section>
-);
+)
 
 const NavigationButton = ({ onClick, children, className }) => (
   <button
@@ -26,17 +26,17 @@ const NavigationButton = ({ onClick, children, className }) => (
   >
     {children}
   </button>
-);
+)
 
 export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
-  const currentSectionKey = sections[section];
+  const currentSectionKey = sections[section]
 
   const handleHomeNavigation = () => {
     if (cameraRef) {
-      cameraRef.goToHome();
-      onSectionChange(0, "nav");
+      cameraRef.goToHome()
+      onSectionChange(0, "nav")
     }
-  };
+  }
 
   return (
     <main className="relative h-full w-full">
@@ -135,5 +135,5 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
         </div>
       </Section>
     </main>
-  );
-};
+  )
+}
