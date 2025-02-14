@@ -559,61 +559,78 @@ const CastleModel = ({ onCastleClick }) => {
         rotation={[Math.PI / 2, 0, 0]}
         scale={0.01}
       />
->>>>>>> d3ce3f9 (New Castle)
+
+      {/* Iframes */}
       <group
         position={[1.672, 1.193, 0.858]}
-        rotation={[Math.PI, 1.919, Math.PI]}
-        scale={0.2}
+        rotation={[Math.PI / 2, 0, 0]}
+        scale={0.01}
       >
-<<<<<<< HEAD
-        <Html
-          position={[0, 0, 0]}
-          transform
-          distanceFactor={1.16}
-          className=" p-2 "
-        >
-          <iframe
-            src="https://getcupid.ai/Blogs"
-            className="rounded-md shadow-lg"
-          />
-          <button
-            onClick={() => onCastleClick("nav")}
-            style={{
-              position: "absolute",
-              bottom: "-40px",
-              left: "50%",
-              transform: "translateX(-50%)",
-            }}
-            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors"
-          >
-            MENU
-          </button>
-||||||| parent of d3ce3f9 (New Castle)
-        <Html
-          position={[0, 0, 0]}
-          transform
-          distanceFactor={1.16}
-          className=" p-2"
-        >
-          <iframe src="https://getcupid.ai/Blogs" />
-          {/* Botão de voltar adicionado aqui */}
-          <button
-            onClick={() => onCastleClick("nav")}
-            style={{
-              position: "absolute",
-              bottom: "-40px",
-              left: "50%",
-              transform: "translateX(-50%)",
-            }}
-            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors"
-          >
-            MENU
-          </button>
-=======
+        <mesh geometry={nodes.atmF.geometry} material={nodes.atmF.material} />
         <Html transform distanceFactor={1.16} className="p-2">
           <iframe
             src="https://getcupid.ai/Blogs"
             className="rounded-md shadow-lg"
+            style={{
+              width: "800px",
+              height: "600px",
+              border: "none",
+              backgroundColor: "white",
+            }}
+          />
+        </Html>
+      </group>
+
+      {/* TAM */}
+      <group
+        position={[-1.638, 1.524, -0.825]}
+        rotation={[Math.PI / 2, 0, 0]}
+        scale={0.01}
+      >
+        <mesh
+          geometry={nodes.glassF.geometry}
+          material={nodes.glassF.material}
+          position={[-1.638, 1.524, -0.825]}
+          rotation={[Math.PI / 2, 0, 0]}
+          scale={0.01}
+        />
+        <Html transform distanceFactor={-1.16} className="p-2">
+          <iframe
+            src="https://getcupid.ai/Blogs"
+            className="rounded-md shadow-lg"
+            style={{
+              width: "800px",
+              height: "600px",
+              border: "none",
+              backgroundColor: "white",
+            }}
+          />
+        </Html>
+      </group>
+
+      {/* TAM */}
+      <group
+        position={[-1.638, 1.524, -0.825]}
+        rotation={[Math.PI / 2, 0, 0]}
+        scale={0.01}
+      >
+        <mesh
+          geometry={nodes.glassF.geometry}
+          material={nodes.glassF.material}
+          position={[-1.638, 1.524, -0.825]}
+          rotation={[Math.PI / 2, 0, 0]}
+          scale={0.01}
+        />
+        <Html transform distanceFactor={-1.16} className="p-2">
+          <iframe
+            src="https://getcupid.ai/Blogs"
+            className="rounded-md shadow-lg"
+            style={{
+              width: "800px",
+              height: "600px",
+              border: "none",
+              backgroundColor: "white",
+            }}
           />
 >>>>>>> d3ce3f9 (New Castle)
         </Html>
