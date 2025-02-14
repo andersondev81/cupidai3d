@@ -14,7 +14,10 @@ import {
 >>>>>>> d3ce3f9 (New Castle)
 import { useControls, button, monitor } from "leva"
 import {
+  VideoTexture,
+  LinearFilter,
   Color,
+  MeshBasicMaterial,
   MeshStandardMaterial,
   MeshPhysicalMaterial,
   DoubleSide,
@@ -233,7 +236,6 @@ const useAudio = () => {
     panner.current.maxDistance = 100
     panner.current.rolloffFactor = 1
     panner.current.setPosition(0, 0, 0)
-
     source.current.connect(panner.current)
     panner.current.connect(audioContext.current.destination)
   }
@@ -272,7 +274,8 @@ const useAudio = () => {
     cleanup,
   }
 }
-// Materials textures
+// Materials textures---------------------------------------------
+
 // Castle Material
 >>>>>>> d3ce3f9 (New Castle)
 const useCastleMaterial = () => {
@@ -324,7 +327,7 @@ const useCastleMaterial = () => {
 =======
   const textures = useTexture({
     map: "/texture/Castle_Color.webp",
-    normalMap: "/texture/Castle_Normal.webp",
+    // normalMap: "/texture/Castle_Normal.webp",
     roughnessMap: "/texture/Castle_Roughness.webp",
     metalnessMap: "/texture/Castle_Metalness.webp",
   })
@@ -342,7 +345,7 @@ const useCastleMaterial = () => {
     () =>
       new MeshPhysicalMaterial({
         map: textures.map,
-        normalMap: textures.normalMap,
+        // normalMap: textures.normalMap,
         roughnessMap: textures.roughnessMap,
         metalnessMap: textures.metalnessMap,
         transparent: false,
@@ -453,20 +456,42 @@ const useAtmMaterial = () => {
         alphaTest: 0.5,
         side: DoubleSide,
         blending: NormalBlending,
-        roughness: 0.4,
+        roughness: 0.8,
         metalness: 0.7,
       }),
     [textures]
   )
 }
 
+//Portal Material
+const usePortalMaterial = () => {
+  return useMemo(() => {
+    const video = document.createElement("video")
+    video.src = "/video/tunel.mp4"
+    video.loop = true
+    video.muted = true
+    video.playsInline = true
+    video.autoplay = true
+    video.play()
+
+    const videoTexture = new VideoTexture(video)
+    videoTexture.minFilter = LinearFilter
+    videoTexture.magFilter = LinearFilter
+    videoTexture.flipY = false
+
+    return new MeshBasicMaterial({
+      map: videoTexture,
+      side: DoubleSide,
+    })
+  }, [])
+}
 const useBallMaterial = () => {
   return useMemo(
     () =>
       new MeshPhysicalMaterial({
-        color: new Color(0xadd8e6), // Azul claro base
-        emissive: new Color(0xe6f3ff), // Azul quase branco para emissão
-        emissiveIntensity: 4.5, // Intensidade alta para criar o brilho forte
+        color: new Color(0xadd8e6),
+        emissive: new Color(0xe6f3ff),
+        emissiveIntensity: 4.5,
         transparent: true,
         opacity: 0.9,
         side: DoubleSide,
@@ -488,6 +513,7 @@ const CastleModel = ({ onCastleClick }) => {
   const hoofMaterial = useHoofMaterial()
   const atmMaterial = useAtmMaterial()
   const ballMaterial = useBallMaterial()
+  const portal = usePortalMaterial()
 
   return (
     <group dispose={null}>
@@ -547,7 +573,7 @@ const CastleModel = ({ onCastleClick }) => {
       </group>
       <mesh
         geometry={nodes.heartVid.geometry}
-        material={material}
+        material={portal}
         position={[0, 0.649, 0]}
         rotation={[Math.PI / 2, 0, 0]}
         scale={0.01}
