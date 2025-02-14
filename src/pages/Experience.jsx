@@ -1,6 +1,6 @@
 import React, { Suspense, useState, useRef, useEffect } from "react"
 import { Canvas, useThree } from "@react-three/fiber"
-import { Sky, Environment } from "@react-three/drei"
+import { Environment } from "@react-three/drei"
 import * as THREE from "three"
 import { CAMERA_CONFIG } from "../components/cameraConfig"
 import Castle from "../assets/models/Castle"
@@ -82,7 +82,7 @@ const useCameraAnimation = (section, cameraRef) => {
           camera.updateProjectionMatrix()
           animationRef.current.isActive = false
           animationRef.current.progress = 0
-        }
+        },
       }
     }
 
@@ -113,7 +113,6 @@ const Experience = () => {
     return (
       <div className="relative w-full h-screen">
         <Canvas>
-          <color attach="background" args={['#000']} />
           <Modeload onStart={handleStart} />
         </Canvas>
       </div>
@@ -123,10 +122,7 @@ const Experience = () => {
   return (
     <div className="relative w-full h-screen">
       <div className="absolute inset-0 z-0">
-      <Canvas
-          camera={CAMERA_CONFIG.sections.intro}
-          className="w-full h-full"
-        >
+        <Canvas camera={CAMERA_CONFIG.sections.intro} className="w-full h-full">
           <SceneController section={currentSection} cameraRef={cameraRef} />
           <Suspense fallback={null}>
             <SceneContent
@@ -138,7 +134,7 @@ const Experience = () => {
       </div>
 
       <div className="absolute inset-0 z-10 pointer-events-none">
-      <div className="w-full h-full">
+        <div className="w-full h-full">
           <CastleUi
             section={currentSection}
             onSectionChange={handleSectionChange}
@@ -157,12 +153,13 @@ const SceneController = ({ section, cameraRef }) => {
     <>
       <fog attach="fog" args={["#ffff", 0, 40]} />
       <Environment
-        files="/images/Clouds.hdr"
+        files="/images/PanoramaV1.hdr"
         background
         blur={0.6}
-        envMapIntensity={0.5}
+        envMapIntensity={1.5}
+        resolution={256}
       />
-      {process.env.NODE_ENV === 'development' && <Perf position="top-left" />}
+      {process.env.NODE_ENV === "development" && <Perf position="top-left" />}
     </>
   )
 }
@@ -176,12 +173,7 @@ const SceneContent = React.memo(({ activeSection, onSectionChange }) => (
       scale={[0.6, 0.6, 0.6]}
       onSectionChange={onSectionChange}
     />
-    <Sky
-      distance={450000}
-      sunPosition={[0, 1, 0]}
-      inclination={0}
-      azimuth={0.25}
-    />
+    <Orb />
   </>
 ))
 
