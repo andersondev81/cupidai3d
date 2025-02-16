@@ -1,143 +1,25 @@
-import React, { Suspense, useEffect, useMemo, useRef } from "react"
-<<<<<<< HEAD
-import { useGLTF, CameraControls, Html } from "@react-three/drei"
-||||||| parent of d3ce3f9 (New Castle)
-import { useGLTF, useTexture, CameraControls, Html } from "@react-three/drei"
-=======
+import { CameraControls, Float, useGLTF, useTexture } from "@react-three/drei";
+import { button, monitor, useControls } from "leva";
+import React, { Suspense, useEffect, useMemo, useRef } from "react";
 import {
-  useGLTF,
-  useTexture,
-  CameraControls,
-  Html,
-  Float,
-} from "@react-three/drei"
->>>>>>> d3ce3f9 (New Castle)
-import { useControls, button, monitor } from "leva"
-import {
-  VideoTexture,
-  LinearFilter,
   Color,
-  MeshBasicMaterial,
-  MeshStandardMaterial,
-  MeshPhysicalMaterial,
   DoubleSide,
-  NormalBlending,
+  LinearFilter,
+  MeshBasicMaterial,
+  MeshPhysicalMaterial,
   NearestFilter,
-} from "three"
-import Modeload from "../../components/helpers/Modeload"
-import { metalness } from "three/examples/jsm/nodes/Nodes.js"
-import RotateAxis from "../../components/helpers/RotateAxis"
+  NormalBlending,
+  VideoTexture,
+} from "three";
+import {
+  Html,
+} from "@react-three/drei"
+import RotateAxis from "../../components/helpers/RotateAxis";
 
-<<<<<<< HEAD
-const defaultCameraPosition = [
-  132.95512091806918,
-  87.33269746995288,
-  188.3864842177005,
-  -0.1823668021901385,
-  -0.24424001987657776,
-  0.22391277970336168,
-]
-
-// Posições da câmera para cada seção
-const cameraPositions = {
-  nav: [
-    -0.1484189177185437, 0.9565803692840462, 6.591986961996083,
-    -0.21830679207380707, 1.042078953185994, 0.860456882413919,
-  ],
-  about: [
-    1.8294030001912027, 1.1241952974854004, -0.9268222253732308,
-    0.1723786308639481, 1.0468291516427397, -0.08072363062511172,
-  ],
-  aidatingcoach: [
-    -2.287522183512657, 1.1140207867811742, -1.087725967459512,
-    -0.08872200461723317, 1.1076978075751573, -0.030188523722664052,
-  ],
-  download: [
-    -2.323807878032301, 1.133672409983926, -1.128058355996892,
-    -0.21384977642968192, 1.1774169642201746, -0.03185946113943251,
-  ],
-  token: [
-    2.0799027767746923, 1.1492603137264552, 1.0627122850364636,
-    -1.2102179925739383, 0.8585880494001786, -0.5986556331928229,
-  ],
-  roadmap: [
-    -2.025201516379411, 1.0672926837870658, 1.0222135061686681,
-    0.03299806883202455, 0.8587359231417601, -0.08269801064024146,
-  ],
-}
-
-||||||| parent of d3ce3f9 (New Castle)
-const defaultCameraPosition = [
-  132.95512091806918,
-  87.33269746995288,
-  188.3864842177005,
-  -0.1823668021901385,
-  -0.24424001987657776,
-  0.22391277970336168,
-]
-
-// Posições da câmera para cada seção
-const cameraPositions = {
-  nav: [
-    -0.1484189177185437, 0.9565803692840462, 6.591986961996083,
-    -0.21830679207380707, 1.042078953185994, 0.860456882413919,
-  ],
-  about: [
-    1.8294030001912027, 1.1241952974854004, -0.9268222253732308,
-    0.1723786308639481, 1.0468291516427397, -0.08072363062511172,
-  ],
-  aidatingcoach: [
-    -2.287522183512657, 1.1140207867811742, -1.087725967459512,
-    -0.08872200461723317, 1.1076978075751573, -0.030188523722664052,
-  ],
-  download: [
-    -2.323807878032301, 1.133672409983926, -1.128058355996892,
-    -0.21384977642968192, 1.1774169642201746, -0.03185946113943251,
-  ],
-  token: [
-    2.0799027767746923, 1.1492603137264552, 1.0627122850364636,
-    -1.2102179925739383, 0.8585880494001786, -0.5986556331928229,
-  ],
-  roadmap: [
-    -2.025201516379411, 1.0672926837870658, 1.0222135061686681,
-    0.03299806883202455, 0.8587359231417601, -0.08269801064024146,
-  ],
-}
-
-// Posições da câmera para cada seção (telas pequenas)
-const cameraPositionsSmallScreen = {
-  intro: [
-    -0.47993818136505073, 1.13917177154802, 6.743922666460792,
-    -1.3224149774642704, 1.6753152120757284, 1.0989767468615808,
-  ],
-  about: [
-    1.8562259954731093, 1.1626020325030495, -0.926552435064171,
-    1.3674383110764547, 1.1705903196566405, -0.662785847191283,
-  ],
-  aidatingcoach: [
-    -2.3148021101664606, 1.1024327055391172, -1.1063841608771088,
-    -0.1820891855994354, 1.1199307653182649, -0.05437741521465597,
-  ],
-  download: [
-    1.8562259954731093, 1.1626020325030495, -0.926552435064171,
-    1.3674383110764547, 1.1705903196566405, -0.662785847191283,
-  ],
-  token: [
-    2.118405773953273, 1.2172470657362846, 1.0635730429142927,
-    0.04723852527162822, 0.585365963592996, 0.11077814711949062,
-  ],
-  roadmap: [
-    -2.194447186898329, 1.1074291907861749, 1.1461923290680842,
-    -0.3644950377073637, 0.9540178555386187, 0.18714237486758786,
-  ],
-}
-
-=======
 // Constants
->>>>>>> d3ce3f9 (New Castle)
-const SMALL_SCREEN_THRESHOLD = 768
-const TRANSITION_DELAY = 100
-const AUDIO_FILE_PATH = "/src/assets/sounds/videoplayback.mp4"
+const SMALL_SCREEN_THRESHOLD = 768;
+const TRANSITION_DELAY = 100;
+const AUDIO_FILE_PATH = "/src/assets/sounds/videoplayback.mp4";
 
 <<<<<<< HEAD
 ||||||| parent of d3ce3f9 (New Castle)
@@ -209,62 +91,62 @@ const cameraConfig = {
       ],
     },
   },
-}
+};
 
 // Custom Hooks
 const useAudio = () => {
-  const audioContext = useRef(null)
-  const audioElement = useRef(null)
-  const source = useRef(null)
-  const panner = useRef(null)
+  const audioContext = useRef(null);
+  const audioElement = useRef(null);
+  const source = useRef(null);
+  const panner = useRef(null);
 
   const initAudio = () => {
-    audioElement.current = new Audio(AUDIO_FILE_PATH)
-    audioElement.current.loop = true
+    audioElement.current = new Audio(AUDIO_FILE_PATH);
+    audioElement.current.loop = true;
 
     audioContext.current = new (window.AudioContext ||
-      window.webkitAudioContext)()
+      window.webkitAudioContext)();
     source.current = audioContext.current.createMediaElementSource(
       audioElement.current
-    )
-    panner.current = audioContext.current.createPanner()
+    );
+    panner.current = audioContext.current.createPanner();
 
     // Configure panner
-    panner.current.panningModel = "HRTF"
-    panner.current.distanceModel = "inverse"
-    panner.current.refDistance = 1
-    panner.current.maxDistance = 100
-    panner.current.rolloffFactor = 1
-    panner.current.setPosition(0, 0, 0)
-    source.current.connect(panner.current)
-    panner.current.connect(audioContext.current.destination)
-  }
+    panner.current.panningModel = "HRTF";
+    panner.current.distanceModel = "inverse";
+    panner.current.refDistance = 1;
+    panner.current.maxDistance = 100;
+    panner.current.rolloffFactor = 1;
+    panner.current.setPosition(0, 0, 0);
+    source.current.connect(panner.current);
+    panner.current.connect(audioContext.current.destination);
+  };
 
   const playSound = () => {
     if (audioContext.current?.state === "suspended") {
-      audioContext.current.resume()
+      audioContext.current.resume();
     }
-    audioElement.current?.play()
-  }
+    audioElement.current?.play();
+  };
 
   const stopSound = () => {
-    audioElement.current?.pause()
+    audioElement.current?.pause();
     if (audioElement.current) {
-      audioElement.current.currentTime = 0
+      audioElement.current.currentTime = 0;
     }
-  }
+  };
 
-  const updateListenerPosition = position => {
+  const updateListenerPosition = (position) => {
     if (audioContext.current && position) {
-      const [x, y, z] = position
-      audioContext.current.listener.setPosition(x, y, z)
+      const [x, y, z] = position;
+      audioContext.current.listener.setPosition(x, y, z);
     }
-  }
+  };
 
   const cleanup = () => {
-    audioElement.current?.pause()
-    audioContext.current?.close()
-  }
+    audioElement.current?.pause();
+    audioContext.current?.close();
+  };
 
   return {
     initAudio,
@@ -272,74 +154,27 @@ const useAudio = () => {
     stopSound,
     updateListenerPosition,
     cleanup,
-  }
-}
-// Materials textures---------------------------------------------
+  };
+};
 
 // Castle Material
 >>>>>>> d3ce3f9 (New Castle)
 const useCastleMaterial = () => {
-<<<<<<< HEAD
-  return useMemo(() => {
-    return new MeshStandardMaterial({
-      color: new Color(0xaaaaaa), // Cor neutra em vez de textura
-      emissive: new Color(0x000000),
-      emissiveIntensity: 0,
-      transparent: false,
-      alphaTest: 0.5,
-      side: DoubleSide,
-      blending: NormalBlending,
-      roughness: 0.5,
-      metalness: 0,
-    })
-  }, [])
-||||||| parent of d3ce3f9 (New Castle)
-  const textures = useTexture({
-    map: "/texture/project6/CastleColorB.jpg",
-    normalMap: "/texture/project6/CastleNormal.jpg",
-    emissiveMap: "/texture/project6/CastleEmissive.jpg",
-  })
-
-  useMemo(() => {
-    Object.values(textures).forEach(texture => {
-      if (texture) {
-        texture.flipY = false
-        texture.minFilter = texture.magFilter = NearestFilter
-      }
-    })
-  }, [textures])
-
-  return useMemo(() => {
-    return new MeshStandardMaterial({
-      map: textures.map,
-      normalMap: textures.normalMap,
-      emissiveMap: textures.emissiveMap,
-      emissive: new Color(0xffffff),
-      emissiveIntensity: 16,
-      transparent: false,
-      alphaTest: 0.5,
-      side: DoubleSide,
-      blending: NormalBlending,
-      roughness: 0.5,
-      metalness: 0,
-    })
-  }, [textures])
-=======
   const textures = useTexture({
     map: "/texture/Castle_Color.webp",
     // normalMap: "/texture/Castle_Normal.webp",
     roughnessMap: "/texture/Castle_Roughness.webp",
     metalnessMap: "/texture/Castle_Metalness.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = false
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.flipY = false;
+        texture.minFilter = texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(
     () =>
@@ -356,24 +191,23 @@ const useCastleMaterial = () => {
         metalness: 0.7,
       }),
     [textures]
-  )
->>>>>>> d3ce3f9 (New Castle)
-}
+  );
+};
 
 // Gods Material
 const useGodsMaterial = () => {
   const textures = useTexture({
     map: "/texture/gods_colors.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = false
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.flipY = false;
+        texture.minFilter = texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(
     () =>
@@ -387,24 +221,24 @@ const useGodsMaterial = () => {
         metalness: 0.7,
       }),
     [textures]
-  )
-}
+  );
+};
 // Hoof Material
 const useHoofMaterial = () => {
   const textures = useTexture({
     map: "/texture/HoofGlass_Color.webp",
     alphaMap: "/texture/HoofGlass_Alpha.webp",
     roughnessMap: "/texture/HoofGlass_Roughness.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = false
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.flipY = false;
+        texture.minFilter = texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(
     () =>
@@ -426,24 +260,24 @@ const useHoofMaterial = () => {
         clearcoatRoughness: 0.1, // Rugosidade do clear coat
       }),
     [textures]
-  )
-}
+  );
+};
 //atm Material
 const useAtmMaterial = () => {
   const textures = useTexture({
     map: "/texture/atm_Color.webp",
     roughnessMap: "/texture/atm_Roughness.webp",
     metalnessMap: "/texture/atm_Metalness.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = false
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.flipY = false;
+        texture.minFilter = texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(
     () =>
@@ -460,31 +294,31 @@ const useAtmMaterial = () => {
         metalness: 0.7,
       }),
     [textures]
-  )
-}
+  );
+};
 
 //Portal Material
 const usePortalMaterial = () => {
   return useMemo(() => {
-    const video = document.createElement("video")
-    video.src = "/video/tunel.mp4"
-    video.loop = true
-    video.muted = true
-    video.playsInline = true
-    video.autoplay = true
-    video.play()
+    const video = document.createElement("video");
+    video.src = "/video/tunel.mp4";
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.autoplay = true;
+    video.play();
 
-    const videoTexture = new VideoTexture(video)
-    videoTexture.minFilter = LinearFilter
-    videoTexture.magFilter = LinearFilter
-    videoTexture.flipY = false
+    const videoTexture = new VideoTexture(video);
+    videoTexture.minFilter = LinearFilter;
+    videoTexture.magFilter = LinearFilter;
+    videoTexture.flipY = false;
 
     return new MeshBasicMaterial({
       map: videoTexture,
       side: DoubleSide,
-    })
-  }, [])
-}
+    });
+  }, []);
+};
 const useBallMaterial = () => {
   return useMemo(
     () =>
@@ -502,18 +336,18 @@ const useBallMaterial = () => {
         clearcoatRoughness: 0.1,
       }),
     []
-  )
-}
+  );
+};
 
 // Components
 const CastleModel = ({ onCastleClick }) => {
-  const { nodes } = useGLTF("/models/Castle.glb")
-  const material = useCastleMaterial()
-  const godsMaterial = useGodsMaterial()
-  const hoofMaterial = useHoofMaterial()
-  const atmMaterial = useAtmMaterial()
-  const ballMaterial = useBallMaterial()
-  const portal = usePortalMaterial()
+  const { nodes } = useGLTF("/models/Castle.glb");
+  const material = useCastleMaterial();
+  const godsMaterial = useGodsMaterial();
+  const hoofMaterial = useHoofMaterial();
+  const atmMaterial = useAtmMaterial();
+  const ballMaterial = useBallMaterial();
+  const portal = usePortalMaterial();
 
   return (
     <group dispose={null}>
@@ -662,87 +496,87 @@ const CastleModel = ({ onCastleClick }) => {
         </Html>
       </group>
     </group>
-  )
-}
+  );
+};
 
 // Main Component
 const Castle = ({ activeSection }) => {
-  const controls = useRef()
+  const controls = useRef();
   const { initAudio, playSound, stopSound, updateListenerPosition, cleanup } =
-    useAudio()
+    useAudio();
 
-  const getCameraPosition = section => {
-    const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD
-    const screenType = isSmallScreen ? "small" : "large"
+  const getCameraPosition = (section) => {
+    const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD;
+    const screenType = isSmallScreen ? "small" : "large";
 
     if (section === "default") {
-      return cameraConfig.default[screenType]
+      return cameraConfig.default[screenType];
     }
 
-    return cameraConfig.sections[screenType][section]
-  }
+    return cameraConfig.sections[screenType][section];
+  };
 
-  const playTransition = sectionName => {
-    if (!controls.current) return
+  const playTransition = (sectionName) => {
+    if (!controls.current) return;
 
-    controls.current.enabled = true
+    controls.current.enabled = true;
 
     const targetPosition = getCameraPosition(
       sectionName === "default" ? "default" : sectionName
-    )
+    );
 
     if (targetPosition) {
       controls.current.setLookAt(...targetPosition, true).then(() => {
-        controls.current.enabled = sectionName === "nav"
-      })
+        controls.current.enabled = sectionName === "nav";
+      });
 
-      updateListenerPosition(targetPosition.slice(0, 3))
+      updateListenerPosition(targetPosition.slice(0, 3));
 
       if (sectionName === "nav") {
-        playSound()
+        playSound();
       } else {
-        stopSound()
+        stopSound();
       }
     }
-  }
+  };
 
   // Initialize camera and audio
   useEffect(() => {
-    if (!controls.current) return
+    if (!controls.current) return;
 
-    window.controls = controls
-    initAudio()
+    window.controls = controls;
+    initAudio();
 
-    controls.current.enabled = true
-    const defaultPosition = getCameraPosition("default")
-    controls.current.setLookAt(...defaultPosition, false)
+    controls.current.enabled = true;
+    const defaultPosition = getCameraPosition("default");
+    controls.current.setLookAt(...defaultPosition, false);
 
     setTimeout(() => {
-      playTransition("nav")
-    }, TRANSITION_DELAY)
+      playTransition("nav");
+    }, TRANSITION_DELAY);
 
-    return cleanup
-  }, [])
+    return cleanup;
+  }, []);
 
   // Handle active section changes
   useEffect(() => {
     if (activeSection) {
-      playTransition(activeSection)
+      playTransition(activeSection);
     }
-  }, [activeSection])
+  }, [activeSection]);
 
   // Handle window resize
   useEffect(() => {
     const handleResize = () => {
       if (controls.current && activeSection) {
-        const newPosition = getCameraPosition(activeSection)
-        controls.current.setLookAt(...newPosition, true)
+        const newPosition = getCameraPosition(activeSection);
+        controls.current.setLookAt(...newPosition, true);
       }
-    }
+    };
 
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [activeSection])
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [activeSection]);
 
   // Debug controls
   useControls("settings", {
@@ -752,32 +586,32 @@ const Castle = ({ activeSection }) => {
       min: 0.1,
       max: 2,
       step: 0.1,
-      onChange: v => {
+      onChange: (v) => {
         if (controls.current) {
-          controls.current.smoothTime = v
+          controls.current.smoothTime = v;
         }
       },
     },
     getLookAt: button(() => {
       if (controls.current) {
-        const position = controls.current.getPosition()
-        const target = controls.current.getTarget()
-        console.log([...position, ...target])
+        const position = controls.current.getPosition();
+        const target = controls.current.getTarget();
+        console.log([...position, ...target]);
       }
     }),
-  })
+  });
 
   return (
     <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
       <CameraControls ref={controls} makeDefault smoothTime={0.6} />
-      <Suspense fallback={<Modeload />}>
+      <Suspense>
         <CastleModel onCastleClick={playTransition} />
       </Suspense>
     </group>
-  )
-}
+  );
+};
 
 // Preload assets
-useGLTF.preload("/models/Castle.glb")
+useGLTF.preload("/models/Castle.glb");
 
-export default Castle
+export default Castle;
