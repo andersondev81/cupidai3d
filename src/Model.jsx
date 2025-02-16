@@ -7,6 +7,7 @@ import React from 'react'
 import { useGLTF } from '@react-three/drei'
 
 export function Model(props) {
+
   const { nodes, materials } = useGLTF('/models/atmPos.glb')
   return (
     <group {...props} dispose={null}>

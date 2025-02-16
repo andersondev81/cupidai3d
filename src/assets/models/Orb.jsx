@@ -138,6 +138,7 @@ const OrbMesh = React.memo(props => {
       </group>
 
       <RotateAxis axis="y" speed={-0.5} rotationType="euler">
+
         <mesh
           geometry={nodes.particles.geometry}
           material={materials.sphere}
