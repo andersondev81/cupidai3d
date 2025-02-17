@@ -1,196 +1,172 @@
-"use client"
-import React, { useMemo } from "react"
-import { useGLTF, useTexture, Float, Sparkles } from "@react-three/drei"
+import React, { useMemo, useRef, useEffect } from "react"
+import { useGLTF, useTexture, Float } from "@react-three/drei"
 import {
   Color,
   MeshStandardMaterial,
-  sRGBEncoding,
   NearestFilter,
-  DoubleSide,
-  NormalBlending,
+  FrontSide,
   AdditiveBlending,
-  MathUtils,
 } from "three"
 import RotateAxis from "../../components/helpers/RotateAxis"
-import { EffectsTree } from "../../components/helpers/EffectsTree"
 
-const emissiveColor = new Color(0x48cae4)
+// Cache de materiais
+const materialCache = new Map()
 
-const OrbMesh = props => {
+// Configurações base para materiais
+const MATERIAL_SETTINGS = {
+  emissiveColor: new Color(0x48cae4),
+  emissiveIntensity: 2,
+  transparent: true,
+  alphaTest: 0.005,
+  depthTest: true,
+  roughness: 0,
+  metalness: 0,
+}
+
+const OrbMesh = React.memo(props => {
   const { nodes } = useGLTF("/models/Orbit.glb")
+  const materialsRef = useRef([])
 
+  // Carrega e configura texturas uma única vez
   const textures = useTexture({
     map: "/texture/Orb_AlphaV1.webp",
-    emissiveMap: "/texture/Orb_AlphaV1.webp",
-    alphaMap: "/texture/Orb_Alpha.webp", // Usando a mesma textura para alphaMap
+    alphaMap: "/texture/Orb_Alpha.webp",
   })
 
+  // Configura texturas
   useMemo(() => {
-    textures.map.encoding = sRGBEncoding
-    if (textures.emissiveMap) {
-      textures.emissiveMap.encoding = sRGBEncoding
-    }
-
-    // Configurações gerais para todas as texturas carregadas
-    ;[
-      textures.map,
-      textures.normalMap,
-      textures.emissiveMap,
-      textures.alphaMap,
-      textures.roughnessMap,
-      textures.metalnessMap,
-    ].forEach(texture => {
+    Object.values(textures).forEach(texture => {
       if (texture) {
         texture.flipY = false
         texture.minFilter = NearestFilter
         texture.magFilter = NearestFilter
+        texture.needsUpdate = true
       }
     })
   }, [textures])
 
-  // Material para as Linhas (LineA, LineB, LineC)
-  const materialLines = useMemo(() => {
-    return new MeshStandardMaterial({
-      map: textures.map,
-      normalMap: textures.normalMap,
-      emissiveMap: textures.emissiveMap,
-      emissive: emissiveColor,
-      alphaMap: textures.alphaMap,
-      roughnessMap: textures.roughnessMap,
-      metalnessMap: textures.metalnessMap,
-      emissiveIntensity: 2,
-      transparent: true,
-      alphaTest: 0.005,
-      depthTest: true,
-      side: DoubleSide,
-      blending: NormalBlending,
-      roughness: 0,
-      metalness: 0,
-      wireframe: false,
-      opacity: 0.3,
-    })
+  // Cria ou recupera materiais do cache
+  const materials = useMemo(() => {
+    const createMaterial = (key, config) => {
+      if (!materialCache.has(key)) {
+        materialCache.set(
+          key,
+          new MeshStandardMaterial({
+            ...MATERIAL_SETTINGS,
+            map: textures.map,
+            alphaMap: textures.alphaMap,
+            emissive: MATERIAL_SETTINGS.emissiveColor,
+            side: FrontSide, // Mudado de DoubleSide para FrontSide
+            ...config,
+          })
+        )
+      }
+      return materialCache.get(key)
+    }
+
+    return {
+      lines: createMaterial('lines', { opacity: 0.3, blending: AdditiveBlending }),
+      center: createMaterial('center', { opacity: 1 }),
+      balls: createMaterial('balls', { opacity: 0.15, blending: AdditiveBlending }),
+      sphere: createMaterial('sphere', {
+        color: new Color(0.678, 0.933, 0.953),
+        opacity: 0.9,
+        transparent: true,
+      })
+    }
   }, [textures])
 
-  // Material para o Center
-  const materialCenter = new MeshStandardMaterial({
-    map: textures.map,
-    normalMap: textures.normalMap,
-    emissiveMap: textures.emissiveMap,
-    emissive: emissiveColor,
-    alphaMap: textures.alphaMap,
-    roughnessMap: textures.roughnessMap,
-    metalnessMap: textures.metalnessMap,
-    emissiveIntensity: 2,
-    transparent: true,
-    alphaTest: 0.005,
-    depthTest: true,
-    side: DoubleSide,
-    blending: NormalBlending,
-    roughness: 0,
-    metalness: 0,
-    opacity: 1,
-  })
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      materialsRef.current.forEach(material => {
+        if (material && material.dispose) {
+          material.dispose()
+        }
+      })
+    }
+  }, [])
 
-  // Material para as Bolas (BallA, BallB, BallC)
-  const materialBalls = new MeshStandardMaterial({
-    map: textures.map,
-    normalMap: textures.normalMap,
-    emissiveMap: textures.emissiveMap,
-    emissive: emissiveColor,
-    alphaMap: textures.alphaMap,
-    roughnessMap: textures.roughnessMap,
-    metalnessMap: textures.metalnessMap,
-    emissiveIntensity: 2,
-    transparent: true,
-    alphaTest: 0.005,
-    depthTest: true,
-    side: DoubleSide,
-    blending: AdditiveBlending,
-    roughness: 0,
-    metalness: 0,
-    opacity: 0.15,
-  })
+  // Reduz a complexidade da geometria da esfera
+  const simplifiedSphereGeometry = useMemo(() => {
+    return <sphereGeometry args={[0.02, 16, 16]} /> // Reduzido de 30,30 para 16,16
+  }, [])
 
   return (
     <group {...props} dispose={null} position={[1.76, 1.155, -0.883]}>
-      {/* Linhas */}
-      <RotateAxis axis="y" speed={1} rotationType="euler">
-        <mesh geometry={nodes.lineC?.geometry} material={materialLines} />
-      </RotateAxis>
-      <RotateAxis axis="z" speed={6} rotationType="euler">
-        <mesh geometry={nodes.lineB?.geometry} material={materialLines} />
-      </RotateAxis>
-      <RotateAxis axis="x" speed={8} rotationType="euler">
-        <mesh geometry={nodes.lineA?.geometry} material={materialLines} />
-      </RotateAxis>
+      {/* Linhas - com rotações otimizadas */}
+      <group>
+        <RotateAxis axis="y" speed={1} rotationType="euler">
+          <mesh geometry={nodes.lineC?.geometry} material={materials.lines} />
+        </RotateAxis>
+        <RotateAxis axis="z" speed={6} rotationType="euler">
+          <mesh geometry={nodes.lineB?.geometry} material={materials.lines} />
+        </RotateAxis>
+        <RotateAxis axis="x" speed={8} rotationType="euler">
+          <mesh geometry={nodes.lineA?.geometry} material={materials.lines} />
+        </RotateAxis>
+      </group>
 
       {/* Center */}
       <RotateAxis axis="y" speed={8} rotationType="euler">
-        <mesh geometry={nodes.center?.geometry} material={materialCenter} />
+        <mesh geometry={nodes.center?.geometry} material={materials.center} />
       </RotateAxis>
 
-      {/* Bolas */}
-      <RotateAxis axis="x" speed={6} rotationType="euler">
-        <mesh geometry={nodes.ballC?.geometry} material={materialBalls} />
-      </RotateAxis>
-      <RotateAxis axis="y" speed={8} rotationType="euler">
-        <mesh
-          geometry={nodes.ballA?.geometry}
-          material={materialBalls}
-          scale={0.993}
-        />
-      </RotateAxis>
-      <RotateAxis axis="z" speed={2} rotationType="euler">
-        <mesh
-          geometry={nodes.ballB?.geometry}
-          material={materialBalls}
-          scale={1.125}
-        />
-      </RotateAxis>
+      {/* Bolas - agrupadas para melhor performance */}
+      <group>
+        <RotateAxis axis="x" speed={6} rotationType="euler">
+          <mesh geometry={nodes.ballC?.geometry} material={materials.balls} />
+        </RotateAxis>
+        <RotateAxis axis="y" speed={8} rotationType="euler">
+          <mesh geometry={nodes.ballA?.geometry} material={materials.balls} scale={0.993} />
+        </RotateAxis>
+        <RotateAxis axis="z" speed={2} rotationType="euler">
+          <mesh geometry={nodes.ballB?.geometry} material={materials.balls} scale={1.125} />
+        </RotateAxis>
+      </group>
 
-      {/* Esfera de efeito */}
-      <mesh position={[0, 0, 0]}>
-        <sphereGeometry args={[0.02, 30, 30]} />
-        <meshBasicMaterial
-          color={new Color(0.678, 0.933, 0.953)} // Azul claro (#ade8f4)
-          toneMapped={false}
-          opacity={0.9}
-          transparent={true}
-        />
-      </mesh>
-      <mesh position={[0, 0, 0]}>
-        <sphereGeometry args={[0.02, 30, 30]} />
-        <meshBasicMaterial
-          color={new Color(0.678, 0.933, 0.953)} // Azul claro (#ade8f4)
-          toneMapped={false}
-          opacity={0.5}
-          transparent={true}
-        />
-      </mesh>
+      {/* Esferas de efeito - combinadas */}
+      <group>
+        <mesh position={[0, 0, 0]}>
+          {simplifiedSphereGeometry}
+          <meshBasicMaterial
+            color={new Color(0.678, 0.933, 0.953)}
+            transparent
+            opacity={0.9}
+          />
+        </mesh>
+      </group>
+
       <RotateAxis axis="y" speed={-0.5} rotationType="euler">
+
         <mesh
           geometry={nodes.particles.geometry}
-          material={nodes.particles.material}
-          color={new Color(0.678, 0.933, 0.953)}
+          material={materials.sphere}
           rotation={[Math.PI / 2, 0, 0]}
           scale={0.01}
         />
       </RotateAxis>
     </group>
   )
-}
+})
 
-useGLTF.preload("/models/Orbit.glb")
-
+// Componente principal
 const Orb = () => {
   return (
     <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
-      <EffectsTree />
-      <Float floatIntensity={0.5} speed={4} axis="y" rotationIntensity={0}>
+      <Float
+        floatIntensity={0.5}
+        speed={4}
+        rotationIntensity={0}
+        floatingRange={[-0.1, 0.1]} // Reduzido o range de flutuação
+      >
         <OrbMesh />
       </Float>
     </group>
   )
 }
 
-export default Orb
+// Preload otimizado
+useGLTF.preload("/models/Orbit.glb")
+
+export default React.memo(Orb)

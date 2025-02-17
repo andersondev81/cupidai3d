@@ -573,7 +573,7 @@ const Castle = ({ activeSection }) => {
   return (
     <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
       <CameraControls ref={controls} makeDefault smoothTime={0.6} />
-      <Suspense fallback={<Modeload />}>
+      <Suspense >
         <CastleModel onCastleClick={playTransition} />
       </Suspense>
     </group>
