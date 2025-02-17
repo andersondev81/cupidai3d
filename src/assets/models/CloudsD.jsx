@@ -37,15 +37,15 @@ function CloudsD() {
           key={seed}
           position={position}
           speed={0.1}
-          opacity={0.9} // Levemente reduzido para melhor performance
-          segments={15} // Reduzido de 20 para 15
+          opacity={0.9} 
+          segments={15}
           color={isSecondLayer ? "#fff" : "#ffe8d6"}
           bounds={isSecondLayer ? [26, 1, 16] : [26, 4, 16]}
           scale={[0.2, 0.15, 0.2]}
           seed={seed}
-          depthWrite={false} // Melhora performance
-          frustumCulled={true} // Ativa culling
-          renderOrder={isSecondLayer ? 1 : 0} // Garante ordem correta de renderização
+          depthWrite={false}
+          frustumCulled={true}
+          renderOrder={isSecondLayer ? 1 : 0}
         >
           <meshBasicMaterial
             transparent
@@ -59,8 +59,6 @@ function CloudsD() {
   )
 }
 
-// Memoização do componente para evitar re-renders desnecessários
 export default React.memo(CloudsD, (prevProps, nextProps) => {
-  // Comparação personalizada para melhor controle sobre re-renders
-  return true // Só re-renderiza se as props mudarem explicitamente
+  return true
 })
