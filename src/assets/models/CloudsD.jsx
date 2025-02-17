@@ -1,71 +1,66 @@
-import React, { useMemo } from "react"
+import React, { useMemo, useRef } from "react"
 import { Cloud } from "@react-three/drei"
+import { useFrame } from "@react-three/fiber"
 
 function CloudsD() {
-  // Memoize cloud positions to prevent unnecessary recalculations
+  const groupRef = useRef()
+
+  // Combinar as duas camadas de nuvens em uma única geração
   const cloudPositions = useMemo(() => {
-    return [...Array(50)].map((_, i) => ({
-      position: [Math.random() * 14 - 8, -1, Math.random() * 14 - 7],
+    return [...Array(30)].map((_, i) => ({ // Reduzido de 50 para 30 nuvens
+      position: [
+        Math.random() * 14 - 8,
+        -1 + (Math.random() * 0.2 - 0.1), // Pequena variação na altura
+        Math.random() * 14 - 7
+      ],
       seed: i * 30,
+      isSecondLayer: i < 15, // Primeiras 15 nuvens são da segunda camada
     }))
-  }, []) // Empty dependency array ensures this is calculated only once
+  }, [])
+
+  // Skip frames para melhor performance
+  useFrame(() => {
+    if (!groupRef.current) return
+    groupRef.current.children.forEach((cloud, i) => {
+      // Atualiza apenas a cada 2 frames
+      if (i % 2 === 0) return
+      if (cloud.material) {
+        cloud.material.needsUpdate = true
+      }
+    })
+  })
 
   return (
-    <group>
-      {/* Luz Direcional - Otimizada */}
-      {/* <directionalLight
-        position={[10, 10, 10]}
-        intensity={0.2}
-        castShadow={false} // Remove shadow if not critical
-      /> */}
-
-      {/* Luzes de Spot - Reduzidas */}
-      {/* <spotLight
-        color="#ffe8d6"
-        position={[5, 6, 5]}
-        angle={0.5}
-        decay={0.85}
-        distance={55}
-        intensity={1.2}
-      /> */}
-      {/* <spotLight
-        position={[0, -3, 0]}
-        color="#fb6f60"
-        angle={0.4}
-        decay={0.55}
-        distance={85}
-        intensity={1.2}
-      /> */}
-
-      {/* Renderização otimizada de nuvens */}
-      {cloudPositions.map(({ position, seed }) => (
+    <group ref={groupRef}>
+      {cloudPositions.map(({ position, seed, isSecondLayer }) => (
         <Cloud
           key={seed}
           position={position}
           speed={0.1}
-          opacity={1}
-          segments={20}
-          color="#ffe8d6"
-          bounds={[26, 4, 16]}
+          opacity={0.9} // Levemente reduzido para melhor performance
+          segments={15} // Reduzido de 20 para 15
+          color={isSecondLayer ? "#fff" : "#ffe8d6"}
+          bounds={isSecondLayer ? [26, 1, 16] : [26, 4, 16]}
           scale={[0.2, 0.15, 0.2]}
           seed={seed}
-        />
-      ))}
-      {cloudPositions.map(({ position, seed }) => (
-        <Cloud
-          key={seed}
-          position={position}
-          speed={0.1}
-          opacity={1}
-          segments={20}
-          color="#fff"
-          bounds={[26, 1, 16]}
-          scale={[0.2, 0.15, 0.2]}
-          seed={seed}
-        />
+          depthWrite={false} // Melhora performance
+          frustumCulled={true} // Ativa culling
+          renderOrder={isSecondLayer ? 1 : 0} // Garante ordem correta de renderização
+        >
+          <meshBasicMaterial
+            transparent
+            opacity={isSecondLayer ? 0.8 : 1}
+            depthTest={true}
+            fog={true}
+          />
+        </Cloud>
       ))}
     </group>
   )
 }
 
-export default React.memo(CloudsD)
+// Memoização do componente para evitar re-renders desnecessários
+export default React.memo(CloudsD, (prevProps, nextProps) => {
+  // Comparação personalizada para melhor controle sobre re-renders
+  return true // Só re-renderiza se as props mudarem explicitamente
+})

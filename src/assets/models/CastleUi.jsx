@@ -105,7 +105,7 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
 
       {/* Seção Token */}
       <Section isActive={currentSectionKey === "token"}>
-        {/* <div className="flex flex-col items-center gap-6 pb-60">
+        <div className="flex flex-col items-center gap-6 pb-60">
           <h1 className="text-4xl font-bold text-stone-100">
             Token Information
           </h1>
@@ -116,9 +116,10 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
             Back to Main
           </NavigationButton>
         </div>
+
       </Section>
 
-      {/* Seção Roadmap */}
+
       <Section isActive={currentSectionKey === "roadmap"}>
         <div className="flex flex-col items-center gap-6">
           <h1 className="text-4xl font-bold text-stone-100">
