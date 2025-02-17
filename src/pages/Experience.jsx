@@ -14,7 +14,7 @@ import Orb from "../assets/models/Orb"
 import CloudsD from "../assets/models/CloudsD"
 // import OldCloudsD from "../assets/models/OldCloudsD"
 
-
+import Modeload from "../components/helpers/Modeload"
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -28,7 +28,7 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('3D Scene Error:', error, errorInfo)
+    console.error("3D Scene Error:", error, errorInfo)
   }
 
   render() {
@@ -65,13 +65,13 @@ const CANVAS_CONFIG = {
     fov: 50,
     near: 0.1,
     far: 1000,
-    position: [15.9, 6.8, -11.4]
-  }
+    position: [15.9, 6.8, -11.4],
+  },
 }
-
-// Camera animation hook with performance optimizations
 const useCameraAnimation = (section, cameraRef) => {
   const { camera } = useThree()
+
+  const [isStarted, setIsStarted] = useState(false)
   const animationRef = useRef({
     progress: 0,
     isActive: false,
@@ -82,10 +82,7 @@ const useCameraAnimation = (section, cameraRef) => {
   useEffect(() => {
     if (!camera) return
 
-    const sectionKey = section in CAMERA_CONFIG.sections
-      ? section
-      : "intro"
-
+    const sectionKey = section in CAMERA_CONFIG.sections ? section : "intro"
     const config = CAMERA_CONFIG.sections[sectionKey]
     const { intensity, curve } = CAMERA_CONFIG.transitions
 
@@ -108,13 +105,15 @@ const useCameraAnimation = (section, cameraRef) => {
 
       const curveValue = curve(t)
       const offsetZ = curveValue * config.transition.zOffset
-      const targetFovOffset = curveValue * config.fov * config.transition.fovMultiplier
+      const targetFovOffset =
+        curveValue * config.fov * config.transition.fovMultiplier
 
       const targetPosition = new THREE.Vector3()
         .lerpVectors(startPosition, config.position, t)
         .add(new THREE.Vector3(0, 0, offsetZ))
 
-      const targetFov = THREE.MathUtils.lerp(startFov, config.fov, t) - targetFovOffset
+      const targetFov =
+        THREE.MathUtils.lerp(startFov, config.fov, t) - targetFovOffset
 
       camera.position.copy(targetPosition)
       camera.fov = targetFov
@@ -149,10 +148,10 @@ const useCameraAnimation = (section, cameraRef) => {
     }
   }, [section, camera, cameraRef])
 
-  return null
+  return isStarted
 }
 
-// Memoized Scene Controller
+// Scene components permanecem os mesmos...
 const SceneController = React.memo(({ section, cameraRef }) => {
   useCameraAnimation(section, cameraRef)
 
@@ -175,11 +174,7 @@ const SceneContent = React.memo(({ activeSection, onSectionChange }) => (
   <>
     <Castle activeSection={activeSection} receiveShadow scale={[2, 2, 2]} />
     <CloudsD />
-    {/* <OldCloudsD/> */}
-
-    {/* <OldOrb/> */}
     <Orb />
-
     <Pole
       position={[-0.8, 0, 5.8]}
       scale={[0.6, 0.6, 0.6]}
@@ -190,6 +185,7 @@ const SceneContent = React.memo(({ activeSection, onSectionChange }) => (
 
 // Main Experience Component
 const Experience = () => {
+  const [isStarted, setIsStarted] = useState(false)
   const [currentSection, setCurrentSection] = useState(0)
   const [activeSection, setActiveSection] = useState("intro")
   const cameraRef = useRef(null)
@@ -199,14 +195,25 @@ const Experience = () => {
     setActiveSection(sectionName)
   }
 
+  const handleStart = () => {
+    setIsStarted(true)
+  }
+
+  if (!isStarted) {
+    return (
+      <div className="relative w-full h-screen">
+        <Canvas>
+          <Modeload onStart={handleStart} />
+        </Canvas>
+      </div>
+    )
+  }
+
   return (
     <div className="relative w-full h-screen">
       <ErrorBoundary>
         <div className="absolute inset-0 z-0">
-          <Canvas
-            {...CANVAS_CONFIG}
-            className="w-full h-full"
-          >
+          <Canvas {...CANVAS_CONFIG} className="w-full h-full">
             <Suspense fallback={null}>
               <SceneController section={currentSection} cameraRef={cameraRef} />
               <SceneContent
