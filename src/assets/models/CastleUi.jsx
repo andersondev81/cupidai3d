@@ -28,8 +28,15 @@ const NavigationButton = ({ onClick, children, className }) => (
   </button>
 )
 
-export const CastleUi = ({ section = 0, onSectionChange }) => {
+export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
   const currentSectionKey = sections[section]
+
+  const handleHomeNavigation = () => {
+    if (cameraRef) {
+      cameraRef.goToHome()
+      onSectionChange(0, "nav")
+    }
+  }
 
   return (
     <main className="relative h-full w-full">
@@ -44,8 +51,8 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
             platform...
           </p>
           <NavigationButton
-            onClick={() => onSectionChange(0, "nav")}
-            className="bg-gray-500 hover:bg-gray-600 text-white"
+            onClick={handleHomeNavigation}
+            className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
           >
             Back to Main
           </NavigationButton>
@@ -58,8 +65,8 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
           <h1 className="text-4xl font-bold text-stone-100">AI Dating Coach</h1>
           <div className="flex gap-4">
             <NavigationButton
-              onClick={() => onSectionChange(0, "nav")}
-              className="bg-gray-500 hover:bg-gray-600 text-white"
+              onClick={handleHomeNavigation}
+              className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
             >
               Back to Main
             </NavigationButton>
@@ -76,19 +83,19 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
           <div className="flex gap-4">
             <NavigationButton
               onClick={() => window.open("#download-link", "_blank")}
-              className="bg-green-500 hover:bg-green-600 text-white"
+              className="bg-green-500 hover:bg-green-600 text-white pointer-events-auto"
             >
               iOS Version
             </NavigationButton>
             <NavigationButton
               onClick={() => window.open("#download-link", "_blank")}
-              className="bg-green-500 hover:bg-green-600 text-white"
+              className="bg-green-500 hover:bg-green-600 text-white pointer-events-auto"
             >
               Android Version
             </NavigationButton>
             <NavigationButton
-              onClick={() => onSectionChange(0, "nav")}
-              className="bg-gray-500 hover:bg-gray-600 text-white"
+              onClick={handleHomeNavigation}
+              className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
             >
               Back
             </NavigationButton>
@@ -102,7 +109,13 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
           <h1 className="text-4xl font-bold text-stone-100">
             Token Information
           </h1>
-        </div> */}
+          <NavigationButton
+            onClick={handleHomeNavigation}
+            className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
+          >
+            Back to Main
+          </NavigationButton>
+        </div>
       </Section>
 
       {/* Seção Roadmap */}
@@ -113,8 +126,8 @@ export const CastleUi = ({ section = 0, onSectionChange }) => {
           </h1>
           <div className="flex gap-4">
             <NavigationButton
-              onClick={() => onSectionChange(0, "nav")}
-              className="bg-gray-500 hover:bg-gray-600 text-white"
+              onClick={handleHomeNavigation}
+              className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
             >
               Main Menu
             </NavigationButton>

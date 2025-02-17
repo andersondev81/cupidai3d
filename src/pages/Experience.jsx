@@ -1,6 +1,6 @@
 import React, { Suspense, useState, useRef, useEffect } from "react"
 import { Canvas, useThree } from "@react-three/fiber"
-import { Sky, Environment } from "@react-three/drei"
+import { Environment } from "@react-three/drei"
 import * as THREE from "three"
 import { CAMERA_CONFIG } from "../components/cameraConfig"
 import Castle from "../assets/models/Castle"
@@ -10,8 +10,9 @@ import { Pole } from "../assets/models/Pole"
 import { Perf } from "r3f-perf"
 import Modeload from "../components/helpers/Modeload"
 import Orb from "../assets/models/Orb"
+import Orb from "../assets/models/Orb"
 
-const useCameraAnimation = section => {
+const useCameraAnimation = (section, cameraRef) => {
   const { camera } = useThree()
   const animationRef = useRef({
     progress: 0,
@@ -74,10 +75,22 @@ const useCameraAnimation = section => {
 
     animate()
 
+    // Expose goToHome method
+    if (cameraRef) {
+      cameraRef.current = {
+        goToHome: () => {
+          camera.position.set(15.9, 6.8, -11.4)
+          camera.updateProjectionMatrix()
+          animationRef.current.isActive = false
+          animationRef.current.progress = 0
+        },
+      }
+    }
+
     return () => {
       animationRef.current.isActive = false
     }
-  }, [section, camera])
+  }, [section, camera, cameraRef])
 
   return null
 }
@@ -85,48 +98,69 @@ const useCameraAnimation = section => {
 const Experience = () => {
   const [currentSection, setCurrentSection] = useState(0)
   const [activeSection, setActiveSection] = useState("intro")
+  const [isStarted, setIsStarted] = useState(false)
+  const cameraRef = useRef(null)
+
+  const handleStart = () => {
+    setIsStarted(true)
+  }
 
   const handleSectionChange = (index, sectionName) => {
     setCurrentSection(index)
     setActiveSection(sectionName)
   }
 
+  if (!isStarted) {
+    return (
+      <div className="relative w-full h-screen">
+        <Canvas>
+          <Modeload onStart={handleStart} />
+        </Canvas>
+      </div>
+    )
+  }
+
   return (
-    <div className="bg-gradient-to-b from-[#bde0fe] to-[#ffafcc] h-screen relative">
-      <div className="absolute inset-0 pointer-events-none z-10">
-        <CastleUi
-          section={currentSection}
-          onSectionChange={handleSectionChange}
-          className="pointer-events-auto"
-        />
+    <div className="relative w-full h-screen">
+      <div className="absolute inset-0 z-0">
+        <Canvas camera={CAMERA_CONFIG.sections.intro} className="w-full h-full">
+          <SceneController section={currentSection} cameraRef={cameraRef} />
+          <Suspense fallback={null}>
+            <SceneContent
+              activeSection={activeSection}
+              onSectionChange={handleSectionChange}
+            />
+          </Suspense>
+        </Canvas>
       </div>
 
-      <Canvas camera={CAMERA_CONFIG.sections.intro} className="w-full h-full">
-        <SceneController section={currentSection} />
-
-        <Suspense fallback={<Modeload />}>
-          <SceneContent
-            activeSection={activeSection}
+      <div className="absolute inset-0 z-10 pointer-events-none">
+        <div className="w-full h-full">
+          <CastleUi
+            section={currentSection}
             onSectionChange={handleSectionChange}
+            cameraRef={cameraRef.current}
+            className="pointer-events-auto"
           />
-        </Suspense>
-      </Canvas>
+        </div>
+      </div>
     </div>
   )
 }
 
-const SceneController = ({ section }) => {
-  useCameraAnimation(section)
+const SceneController = ({ section, cameraRef }) => {
+  useCameraAnimation(section, cameraRef)
   return (
     <>
       <fog attach="fog" args={["#ffff", 0, 40]} />
       <Environment
-        files="/images/Clouds.hdr"
+        files="/images/PanoramaV1.hdr"
         background
         blur={0.6}
-        envMapIntensity={0.5}
+        envMapIntensity={1.5}
+        resolution={256}
       />
-      <Perf position="top-left" />
+      {process.env.NODE_ENV === "development" && <Perf position="top-left" />}
     </>
   )
 }
@@ -141,14 +175,7 @@ const SceneContent = React.memo(({ activeSection, onSectionChange }) => (
       scale={[0.6, 0.6, 0.6]}
       onSectionChange={onSectionChange}
     />
-
     <Orb />
-    <Sky
-      distance={450000}
-      sunPosition={[0, 1, 0]}
-      inclination={0}
-      azimuth={0.25}
-    />
   </>
 ))
 

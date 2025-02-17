@@ -15,10 +15,10 @@ import {
 const usePoleMaterial = () => {
   // Carregar texturas do Pole
   const textures = useTexture({
-    map: "/texture/Pole_ColorV3AO.webp",
-    displacementMap: "/texture/Pole_Height.webp",
+    map: "/texture/Pole_Color.webp",
+    // displacementMap: "/texture/Pole_Height.webp",
     metalnessMap: "/texture/Pole_Metalness.webp",
-    normalMap: "/texture/Pole_NormalV3.webp",
+    // normalMap: "/texture/Pole_Normal.webp",
     roughnessMap: "/texture/Pole_Roughness.webp",
   })
 
@@ -44,7 +44,7 @@ const usePoleMaterial = () => {
         alphaTest: 0.5,
         side: DoubleSide,
         blending: NormalBlending,
-        displacementScale: 0.001,
+        // displacementScale: 0.001,
         roughness: 0.1,
         metalness: 1,
         envMap: envMap,
