@@ -10,6 +10,7 @@ import { Pole } from "../assets/models/Pole"
 import { Perf } from "r3f-perf"
 import Modeload from "../components/helpers/Modeload"
 import Orb from "../assets/models/Orb"
+import Orb from "../assets/models/Orb"
 
 const useCameraAnimation = (section, cameraRef) => {
   const { camera } = useThree()
@@ -167,6 +168,7 @@ const SceneController = ({ section, cameraRef }) => {
 const SceneContent = React.memo(({ activeSection, onSectionChange }) => (
   <>
     <Castle activeSection={activeSection} receiveShadow scale={[2, 2, 2]} />
+
     <CoudsD />
     <Pole
       position={[-0.8, 0, 5.8]}
