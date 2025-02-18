@@ -1,31 +1,29 @@
-import React, { Suspense, useEffect, useMemo, useRef } from "react"
 import {
+  CameraControls,
+  Float,
+  Html,
   useGLTF,
   useTexture,
-  CameraControls,
-  Html,
-  Float,
-} from "@react-three/drei"
-import { useControls, button, monitor } from "leva"
+} from "@react-three/drei";
+import { button, monitor, useControls } from "leva";
+import React, { Suspense, useEffect, useMemo, useRef } from "react";
 import {
-  VideoTexture,
-  LinearFilter,
   Color,
-  MeshBasicMaterial,
-  MeshStandardMaterial,
-  MeshPhysicalMaterial,
   DoubleSide,
-  NormalBlending,
+  LinearFilter,
+  MeshBasicMaterial,
+  MeshPhysicalMaterial,
   NearestFilter,
-} from "three"
-import Modeload from "../../components/helpers/Modeload"
-import { metalness } from "three/examples/jsm/nodes/Nodes.js"
-import RotateAxis from "../../components/helpers/RotateAxis"
+  NormalBlending,
+  VideoTexture,
+} from "three";
+import Modeload from "../../components/helpers/Modeload";
+import RotateAxis from "../../components/helpers/RotateAxis";
 
 // Constants
-const SMALL_SCREEN_THRESHOLD = 768
-const TRANSITION_DELAY = 100
-const AUDIO_FILE_PATH = "/src/assets/sounds/videoplayback.mp4"
+const SMALL_SCREEN_THRESHOLD = 768;
+const TRANSITION_DELAY = 100;
+const AUDIO_FILE_PATH = "/src/assets/sounds/videoplayback.mp4";
 
 // Camera Positions Configuration
 const cameraConfig = {
@@ -93,62 +91,62 @@ const cameraConfig = {
       ],
     },
   },
-}
+};
 
 // Custom Hooks
 const useAudio = () => {
-  const audioContext = useRef(null)
-  const audioElement = useRef(null)
-  const source = useRef(null)
-  const panner = useRef(null)
+  const audioContext = useRef(null);
+  const audioElement = useRef(null);
+  const source = useRef(null);
+  const panner = useRef(null);
 
   const initAudio = () => {
-    audioElement.current = new Audio(AUDIO_FILE_PATH)
-    audioElement.current.loop = true
+    audioElement.current = new Audio(AUDIO_FILE_PATH);
+    audioElement.current.loop = true;
 
     audioContext.current = new (window.AudioContext ||
-      window.webkitAudioContext)()
+      window.webkitAudioContext)();
     source.current = audioContext.current.createMediaElementSource(
       audioElement.current
-    )
-    panner.current = audioContext.current.createPanner()
+    );
+    panner.current = audioContext.current.createPanner();
 
     // Configure panner
-    panner.current.panningModel = "HRTF"
-    panner.current.distanceModel = "inverse"
-    panner.current.refDistance = 1
-    panner.current.maxDistance = 100
-    panner.current.rolloffFactor = 1
-    panner.current.setPosition(0, 0, 0)
-    source.current.connect(panner.current)
-    panner.current.connect(audioContext.current.destination)
-  }
+    panner.current.panningModel = "HRTF";
+    panner.current.distanceModel = "inverse";
+    panner.current.refDistance = 1;
+    panner.current.maxDistance = 100;
+    panner.current.rolloffFactor = 1;
+    panner.current.setPosition(0, 0, 0);
+    source.current.connect(panner.current);
+    panner.current.connect(audioContext.current.destination);
+  };
 
   const playSound = () => {
     if (audioContext.current?.state === "suspended") {
-      audioContext.current.resume()
+      audioContext.current.resume();
     }
-    audioElement.current?.play()
-  }
+    audioElement.current?.play();
+  };
 
   const stopSound = () => {
-    audioElement.current?.pause()
+    audioElement.current?.pause();
     if (audioElement.current) {
-      audioElement.current.currentTime = 0
+      audioElement.current.currentTime = 0;
     }
-  }
+  };
 
-  const updateListenerPosition = position => {
+  const updateListenerPosition = (position) => {
     if (audioContext.current && position) {
-      const [x, y, z] = position
-      audioContext.current.listener.setPosition(x, y, z)
+      const [x, y, z] = position;
+      audioContext.current.listener.setPosition(x, y, z);
     }
-  }
+  };
 
   const cleanup = () => {
-    audioElement.current?.pause()
-    audioContext.current?.close()
-  }
+    audioElement.current?.pause();
+    audioContext.current?.close();
+  };
 
   return {
     initAudio,
@@ -156,8 +154,8 @@ const useAudio = () => {
     stopSound,
     updateListenerPosition,
     cleanup,
-  }
-}
+  };
+};
 // Materials textures---------------------------------------------
 
 // Castle Material
@@ -167,16 +165,16 @@ const useCastleMaterial = () => {
     // normalMap: "/texture/Castle_Normal.webp",
     roughnessMap: "/texture/Castle_Roughness.webp",
     metalnessMap: "/texture/Castle_Metalness.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = false
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.flipY = false;
+        texture.minFilter = texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(
     () =>
@@ -193,23 +191,23 @@ const useCastleMaterial = () => {
         metalness: 0.7,
       }),
     [textures]
-  )
-}
+  );
+};
 
 // Gods Material
 const useGodsMaterial = () => {
   const textures = useTexture({
     map: "/texture/gods_colors.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = false
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.flipY = false;
+        texture.minFilter = texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(
     () =>
@@ -223,24 +221,24 @@ const useGodsMaterial = () => {
         metalness: 0.7,
       }),
     [textures]
-  )
-}
+  );
+};
 // Hoof Material
 const useHoofMaterial = () => {
   const textures = useTexture({
     map: "/texture/HoofGlass_Color.webp",
     alphaMap: "/texture/HoofGlass_Alpha.webp",
     roughnessMap: "/texture/HoofGlass_Roughness.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = false
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.flipY = false;
+        texture.minFilter = texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(
     () =>
@@ -262,24 +260,24 @@ const useHoofMaterial = () => {
         clearcoatRoughness: 0.1, // Rugosidade do clear coat
       }),
     [textures]
-  )
-}
+  );
+};
 //atm Material
 const useAtmMaterial = () => {
   const textures = useTexture({
     map: "/texture/atm_Color.webp",
     roughnessMap: "/texture/atm_Roughness.webp",
     metalnessMap: "/texture/atm_Metalness.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = false
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.flipY = false;
+        texture.minFilter = texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(
     () =>
@@ -296,31 +294,31 @@ const useAtmMaterial = () => {
         metalness: 0.7,
       }),
     [textures]
-  )
-}
+  );
+};
 
 //Portal Material
 const usePortalMaterial = () => {
   return useMemo(() => {
-    const video = document.createElement("video")
-    video.src = "/video/tunel.mp4"
-    video.loop = true
-    video.muted = true
-    video.playsInline = true
-    video.autoplay = true
-    video.play()
+    const video = document.createElement("video");
+    video.src = "/video/tunel.mp4";
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.autoplay = true;
+    video.play();
 
-    const videoTexture = new VideoTexture(video)
-    videoTexture.minFilter = LinearFilter
-    videoTexture.magFilter = LinearFilter
-    videoTexture.flipY = false
+    const videoTexture = new VideoTexture(video);
+    videoTexture.minFilter = LinearFilter;
+    videoTexture.magFilter = LinearFilter;
+    videoTexture.flipY = false;
 
     return new MeshBasicMaterial({
       map: videoTexture,
       side: DoubleSide,
-    })
-  }, [])
-}
+    });
+  }, []);
+};
 const useBallMaterial = () => {
   return useMemo(
     () =>
@@ -338,18 +336,18 @@ const useBallMaterial = () => {
         clearcoatRoughness: 0.1,
       }),
     []
-  )
-}
+  );
+};
 
 // Components
 const CastleModel = ({ onCastleClick }) => {
-  const { nodes } = useGLTF("/models/Castle.glb")
-  const material = useCastleMaterial()
-  const godsMaterial = useGodsMaterial()
-  const hoofMaterial = useHoofMaterial()
-  const atmMaterial = useAtmMaterial()
-  const ballMaterial = useBallMaterial()
-  const portal = usePortalMaterial()
+  const { nodes } = useGLTF("/models/Castle.glb");
+  const material = useCastleMaterial();
+  const godsMaterial = useGodsMaterial();
+  const hoofMaterial = useHoofMaterial();
+  const atmMaterial = useAtmMaterial();
+  const ballMaterial = useBallMaterial();
+  const portal = usePortalMaterial();
 
   return (
     <group dispose={null}>
@@ -465,87 +463,96 @@ const CastleModel = ({ onCastleClick }) => {
         </Html>
       </group>
     </group>
-  )
-}
+  );
+};
 
 // Main Component
 const Castle = ({ activeSection }) => {
-  const controls = useRef()
+  const controls = useRef();
   const { initAudio, playSound, stopSound, updateListenerPosition, cleanup } =
-    useAudio()
-
-  const getCameraPosition = section => {
-    const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD
-    const screenType = isSmallScreen ? "small" : "large"
+    useAudio();
+  const getCameraPosition = (section) => {
+    const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD;
+    const screenType = isSmallScreen ? "small" : "large";
 
     if (section === "default") {
-      return cameraConfig.default[screenType]
+      return cameraConfig.default[screenType];
     }
 
-    return cameraConfig.sections[screenType][section]
-  }
+    return cameraConfig.sections[screenType][section];
+  };
 
-  const playTransition = sectionName => {
-    if (!controls.current) return
+  const playTransition = (sectionName) => {
+    if (!controls.current) return;
 
-    controls.current.enabled = true
+    controls.current.enabled = true;
 
     const targetPosition = getCameraPosition(
       sectionName === "default" ? "default" : sectionName
-    )
+    );
 
     if (targetPosition) {
       controls.current.setLookAt(...targetPosition, true).then(() => {
-        controls.current.enabled = sectionName === "nav"
-      })
+        controls.current.enabled = sectionName === "nav";
+      });
 
-      updateListenerPosition(targetPosition.slice(0, 3))
+      updateListenerPosition(targetPosition.slice(0, 3));
 
       if (sectionName === "nav") {
-        playSound()
+        playSound();
       } else {
-        stopSound()
+        stopSound();
       }
     }
-  }
+  };
 
   // Initialize camera and audio
   useEffect(() => {
-    if (!controls.current) return
+    if (!controls.current) return;
 
-    window.controls = controls
-    initAudio()
+    window.controls = controls;
+    initAudio();
 
-    controls.current.enabled = true
-    const defaultPosition = getCameraPosition("default")
-    controls.current.setLookAt(...defaultPosition, false)
+    controls.current.minPolarAngle = Math.PI * 0.15;
+    controls.current.maxPolarAngle = Math.PI * 0.55;
+    controls.current.minDistance = 5;
+    controls.current.maxDistance = 20;
+    controls.current.boundaryFriction = 1;
+    controls.current.boundaryEnclosesCamera = true;
+    controls.current.verticalDragToForward = false;
+    controls.current.dollyToCursor = false;
+    controls.current.minY = 1;
+    controls.current.maxY = 15;
+
+    const defaultPosition = getCameraPosition("default");
+    controls.current.setLookAt(...defaultPosition, false);
 
     setTimeout(() => {
-      playTransition("nav")
-    }, TRANSITION_DELAY)
+      playTransition("nav");
+    }, TRANSITION_DELAY);
 
-    return cleanup
-  }, [])
+    return cleanup;
+  }, []);
 
   // Handle active section changes
   useEffect(() => {
     if (activeSection) {
-      playTransition(activeSection)
+      playTransition(activeSection);
     }
-  }, [activeSection])
+  }, [activeSection]);
 
   // Handle window resize
   useEffect(() => {
     const handleResize = () => {
       if (controls.current && activeSection) {
-        const newPosition = getCameraPosition(activeSection)
-        controls.current.setLookAt(...newPosition, true)
+        const newPosition = getCameraPosition(activeSection);
+        controls.current.setLookAt(...newPosition, true);
       }
-    }
+    };
 
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [activeSection])
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [activeSection]);
 
   // Debug controls
   useControls("settings", {
@@ -555,32 +562,44 @@ const Castle = ({ activeSection }) => {
       min: 0.1,
       max: 2,
       step: 0.1,
-      onChange: v => {
+      onChange: (v) => {
         if (controls.current) {
-          controls.current.smoothTime = v
+          controls.current.smoothTime = v;
         }
       },
     },
     getLookAt: button(() => {
       if (controls.current) {
-        const position = controls.current.getPosition()
-        const target = controls.current.getTarget()
-        console.log([...position, ...target])
+        const position = controls.current.getPosition();
+        const target = controls.current.getTarget();
+        console.log([...position, ...target]);
       }
     }),
-  })
+  });
 
   return (
     <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
-      <CameraControls ref={controls} makeDefault smoothTime={0.6} />
-      <Suspense >
+      <CameraControls
+        ref={controls}
+        makeDefault
+        smoothTime={0.6}
+        minPolarAngle={Math.PI * 0.15} // Mantém o limite para cima
+        maxPolarAngle={Math.PI * 0.55} // Permite descer um pouco mais
+        minDistance={5}
+        maxDistance={20}
+        boundaryFriction={1}
+        boundaryEnclosesCamera={true}
+        verticalDragToForward={false}
+        dollyToCursor={false}
+        minY={1}
+        maxY={15}
+      />
+      <Suspense fallback={<Modeload />}>
         <CastleModel onCastleClick={playTransition} />
       </Suspense>
     </group>
-  )
-}
+  );
+};
+useGLTF.preload("/models/Castle.glb");
 
-// Preload assets
-useGLTF.preload("/models/Castle.glb")
-
-export default Castle
+export default Castle;
