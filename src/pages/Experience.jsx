@@ -54,7 +54,7 @@ class ErrorBoundary extends React.Component {
 // Optimized Canvas configuration
 const CANVAS_CONFIG = {
   gl: {
-    antialias: false, // Disable antialiasing for better performance
+    antialias: true,
     powerPreference: "high-performance",
     stencil: false,
     depth: true,
