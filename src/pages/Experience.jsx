@@ -185,7 +185,7 @@ const SceneContent = React.memo(({ activeSection, onSectionChange }) => (
 
 // Main Experience Component
 const Experience = () => {
-  const [isStarted, setIsStarted] = useState(false)
+  // const [isStarted, setIsStarted] = useState(false)
   const [currentSection, setCurrentSection] = useState(0)
   const [activeSection, setActiveSection] = useState("intro")
   const cameraRef = useRef(null)
@@ -199,15 +199,15 @@ const Experience = () => {
     setIsStarted(true)
   }
 
-  if (!isStarted) {
-    return (
-      <div className="relative w-full h-screen">
-        <Canvas>
-          <Modeload onStart={handleStart} />
-        </Canvas>
-      </div>
-    )
-  }
+  // if (!isStarted) {
+  //   return (
+  //     <div className="relative w-full h-screen">
+  //       <Canvas>
+  //         <Modeload onStart={handleStart} />
+  //       </Canvas>
+  //     </div>
+  //   )
+  // }
 
   return (
     <div className="relative w-full h-screen">

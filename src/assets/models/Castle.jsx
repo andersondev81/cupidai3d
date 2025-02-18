@@ -583,9 +583,9 @@ const Castle = ({ activeSection }) => {
         ref={controls}
         makeDefault
         smoothTime={0.6}
-        minPolarAngle={Math.PI * 0.15} // Mantém o limite para cima
-        maxPolarAngle={Math.PI * 0.55} // Permite descer um pouco mais
-        minDistance={5}
+        minPolarAngle={Math.PI * 0.15}
+        maxPolarAngle={Math.PI * 0.55} 
+        minDistance={50}
         maxDistance={20}
         boundaryFriction={1}
         boundaryEnclosesCamera={true}
