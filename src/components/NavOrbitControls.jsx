@@ -17,8 +17,8 @@ const NavOrbitControls = ({ isNavSection }) => {
     minAzimuthAngle,
     maxAzimuthAngle,
   } = useControls("Nav Camera Limits", {
-    minDistance: { value: 10, min: 5, max: 20 },
-    maxDistance: { value: 30, min: 20, max: 50 },
+    minDistance: { value: 30, min: 5, max: 150 },
+    maxDistance: { value: 30, min: 5, max: 150 },
     minPolarAngle: { value: Math.PI * 0.3, min: 0, max: Math.PI },
     maxPolarAngle: { value: Math.PI * 0.6, min: 0, max: Math.PI },
     minAzimuthAngle: { value: -Math.PI * 0.3, min: -Math.PI, max: 0 },

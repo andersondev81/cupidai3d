@@ -7,6 +7,10 @@ import Castle from "../assets/models/Castle"
 import { CastleUi } from "../assets/models/CastleUi"
 import { Pole } from "../assets/models/Pole"
 import { Perf } from "r3f-perf"
+// Iframes
+import ScrolIframe from "../assets/models/ScrolIframe"
+import AtmIframe from "../assets/models/AtmIframe"
+import MirrorIframe from "../assets/models/MirrorIframe"
 
 import Orb from "../assets/models/Orb"
 // import OldOrb from "../assets/models/OldOrb"
@@ -180,6 +184,10 @@ const SceneContent = React.memo(({ activeSection, onSectionChange }) => (
       scale={[0.6, 0.6, 0.6]}
       onSectionChange={onSectionChange}
     />
+    {/* Iframes */}
+    <ScrolIframe />
+    <AtmIframe />
+    <MirrorIframe />
   </>
 ))
 
