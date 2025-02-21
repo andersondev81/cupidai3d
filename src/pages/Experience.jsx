@@ -193,29 +193,29 @@ const SceneContent = React.memo(({ activeSection, onSectionChange }) => (
 
 // Main Experience Component
 const Experience = () => {
-  // const [isStarted, setIsStarted] = useState(false)
-  const [currentSection, setCurrentSection] = useState(0)
-  const [activeSection, setActiveSection] = useState("intro")
-  const cameraRef = useRef(null)
+  const [isStarted, setIsStarted] = useState(false); // Adiciona o estado isStarted
+  const [currentSection, setCurrentSection] = useState(0);
+  const [activeSection, setActiveSection] = useState("intro");
+  const cameraRef = useRef(null);
 
   const handleSectionChange = (index, sectionName) => {
-    setCurrentSection(index)
-    setActiveSection(sectionName)
-  }
+    setCurrentSection(index);
+    setActiveSection(sectionName);
+  };
 
   const handleStart = () => {
-    setIsStarted(true)
-  }
+    setIsStarted(true);
+  };
 
-  // if (!isStarted) {
-  //   return (
-  //     <div className="relative w-full h-screen">
-  //       <Canvas>
-  //         <Modeload onStart={handleStart} />
-  //       </Canvas>
-  //     </div>
-  //   )
-  // }
+  if (!isStarted) {
+    return (
+      <div className="relative w-full h-screen">
+        <Canvas>
+          <Modeload onStart={handleStart} />
+        </Canvas>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-screen">
@@ -244,7 +244,6 @@ const Experience = () => {
         </div>
       </ErrorBoundary>
     </div>
-  )
-}
-
-export default Experience
+  );
+};
+export default Experience;
