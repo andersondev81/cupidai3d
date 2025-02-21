@@ -1,4 +1,5 @@
-import React from "react"
+import React, { useState } from "react";
+import { AboutOverlay } from "./AboutOverlay";
 
 export const sections = [
   "nav",
@@ -7,7 +8,7 @@ export const sections = [
   "download",
   "token",
   "roadmap",
-]
+];
 
 const Section = ({ children, isActive, className = "" }) => (
   <section
@@ -17,7 +18,7 @@ const Section = ({ children, isActive, className = "" }) => (
   >
     {children}
   </section>
-)
+);
 
 const NavigationButton = ({ onClick, children, className }) => (
   <button
@@ -26,17 +27,18 @@ const NavigationButton = ({ onClick, children, className }) => (
   >
     {children}
   </button>
-)
+);
 
 export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
-  const currentSectionKey = sections[section]
+  const [showAboutOverlay, setShowAboutOverlay] = useState(false);
+  const currentSectionKey = sections[section];
 
   const handleHomeNavigation = () => {
     if (cameraRef) {
-      cameraRef.goToHome()
-      onSectionChange(0, "nav")
+      cameraRef.goToHome();
+      onSectionChange(0, "nav");
     }
-  }
+  };
 
   return (
     <main className="relative h-full w-full">
@@ -50,12 +52,24 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
             Discover the innovative features behind our castle-inspired
             platform...
           </p>
-          <NavigationButton
-            onClick={handleHomeNavigation}
-            className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
-          >
-            Back to Main
-          </NavigationButton>
+          <div className="flex gap-4">
+            <NavigationButton
+              onClick={() => {
+                setTimeout(() => {
+                  setShowAboutOverlay(true);
+                }, 500);
+              }}
+              className="bg-blue-500 hover:bg-blue-600 text-white pointer-events-auto"
+            >
+              Learn More
+            </NavigationButton>
+            <NavigationButton
+              onClick={handleHomeNavigation}
+              className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
+            >
+              Back to Main
+            </NavigationButton>
+          </div>
         </div>
       </Section>
 
@@ -116,10 +130,9 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
             Back to Main
           </NavigationButton>
         </div>
-
       </Section>
 
-
+      {/* Seção Roadmap */}
       <Section isActive={currentSectionKey === "roadmap"}>
         <div className="flex flex-col items-center gap-6">
           <h1 className="text-4xl font-bold text-stone-100">
@@ -135,6 +148,12 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
           </div>
         </div>
       </Section>
+
+      {/* AboutOverlay Component */}
+      <AboutOverlay
+        isVisible={showAboutOverlay}
+        onClose={() => setShowAboutOverlay(false)}
+      />
     </main>
-  )
-}
+  );
+};

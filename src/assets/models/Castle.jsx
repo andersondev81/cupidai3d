@@ -1,24 +1,23 @@
-import { CameraControls, useGLTF, useTexture } from "@react-three/drei"
-import { button, monitor, useControls } from "leva"
-import React, { Suspense, useEffect, useMemo, useRef } from "react"
+import { CameraControls, useGLTF, useTexture } from "@react-three/drei";
+import { button, monitor, useControls } from "leva";
+import React, { Suspense, useEffect, useMemo, useRef } from "react";
 import {
-  Color,
   DoubleSide,
   LinearFilter,
   MeshBasicMaterial,
-  MeshStandardMaterial,
   MeshPhysicalMaterial,
+  MeshStandardMaterial,
   NearestFilter,
   NormalBlending,
   VideoTexture,
-} from "three"
-import Modeload from "../../components/helpers/Modeload"
-import RotateAxis from "../../components/helpers/RotateAxis"
-import FountainParticles from "../../components/FountainParticles"
+} from "three";
+import FountainParticles from "../../components/FountainParticles";
+import Modeload from "../../components/helpers/Modeload";
+import RotateAxis from "../../components/helpers/RotateAxis";
 // Constants
-const SMALL_SCREEN_THRESHOLD = 768
-const TRANSITION_DELAY = 100
-const AUDIO_FILE_PATH = "/src/assets/sounds/heartportal.MP3"
+const SMALL_SCREEN_THRESHOLD = 768;
+const TRANSITION_DELAY = 100;
+const AUDIO_FILE_PATH = "/src/assets/sounds/heartportal.MP3";
 
 // Camera Positions Configuration
 const cameraConfig = {
@@ -39,24 +38,24 @@ const cameraConfig = {
         -0.21830679207380707, 1.042078953185994, 0.860456882413919,
       ],
       about: [
-        1.8294030001912027, 1.1241952974854004, -0.9268222253732308,
-        0.1723786308639481, 1.0468291516427397, -0.08072363062511172,
+        2.036849267056926, 1.1276933552454578, -1.0231282019898584,
+        0.37394830262366985, 1.0624176349739602, -0.187605864806909,
       ],
       aidatingcoach: [
-        -2.287522183512657, 1.1140207867811742, -1.087725967459512,
-        -0.08872200461723317, 1.1076978075751573, -0.030188523722664052,
+        -2.434203790421109, 1.6557626961206224, -1.2415015061749266,
+        -0.30992362617772434, 1.2392967457625186, -0.11582946349265688,
       ],
       download: [
-        -2.323807878032301, 1.133672409983926, -1.128058355996892,
-        -0.21384977642968192, 1.1774169642201746, -0.03185946113943251,
+        -2.434203790421109, 1.6557626961206224, -1.2415015061749266,
+        -0.30992362617772434, 1.2392967457625186, -0.11582946349265688,
       ],
       token: [
         2.0799027767746923, 1.1492603137264552, 1.0627122850364636,
         -1.2102179925739383, 0.8585880494001786, -0.5986556331928229,
       ],
       roadmap: [
-        -2.025201516379411, 1.0672926837870658, 1.0222135061686681,
-        0.03299806883202455, 0.8587359231417601, -0.08269801064024146,
+        -2.231073073487725, 1.1995652698467631, 1.135322606706848,
+        -0.17684615441762777, 0.9455151215049427, 0.03254375215457311,
       ],
     },
     small: {
@@ -81,67 +80,214 @@ const cameraConfig = {
         0.04723852527162822, 0.585365963592996, 0.11077814711949062,
       ],
       roadmap: [
-        -2.194447186898329, 1.1074291907861749, 1.1461923290680842,
-        -0.3644950377073637, 0.9540178555386187, 0.18714237486758786,
+        -2.231073073487725, 1.1995652698467631, 1.135322606706848,
+        -0.17684615441762777, 0.9455151215049427, 0.03254375215457311,
       ],
     },
   },
-}
+};
 
 // Custom Hooks
-const useAudio = () => {
-  const audioContext = useRef(null)
-  const audioElement = useRef(null)
-  const source = useRef(null)
-  const panner = useRef(null)
+const TRANSITION_SOUND = "/src/assets/sounds/camerawoosh.MP3";
+const AUDIO_PATHS = {
+  nav: "/src/assets/sounds/nav.mp3",
+  about: "/src/assets/sounds/orb.mp3",
+  aidatingcoach: "/src/assets/sounds/daingcoachmirror.MP3",
+  download: "/src/assets/sounds/daingcoachmirror.mp3",
+  token: "/src/assets/sounds/atmambiance.mp3",
+  roadmap: "/src/assets/sounds/roadmap.mp3",
+};
+const NAV_EXTRA_SOUNDS = {
+  templeAmbient: "/src/assets/sounds/templeambiance.mp3",
+  fountain: "/src/assets/sounds/fountain.mp3",
+};
+
+// Enhanced Audio Hook
+const useMultiAudio = () => {
+  const audioContextRef = useRef(null);
+  const audioElementsRef = useRef({});
+  const gainNodesRef = useRef({});
+  const currentSectionRef = useRef(null);
+  const transitionSoundRef = useRef(null);
+  const transitionGainRef = useRef(null);
+  const navExtraSoundsRef = useRef({});
+  const navExtraGainsRef = useRef({});
 
   const initAudio = () => {
-    audioElement.current = new Audio(AUDIO_FILE_PATH)
-    audioElement.current.loop = true
+    try {
+      audioContextRef.current = new (window.AudioContext ||
+        window.webkitAudioContext)();
 
-    audioContext.current = new (window.AudioContext ||
-      window.webkitAudioContext)()
-    source.current = audioContext.current.createMediaElementSource(
-      audioElement.current
-    )
-    panner.current = audioContext.current.createPanner()
+      transitionSoundRef.current = new Audio(TRANSITION_SOUND);
+      const transitionSource = audioContextRef.current.createMediaElementSource(
+        transitionSoundRef.current
+      );
+      transitionGainRef.current = audioContextRef.current.createGain();
+      transitionGainRef.current.gain.value = 0.5;
+      transitionSource.connect(transitionGainRef.current);
+      transitionGainRef.current.connect(audioContextRef.current.destination);
 
-    // Configure panner
-    panner.current.panningModel = "HRTF"
-    panner.current.distanceModel = "inverse"
-    panner.current.refDistance = 1
-    panner.current.maxDistance = 100
-    panner.current.rolloffFactor = 1
-    panner.current.setPosition(0, 0, 0)
-    source.current.connect(panner.current)
-    panner.current.connect(audioContext.current.destination)
-  }
+      Object.entries(NAV_EXTRA_SOUNDS).forEach(([key, path]) => {
+        const audioElement = new Audio(path);
+        audioElement.loop = true;
+        navExtraSoundsRef.current[key] = audioElement;
 
-  const playSound = () => {
-    if (audioContext.current?.state === "suspended") {
-      audioContext.current.resume()
+        const source =
+          audioContextRef.current.createMediaElementSource(audioElement);
+        const gainNode = audioContextRef.current.createGain();
+        gainNode.gain.value = 0.3;
+        source.connect(gainNode);
+        gainNode.connect(audioContextRef.current.destination);
+        navExtraGainsRef.current[key] = gainNode;
+      });
+
+      // Initialize section sounds
+      Object.entries(AUDIO_PATHS).forEach(([section, path]) => {
+        const audioElement = new Audio(path);
+        audioElement.loop = true;
+        audioElementsRef.current[section] = audioElement;
+
+        const source =
+          audioContextRef.current.createMediaElementSource(audioElement);
+        const gainNode = audioContextRef.current.createGain();
+        gainNode.gain.value = 0.3;
+
+        source.connect(gainNode);
+        gainNode.connect(audioContextRef.current.destination);
+        gainNodesRef.current[section] = gainNode;
+      });
+
+      console.log("Audio system initialized successfully");
+    } catch (error) {
+      console.error("Error initializing audio system:", error);
     }
-    audioElement.current?.play()
-  }
+  };
+
+  const playTransitionSound = () => {
+    if (transitionSoundRef.current) {
+      transitionSoundRef.current.currentTime = 0;
+      const playPromise = transitionSoundRef.current.play();
+
+      if (playPromise !== undefined) {
+        playPromise.catch((error) => {
+          console.warn("Error playing transition sound:", error);
+        });
+      }
+    }
+  };
+
+  const playSound = (section) => {
+    try {
+      if (audioContextRef.current?.state === "suspended") {
+        audioContextRef.current.resume();
+      }
+
+      playTransitionSound();
+
+      if (currentSectionRef.current && currentSectionRef.current !== section) {
+        const currentAudio =
+          audioElementsRef.current[currentSectionRef.current];
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+        }
+
+        if (currentSectionRef.current === "nav") {
+          Object.values(navExtraSoundsRef.current).forEach((audio) => {
+            if (audio) {
+              audio.pause();
+              audio.currentTime = 0;
+            }
+          });
+        }
+      }
+
+      setTimeout(() => {
+        const newAudio = audioElementsRef.current[section];
+        if (newAudio) {
+          newAudio.currentTime = 0;
+          newAudio.play().catch(console.error);
+
+          if (section === "nav") {
+            Object.values(navExtraSoundsRef.current).forEach((audio) => {
+              if (audio) {
+                audio.currentTime = 0;
+                audio.play().catch(console.error);
+              }
+            });
+          }
+
+          currentSectionRef.current = section;
+        }
+      }, 500); // Increased delay between transition and section sounds
+    } catch (error) {
+      console.error("Error playing sounds:", error);
+    }
+  };
 
   const stopSound = () => {
-    audioElement.current?.pause()
-    if (audioElement.current) {
-      audioElement.current.currentTime = 0
-    }
-  }
+    try {
+      if (currentSectionRef.current) {
+        const currentAudio =
+          audioElementsRef.current[currentSectionRef.current];
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+        }
 
-  const updateListenerPosition = position => {
-    if (audioContext.current && position) {
-      const [x, y, z] = position
-      audioContext.current.listener.setPosition(x, y, z)
+        // Stop nav extra sounds if in nav section
+        if (currentSectionRef.current === "nav") {
+          Object.values(navExtraSoundsRef.current).forEach((audio) => {
+            if (audio) {
+              audio.pause();
+              audio.currentTime = 0;
+            }
+          });
+        }
+
+        currentSectionRef.current = null;
+      }
+    } catch (error) {
+      console.error("Error stopping sound:", error);
     }
-  }
+  };
+
+  const updateListenerPosition = (position) => {
+    if (audioContextRef.current && position) {
+      const [x, y, z] = position;
+      audioContextRef.current.listener.setPosition(x, y, z);
+    }
+  };
 
   const cleanup = () => {
-    audioElement.current?.pause()
-    audioContext.current?.close()
-  }
+    try {
+      if (transitionSoundRef.current) {
+        transitionSoundRef.current.pause();
+        transitionSoundRef.current = null;
+      }
+
+      Object.values(audioElementsRef.current).forEach((audio) => {
+        if (audio) {
+          audio.pause();
+          audio.currentTime = 0;
+        }
+      });
+
+      Object.values(navExtraSoundsRef.current).forEach((audio) => {
+        if (audio) {
+          audio.pause();
+          audio.currentTime = 0;
+        }
+      });
+
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
+      }
+    } catch (error) {
+      console.error("Error during cleanup:", error);
+    }
+  };
 
   return {
     initAudio,
@@ -149,8 +295,8 @@ const useAudio = () => {
     stopSound,
     updateListenerPosition,
     cleanup,
-  }
-}
+  };
+};
 // Materials textures---------------------------------------------
 
 // Castle Material
@@ -160,16 +306,16 @@ const useCastleMaterial = () => {
     // normalMap: "/texture/Castle_Normal.webp",
     roughnessMap: "/texture/Castle_Roughness.webp",
     metalnessMap: "/texture/Castle_Metalness.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = false
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.flipY = false;
+        texture.minFilter = texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(
     () =>
@@ -186,23 +332,23 @@ const useCastleMaterial = () => {
         metalness: 0.7,
       }),
     [textures]
-  )
-}
+  );
+};
 
 // Gods Material
 const useGodsMaterial = () => {
   const textures = useTexture({
     map: "/texture/gods_colors.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = false
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.flipY = false;
+        texture.minFilter = texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(
     () =>
@@ -216,24 +362,24 @@ const useGodsMaterial = () => {
         metalness: 1,
       }),
     [textures]
-  )
-}
+  );
+};
 // Hoof Material
 const useHoofMaterial = () => {
   const textures = useTexture({
     map: "/texture/HoofGlass_Color.webp",
     // alphaMap: "/texture/HoofGlass_Alpha.webp",
     // roughnessMap: "/texture/HoofGlass_Roughness.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = false
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.flipY = false;
+        texture.minFilter = texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(
     () =>
@@ -255,8 +401,8 @@ const useHoofMaterial = () => {
         clearcoatRoughness: 0.1,
       }),
     [textures]
-  )
-}
+  );
+};
 
 //atm Material
 const useAtmMaterial = () => {
@@ -265,16 +411,16 @@ const useAtmMaterial = () => {
     // roughnessMap: "/texture/atmRoughness.webp",
     // metalnessMap: "/texture/atmMetalness.webp",
     // materialEmissive: "/texture/atmEmissive.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = false
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.flipY = false;
+        texture.minFilter = texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(
     () =>
@@ -293,23 +439,23 @@ const useAtmMaterial = () => {
         // emissiveIntensity: 3,
       }),
     [textures]
-  )
-}
+  );
+};
 
 //Scroll Material
 const useScrollMaterial = () => {
   const textures = useTexture({
     map: "/texture/Scroll_Color.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = false
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.flipY = false;
+        texture.minFilter = texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(
     () =>
@@ -320,46 +466,46 @@ const useScrollMaterial = () => {
         side: DoubleSide,
       }),
     [textures]
-  )
-}
+  );
+};
 
 //Portal Material
 const usePortalMaterial = () => {
   return useMemo(() => {
-    const video = document.createElement("video")
-    video.src = "/video/tunel.mp4"
-    video.loop = true
-    video.muted = true
-    video.playsInline = true
-    video.autoplay = true
-    video.play()
+    const video = document.createElement("video");
+    video.src = "/video/tunel.mp4";
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.autoplay = true;
+    video.play();
 
-    const videoTexture = new VideoTexture(video)
-    videoTexture.minFilter = LinearFilter
-    videoTexture.magFilter = LinearFilter
-    videoTexture.flipY = false
+    const videoTexture = new VideoTexture(video);
+    videoTexture.minFilter = LinearFilter;
+    videoTexture.magFilter = LinearFilter;
+    videoTexture.flipY = false;
 
     return new MeshBasicMaterial({
       map: videoTexture,
       side: DoubleSide,
-    })
-  }, [])
-}
+    });
+  }, []);
+};
 // Fontaine Water Material
 const useWaterMaterial = () => {
   return useMemo(() => {
-    const video = document.createElement("video")
-    video.src = "/video/waterColor.mp4"
-    video.loop = true
-    video.muted = true
-    video.playsInline = true
-    video.autoplay = true
-    video.play()
+    const video = document.createElement("video");
+    video.src = "/video/waterColor.mp4";
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.autoplay = true;
+    video.play();
 
-    const videoTexture = new VideoTexture(video)
-    videoTexture.minFilter = LinearFilter
-    videoTexture.magFilter = LinearFilter
-    videoTexture.flipY = false
+    const videoTexture = new VideoTexture(video);
+    videoTexture.minFilter = LinearFilter;
+    videoTexture.magFilter = LinearFilter;
+    videoTexture.flipY = false;
 
     return new MeshStandardMaterial({
       map: videoTexture,
@@ -367,20 +513,20 @@ const useWaterMaterial = () => {
       roughness: 0.4,
       metalness: 1,
       side: DoubleSide,
-    })
-  }, [])
-}
+    });
+  }, []);
+};
 
 // Components
 const CastleModel = ({ onCastleClick }) => {
-  const { nodes } = useGLTF("/models/Castle.glb")
-  const material = useCastleMaterial()
-  const godsMaterial = useGodsMaterial()
-  const hoofMaterial = useHoofMaterial()
-  const atmMaterial = useAtmMaterial()
-  const portal = usePortalMaterial()
-  const scrollMaterial = useScrollMaterial()
-  const waterMaterial = useWaterMaterial()
+  const { nodes } = useGLTF("/models/Castle.glb");
+  const material = useCastleMaterial();
+  const godsMaterial = useGodsMaterial();
+  const hoofMaterial = useHoofMaterial();
+  const atmMaterial = useAtmMaterial();
+  const portal = usePortalMaterial();
+  const scrollMaterial = useScrollMaterial();
+  const waterMaterial = useWaterMaterial();
 
   return (
     <group dispose={null}>
@@ -437,50 +583,69 @@ const CastleModel = ({ onCastleClick }) => {
         spread={0.3}
       />
     </group>
-  )
-}
+  );
+};
 
 // Main Component
 const Castle = ({ activeSection }) => {
-  const controls = useRef()
+  const controls = useRef();
   const { initAudio, playSound, stopSound, updateListenerPosition, cleanup } =
-    useAudio()
-  const getCameraPosition = section => {
-    const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD
-    const screenType = isSmallScreen ? "small" : "large"
+    useMultiAudio();
+  const getCameraPosition = (section) => {
+    const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD;
+    const screenType = isSmallScreen ? "small" : "large";
 
     if (section === "default") {
-      return cameraConfig.default[screenType]
+      return cameraConfig.default[screenType];
     }
 
-    return cameraConfig.sections[screenType][section]
-  }
+    return cameraConfig.sections[screenType][section];
+  };
 
-  const playTransition = sectionName => {
-    if (!controls.current) return
+  const playTransition = (sectionName) => {
+    if (!controls.current) return;
 
-    controls.current.enabled = true
+    controls.current.enabled = true; // Sempre mantém enabled como true
 
     const targetPosition = getCameraPosition(
       sectionName === "default" ? "default" : sectionName
-    )
+    );
 
     if (targetPosition) {
       controls.current.setLookAt(...targetPosition, true).then(() => {
         controls.current.enabled = sectionName === "nav"
       })
 
-      updateListenerPosition(targetPosition.slice(0, 3))
 
-      if (sectionName === "nav") {
-        playSound()
+      updateListenerPosition(targetPosition.slice(0, 3));
+
+      if (sectionName !== "default") {
+        playSound(sectionName);
       } else {
-        stopSound()
+        stopSound();
       }
     }
-  }
+  };
+
+  // useEffect(() => {
+  //   if (!controls.current) return;
+
+  //   window.controls = controls;
+  //   initAudio();
+
+  //   // REMOVIDO TODAS AS RESTRIÇÕES
+  //   const defaultPosition = getCameraPosition("default");
+  //   controls.current.setLookAt(...defaultPosition, false);
+
+  //   setTimeout(() => {
+  //     playTransition("nav");
+  //   }, TRANSITION_DELAY);
+
+  //   return cleanup;
+  // }, []);
 
   // Initialize camera and audio
+
   useEffect(() => {
     if (!controls.current) return
 
@@ -507,13 +672,12 @@ const Castle = ({ activeSection }) => {
 
     return cleanup
   }, [])
-
   // Handle active section changes
   useEffect(() => {
     if (activeSection) {
-      playTransition(activeSection)
+      playTransition(activeSection);
     }
-  }, [activeSection])
+  }, [activeSection]);
 
   // Handle window resize
   useEffect(() => {

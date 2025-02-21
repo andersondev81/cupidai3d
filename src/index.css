@@ -142,3 +142,26 @@ button:focus {
 canvas {
   touch-action: none;
 }
+
+.atm-screen {
+  width: 1024px; /* Ajuste para o tamanho que você precisa */
+  height: 670px; /* Ajuste para o tamanho que você precisa */
+  overflow: hidden;
+}
+
+.atm-screen iframe {
+  width: 1024px; /* Mesmo tamanho do wrapper */
+  height: 670px; /* Mesmo tamanho do wrapper */
+  border: none;
+  border-radius: 20px;
+  background: #ffffff;
+}
+.atm-screen iframe::-webkit-scrollbar {
+  display: none;
+}
+
+/* Garante que o conteúdo do iframe também não tenha scrollbar */
+.atm-screen iframe html,
+.atm-screen iframe body {
+  overflow: hidden;
+}
