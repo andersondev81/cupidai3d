@@ -12,7 +12,7 @@ import {
   VideoTexture,
 } from "three";
 import FountainParticles from "../../components/FountainParticles";
-import Modeload from "../../components/helpers/Modeload";
+// import Modeload from "../../components/helpers/Modeload";
 import RotateAxis from "../../components/helpers/RotateAxis";
 // Constants
 const SMALL_SCREEN_THRESHOLD = 768;
@@ -732,7 +732,7 @@ const Castle = ({ activeSection }) => {
         minY={1}
         maxY={15}
       />
-      <Suspense fallback={<Modeload />}>
+      <Suspense >
         <CastleModel onCastleClick={playTransition} />
       </Suspense>
     </group>
