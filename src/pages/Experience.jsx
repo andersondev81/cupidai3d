@@ -7,6 +7,7 @@ import Castle from "../assets/models/Castle"
 import { CastleUi } from "../assets/models/CastleUi"
 import { Pole } from "../assets/models/Pole"
 import { Perf } from "r3f-perf"
+import { Stairs } from "../assets/models/Stairs"
 // Iframes
 import ScrolIframe from "../assets/models/ScrolIframe"
 import AtmIframe from "../assets/models/AtmIframe"
@@ -162,13 +163,14 @@ const SceneController = React.memo(({ section, cameraRef }) => {
   return (
     <>
       <fog attach="fog" args={["#ffff", 0, 40]} />
-      <Environment
+      {/* <Environment
         files="/images/PanoramaV1.hdr"
         background
         blur={0.6}
         envMapIntensity={1.5}
         resolution={256}
-      />
+      /> */}
+      <Environment preset="warehouse" />
       {process.env.NODE_ENV === "development" && <Perf position="top-left" />}
     </>
   )
@@ -177,6 +179,7 @@ const SceneController = React.memo(({ section, cameraRef }) => {
 const SceneContent = React.memo(({ activeSection, onSectionChange }) => (
   <>
     <Castle activeSection={activeSection} receiveShadow scale={[2, 2, 2]} />
+    <Stairs />
     <CloudsD />
     <Orb />
     <Pole
@@ -193,19 +196,19 @@ const SceneContent = React.memo(({ activeSection, onSectionChange }) => (
 
 // Main Experience Component
 const Experience = () => {
-  const [isStarted, setIsStarted] = useState(false); // Adiciona o estado isStarted
-  const [currentSection, setCurrentSection] = useState(0);
-  const [activeSection, setActiveSection] = useState("intro");
-  const cameraRef = useRef(null);
+  const [isStarted, setIsStarted] = useState(false) // Adiciona o estado isStarted
+  const [currentSection, setCurrentSection] = useState(0)
+  const [activeSection, setActiveSection] = useState("intro")
+  const cameraRef = useRef(null)
 
   const handleSectionChange = (index, sectionName) => {
-    setCurrentSection(index);
-    setActiveSection(sectionName);
-  };
+    setCurrentSection(index)
+    setActiveSection(sectionName)
+  }
 
   const handleStart = () => {
-    setIsStarted(true);
-  };
+    setIsStarted(true)
+  }
 
   if (!isStarted) {
     return (
@@ -214,7 +217,7 @@ const Experience = () => {
           <Modeload onStart={handleStart} />
         </Canvas>
       </div>
-    );
+    )
   }
 
   return (
@@ -244,6 +247,6 @@ const Experience = () => {
         </div>
       </ErrorBoundary>
     </div>
-  );
-};
-export default Experience;
+  )
+}
+export default Experience
