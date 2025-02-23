@@ -6,7 +6,7 @@ export const EffectsTree = () => {
   const bloomConfig = useControls("bloom", {
     enabled: true,
     luminanceThreshold: { value: 0.37, min: 0, max: 2 },
-    intensity: { value: 7.5, min: 0, max: 1.2 },
+    intensity: { value: 7.5, min: 0, max: 20 },
     mipmapBlur: true,
     kernelSize: { value: 4, options: [0, 1, 2, 3, 4, 5] },
     luminanceSmoothing: { value: 1.2, min: 0, max: 2 },
