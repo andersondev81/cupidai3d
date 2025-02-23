@@ -8,7 +8,7 @@ import { CastleUi } from "../assets/models/CastleUi"
 import { Pole } from "../assets/models/Pole"
 import { Perf } from "r3f-perf"
 import { Stairs } from "../assets/models/Stairs"
-import StatsPanel from "../components/helpers/StatsPanel"
+
 // Iframes
 import ScrolIframe from "../assets/models/ScrolIframe"
 import AtmIframe from "../assets/models/AtmIframe"
@@ -172,14 +172,13 @@ const SceneController = React.memo(({ section, cameraRef }) => {
         resolution={256}
       /> */}
       <Environment preset="warehouse" />
-      {process.env.NODE_ENV === "development" && <Perf position="top-left" />}
+      {process.env.NODE_ENV === "production" && <Perf position="top-left" />}
     </>
   )
 })
 
 const SceneContent = React.memo(({ activeSection, onSectionChange }) => (
   <>
-    <StatsPanel />
     <Castle activeSection={activeSection} receiveShadow scale={[2, 2, 2]} />
     <Stairs />
     <CloudsD />
