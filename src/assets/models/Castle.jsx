@@ -303,7 +303,7 @@ const useMultiAudio = () => {
 // Castle Material
 const useCastleMaterial = () => {
   const textures = useTexture({
-    map: "/texture/CastleBake.webp",
+    map: "/texture/CastleBake1.webp",
     normalMap: "/texture/Castle_Normal.webp",
     roughnessMap: "/texture/Castle_Roughness.webp",
     emissiveMap: "/texture/Castle_Emissive.webp",
@@ -322,7 +322,7 @@ const useCastleMaterial = () => {
     () =>
       new MeshPhysicalMaterial({
         map: textures.map,
-        normalMap: textures.normalMap,
+        // normalMap: textures.normalMap,
         roughnessMap: textures.roughnessMap,
         emissiveMap: textures.emissiveMap,
         emissive: new Color(0xffffff), // Adicionando a cor emissiva
@@ -371,7 +371,7 @@ const useGodsMaterial = () => {
 // Hoof Material
 const useHoofMaterial = () => {
   const textures = useTexture({
-    map: "/texture/HoofGlass_Color.webp",
+    map: "/texture/HoofGlassBake.webp",
     // alphaMap: "/texture/HoofGlass_Alpha.webp",
     // roughnessMap: "/texture/HoofGlass_Roughness.webp",
   })
@@ -395,14 +395,14 @@ const useHoofMaterial = () => {
         opacity: 1,
         side: DoubleSide,
         blending: NormalBlending,
-        // roughness: 0.2,
-        // metalness: 0.1,
+        roughness: 0.2,
+        metalness: 0.1,
         transmission: 0.95,
-        ior: 1.5,
-        thickness: 0.5,
-        envMapIntensity: 1,
-        clearcoat: 1,
-        clearcoatRoughness: 0.1,
+        // ior: 1.5,
+        // thickness: 0.5,
+        // envMapIntensity: 1,
+        // clearcoat: 1,
+        // clearcoatRoughness: 0.1,
       }),
     [textures]
   )
@@ -414,7 +414,7 @@ const useAtmMaterial = () => {
     map: "/texture/atmBake.webp",
     // roughnessMap: "/texture/atmRoughness.webp",
     // metalnessMap: "/texture/atmMetalness.webp",
-    // materialEmissive: "/texture/atmEmissive.webp",
+    materialEmissive: "/texture/atmEmissive.webp",
   })
 
   useMemo(() => {
@@ -430,17 +430,17 @@ const useAtmMaterial = () => {
     () =>
       new MeshPhysicalMaterial({
         map: textures.map,
-        // roughnessMap: textures.roughnessMap,
-        // metalnessMap: textures.metalnessMap,
-        // emissive: new Color(0xffffff), // Adicionando cor base emissiva (branco)
-        // emissiveMap: textures.materialEmissive,
+        roughnessMap: textures.roughnessMap,
+        metalnessMap: textures.metalnessMap,
+        emissive: new Color(0xfff), // Adicionando cor base emissiva (branco)
+        emissiveMap: textures.materialEmissive,
         transparent: false,
         alphaTest: 0.5,
         side: DoubleSide,
         blending: NormalBlending,
-        roughness: 0.2,
-        metalness: 0.7,
-        // emissiveIntensity: 3,
+        // roughness: 1,
+        // metalness: 0,
+        emissiveIntensity: 1,
       }),
     [textures]
   )
@@ -514,8 +514,8 @@ const useWaterMaterial = () => {
     return new MeshStandardMaterial({
       map: videoTexture,
       transparent: false,
-      roughness: 0.4,
-      metalness: 1,
+      roughness: 0.2,
+      metalness: 0,
       side: DoubleSide,
     })
   }, [])
@@ -651,32 +651,32 @@ const Castle = ({ activeSection }) => {
 
   // Initialize camera and audio
 
-  useEffect(() => {
-    if (!controls.current) return
+  // useEffect(() => {
+  //   if (!controls.current) return
 
-    window.controls = controls
-    // initAudio()
+  //   window.controls = controls
+  //   // initAudio()
 
-    controls.current.minPolarAngle = Math.PI * 0.15
-    controls.current.maxPolarAngle = Math.PI * 0.55
-    controls.current.minDistance = 5
-    controls.current.maxDistance = 20
-    controls.current.boundaryFriction = 1
-    controls.current.boundaryEnclosesCamera = true
-    controls.current.verticalDragToForward = false
-    controls.current.dollyToCursor = false
-    controls.current.minY = 1
-    controls.current.maxY = 15
+  //   controls.current.minPolarAngle = Math.PI * 0.15
+  //   controls.current.maxPolarAngle = Math.PI * 0.55
+  //   controls.current.minDistance = 5
+  //   controls.current.maxDistance = 20
+  //   controls.current.boundaryFriction = 1
+  //   controls.current.boundaryEnclosesCamera = true
+  //   controls.current.verticalDragToForward = false
+  //   controls.current.dollyToCursor = false
+  //   controls.current.minY = 1
+  //   controls.current.maxY = 15
 
-    const defaultPosition = getCameraPosition("default")
-    controls.current.setLookAt(...defaultPosition, false)
+  //   const defaultPosition = getCameraPosition("default")
+  //   controls.current.setLookAt(...defaultPosition, false)
 
-    setTimeout(() => {
-      playTransition("nav")
-    }, TRANSITION_DELAY)
+  //   setTimeout(() => {
+  //     playTransition("nav")
+  //   }, TRANSITION_DELAY)
 
-    return cleanup
-  }, [])
+  //   return cleanup
+  // }, [])
   // Handle active section changes
   useEffect(() => {
     if (activeSection) {

@@ -52,16 +52,14 @@ html {
 body {
   margin: 0 auto; /* Centraliza o conteúdo */
   padding: 0; /* Remove espaços internos */
-  max-width: 1200px; /* Limita a largura máxima do conteúdo */
+  /* Limita a largura máxima do conteúdo */
   width: 100%; /* Ajusta responsivamente */
   height: 100%;
-  background-color: #ffffff; /* Cor de fundo do conteúdo */
   box-sizing: border-box; /* Inclui padding e bordas no tamanho total */
   font-family: "Open Sans", sans-serif; /* Definindo a fonte global */
   touch-action: none;
   overscroll-behavior-y: none;
   margin: 0;
-  background-color: #d9afd9;
   background-image: linear-gradient(0deg, #d9afd9 0%, #97d9e1 100%);
 }
 

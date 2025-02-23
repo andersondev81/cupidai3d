@@ -162,7 +162,7 @@ const SceneController = React.memo(({ section, cameraRef }) => {
 
   return (
     <>
-      <fog attach="fog" args={["#ffff", 0, 40]} />
+      {/* <fog attach="fog" args={["#ffff", 0, 40]} /> */}
       {/* <Environment
         files="/images/PanoramaV1.hdr"
         background
