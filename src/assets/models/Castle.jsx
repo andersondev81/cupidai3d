@@ -15,7 +15,6 @@ import {
 import { Select } from "@react-three/postprocessing"
 import FountainParticles from "../../components/FountainParticles"
 import RotateAxis from "../../components/helpers/RotateAxis"
-import { EffectsTree } from "../../components/helpers/EffectsTree"
 
 // Constants
 const SMALL_SCREEN_THRESHOLD = 768
@@ -303,7 +302,7 @@ const useMultiAudio = () => {
 // Castle Material
 const useCastleMaterial = () => {
   const textures = useTexture({
-    map: "/texture/CastleBake1.webp",
+    map: "/texture/Castle_ColorAO.webp",
     normalMap: "/texture/Castle_Normal.webp",
     roughnessMap: "/texture/Castle_Roughness.webp",
     emissiveMap: "/texture/Castle_Emissive.webp",
@@ -331,8 +330,8 @@ const useCastleMaterial = () => {
         alphaTest: 0.5,
         side: DoubleSide,
         blending: NormalBlending,
-        // roughness: 0.4,
-        // metalness: 0,
+        roughness: 0.6,
+        // metalness: 0.2,
       }),
     [textures]
   )
@@ -738,7 +737,6 @@ const Castle = ({ activeSection }) => {
         maxY={15}
       />
       <Suspense>
-        <EffectsTree />
         <CastleModel onCastleClick={playTransition} />
       </Suspense>
     </group>

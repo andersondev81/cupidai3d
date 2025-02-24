@@ -6,7 +6,13 @@ import {
   NearestFilter,
   FrontSide,
   AdditiveBlending,
+  Layers,
 } from "three"
+import {
+  EffectComposer,
+  Bloom,
+  SelectiveBloom,
+} from "@react-three/postprocessing"
 import RotateAxis from "../../components/helpers/RotateAxis"
 
 // Cache de materiais
@@ -15,7 +21,7 @@ const materialCache = new Map()
 // Configurações base para materiais
 const MATERIAL_SETTINGS = {
   emissiveColor: new Color(0x48cae4),
-  emissiveIntensity: 2,
+  emissiveIntensity: 6,
   transparent: true,
   alphaTest: 0.005,
   depthTest: true,
@@ -23,14 +29,20 @@ const MATERIAL_SETTINGS = {
   metalness: 0,
 }
 
+// Camada específica para elementos com emissive map
+const BLOOM_LAYER = new Layers()
+BLOOM_LAYER.set(1) // Usando a camada 1 para os elementos com emissive map
+
 const OrbMesh = React.memo(props => {
   const { nodes } = useGLTF("/models/Orbit.glb")
   const materialsRef = useRef([])
+  const emissiveGroupRef = useRef()
 
   // Carrega e configura texturas uma única vez
   const textures = useTexture({
     map: "/texture/Orb_AlphaV1.webp",
     alphaMap: "/texture/Orb_Alpha.webp",
+    emissiveMap: "/texture/OrbBake_Emissive.webp",
   })
 
   // Configura texturas
@@ -56,6 +68,7 @@ const OrbMesh = React.memo(props => {
             map: textures.map,
             alphaMap: textures.alphaMap,
             emissive: MATERIAL_SETTINGS.emissiveColor,
+            emissiveMap: textures.emissiveMap,
             side: FrontSide, // Mudado de DoubleSide para FrontSide
             ...config,
           })
@@ -65,16 +78,34 @@ const OrbMesh = React.memo(props => {
     }
 
     return {
-      lines: createMaterial('lines', { opacity: 0.3, blending: AdditiveBlending }),
-      center: createMaterial('center', { opacity: 1 }),
-      balls: createMaterial('balls', { opacity: 0.15, blending: AdditiveBlending }),
-      sphere: createMaterial('sphere', {
+      lines: createMaterial("lines", {
+        opacity: 0.3,
+        blending: AdditiveBlending,
+      }),
+      center: createMaterial("center", { opacity: 1 }),
+      balls: createMaterial("balls", {
+        opacity: 0.15,
+        blending: AdditiveBlending,
+      }),
+      sphere: createMaterial("sphere", {
         color: new Color(0.678, 0.933, 0.953),
         opacity: 0.9,
         transparent: true,
-      })
+      }),
     }
   }, [textures])
+
+  // Aplica layer de bloom nos elementos emissivos após renderização
+  useEffect(() => {
+    if (emissiveGroupRef.current) {
+      // Configura a camada para todos os meshes filhos
+      emissiveGroupRef.current.traverse(child => {
+        if (child.isMesh && child.material.emissive) {
+          child.layers.enable(1) // Habilita a camada 1 para elementos com emissive
+        }
+      })
+    }
+  }, [])
 
   // Cleanup
   useEffect(() => {
@@ -94,38 +125,49 @@ const OrbMesh = React.memo(props => {
 
   return (
     <group {...props} dispose={null} position={[1.76, 1.155, -0.883]}>
-      {/* Linhas - com rotações otimizadas */}
-      <group>
-        <RotateAxis axis="y" speed={1} rotationType="euler">
-          <mesh geometry={nodes.lineC?.geometry} material={materials.lines} />
-        </RotateAxis>
-        <RotateAxis axis="z" speed={6} rotationType="euler">
-          <mesh geometry={nodes.lineB?.geometry} material={materials.lines} />
-        </RotateAxis>
-        <RotateAxis axis="x" speed={8} rotationType="euler">
-          <mesh geometry={nodes.lineA?.geometry} material={materials.lines} />
-        </RotateAxis>
-      </group>
+      {/* Grupo para elementos com emissive que terão bloom */}
+      <group ref={emissiveGroupRef}>
+        {/* Linhas - com rotações otimizadas */}
+        <group>
+          <RotateAxis axis="y" speed={1} rotationType="euler">
+            <mesh geometry={nodes.lineC?.geometry} material={materials.lines} />
+          </RotateAxis>
+          <RotateAxis axis="z" speed={6} rotationType="euler">
+            <mesh geometry={nodes.lineB?.geometry} material={materials.lines} />
+          </RotateAxis>
+          <RotateAxis axis="x" speed={8} rotationType="euler">
+            <mesh geometry={nodes.lineA?.geometry} material={materials.lines} />
+          </RotateAxis>
+        </group>
 
-      {/* Center */}
-      <RotateAxis axis="y" speed={8} rotationType="euler">
-        <mesh geometry={nodes.center?.geometry} material={materials.center} />
-      </RotateAxis>
-
-      {/* Bolas - agrupadas para melhor performance */}
-      <group>
-        <RotateAxis axis="x" speed={6} rotationType="euler">
-          <mesh geometry={nodes.ballC?.geometry} material={materials.balls} />
-        </RotateAxis>
+        {/* Center */}
         <RotateAxis axis="y" speed={8} rotationType="euler">
-          <mesh geometry={nodes.ballA?.geometry} material={materials.balls} scale={0.993} />
+          <mesh geometry={nodes.center?.geometry} material={materials.center} />
         </RotateAxis>
-        <RotateAxis axis="z" speed={2} rotationType="euler">
-          <mesh geometry={nodes.ballB?.geometry} material={materials.balls} scale={1.125} />
-        </RotateAxis>
+
+        {/* Bolas - agrupadas para melhor performance */}
+        <group>
+          <RotateAxis axis="x" speed={6} rotationType="euler">
+            <mesh geometry={nodes.ballC?.geometry} material={materials.balls} />
+          </RotateAxis>
+          <RotateAxis axis="y" speed={8} rotationType="euler">
+            <mesh
+              geometry={nodes.ballA?.geometry}
+              material={materials.balls}
+              scale={0.993}
+            />
+          </RotateAxis>
+          <RotateAxis axis="z" speed={2} rotationType="euler">
+            <mesh
+              geometry={nodes.ballB?.geometry}
+              material={materials.balls}
+              scale={1.125}
+            />
+          </RotateAxis>
+        </group>
       </group>
 
-      {/* Esferas de efeito - combinadas */}
+      {/* Esferas de efeito - NÃO terão bloom (fora do grupo emissiveGroupRef) */}
       <group>
         <mesh position={[0, 0, 0]}>
           {simplifiedSphereGeometry}
@@ -138,7 +180,6 @@ const OrbMesh = React.memo(props => {
       </group>
 
       <RotateAxis axis="y" speed={-0.5} rotationType="euler">
-
         <mesh
           geometry={nodes.particles.geometry}
           material={materials.sphere}
@@ -152,17 +193,34 @@ const OrbMesh = React.memo(props => {
 
 // Componente principal
 const Orb = () => {
+  const sceneRef = useRef()
+
   return (
-    <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
-      <Float
-        floatIntensity={0.5}
-        speed={4}
-        rotationIntensity={0}
-        floatingRange={[-0.1, 0.1]} // Reduzido o range de flutuação
-      >
-        <OrbMesh />
-      </Float>
-    </group>
+    <>
+      <group ref={sceneRef} position={[0, 0, 0]} rotation={[0, 0, 0]}>
+        <Float
+          floatIntensity={0.5}
+          speed={4}
+          rotationIntensity={0}
+          floatingRange={[-0.1, 0.1]} // Reduzido o range de flutuação
+        >
+          <OrbMesh />
+        </Float>
+      </group>
+
+      {/* EffectComposer com efeito SelectiveBloom para aplicar apenas em layers específicas */}
+      <EffectComposer>
+        <SelectiveBloom
+          lights={[]} // Não precisamos especificar luzes aqui
+          selection={sceneRef} // Aplica apenas aos objetos na referência sceneRef
+          selectionLayer={1} // Usa a camada 1 para identificar objetos
+          luminanceThreshold={1.1}
+          mipmapBlur
+          intensity={40}
+          radius={0.3}
+        />
+      </EffectComposer>
+    </>
   )
 }
 
