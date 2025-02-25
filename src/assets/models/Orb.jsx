@@ -209,7 +209,7 @@ const Orb = () => {
       </group>
 
       {/* EffectComposer com efeito SelectiveBloom para aplicar apenas em layers específicas */}
-      <EffectComposer>
+      {/* <EffectComposer>
         <SelectiveBloom
           lights={[]} // Não precisamos especificar luzes aqui
           selection={sceneRef} // Aplica apenas aos objetos na referência sceneRef
@@ -219,7 +219,7 @@ const Orb = () => {
           intensity={6}
           radius={0.3}
         />
-      </EffectComposer>
+      </EffectComposer> */}
     </>
   )
 }
