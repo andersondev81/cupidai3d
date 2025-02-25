@@ -119,7 +119,7 @@ export function HeartText({ onSectionChange, ...props }) {
       </group>
 
       {/* EffectComposer com configurações otimizadas para branco intenso */}
-      <EffectComposer>
+      {/* <EffectComposer>
         <SelectiveBloom
           lights={[]}
           selection={sceneRef}
@@ -127,10 +127,10 @@ export function HeartText({ onSectionChange, ...props }) {
           luminanceThreshold={0.59} // Reduzido para capturar mais das áreas brancas
           luminanceSmoothing={0.8} // Adicionado para transição mais suave
           mipmapBlur
-          intensity={3.9} // Aumentado para bloom mais intenso
+          intensity={1} // Aumentado para bloom mais intenso
           radius={0.5} // Aumentado para glow mais difuso
         />
-      </EffectComposer>
+      </EffectComposer> */}
     </>
   )
 }

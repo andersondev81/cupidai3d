@@ -47,8 +47,8 @@ const useStairsMaterial = () => {
         depthTest: true,
         side: DoubleSide,
         blending: NormalBlending,
-        roughness: 1,
-        metalness: 0.3,
+        roughness: 0.4,
+        metalness: 0.6,
       }),
     [textures, envMap]
   )

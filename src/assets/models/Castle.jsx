@@ -330,8 +330,8 @@ const useCastleMaterial = () => {
         alphaTest: 0.5,
         side: DoubleSide,
         blending: NormalBlending,
-        roughness: 0.6,
-        // metalness: 0.2,
+        roughness: 1.6,
+        metalness: 1,
       }),
     [textures]
   )
@@ -372,7 +372,7 @@ const useHoofMaterial = () => {
   const textures = useTexture({
     map: "/texture/HoofGlassBake.webp",
     // alphaMap: "/texture/HoofGlass_Alpha.webp",
-    // roughnessMap: "/texture/HoofGlass_Roughness.webp",
+    roughnessMap: "/texture/HoofGlassBake.webp",
   })
 
   useMemo(() => {
@@ -391,12 +391,12 @@ const useHoofMaterial = () => {
         // alphaMap: textures.alphaMap,
         // roughnessMap: textures.roughnessMap,
         transparent: false,
-        opacity: 1,
+        // opacity: 1,
         side: DoubleSide,
         blending: NormalBlending,
         roughness: 0.2,
-        metalness: 0.1,
-        transmission: 0.95,
+        metalness: 1,
+        // transmission: 0.95,
         // ior: 1.5,
         // thickness: 0.5,
         // envMapIntensity: 1,
@@ -439,7 +439,7 @@ const useAtmMaterial = () => {
         blending: NormalBlending,
         // roughness: 1,
         // metalness: 0,
-        emissiveIntensity: 1,
+        emissiveIntensity: 4,
       }),
     [textures]
   )
