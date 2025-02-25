@@ -1,26 +1,19 @@
 import React, { useMemo, useRef, useEffect } from "react"
 import { useGLTF, useTexture } from "@react-three/drei"
-import { EffectComposer, SelectiveBloom } from "@react-three/postprocessing"
 import {
-  MeshStandardMaterial,
   DoubleSide,
   NormalBlending,
   NearestFilter,
-  Layers,
   Color,
   MeshPhysicalMaterial,
 } from "three"
 
-// Camada específica para elementos HeartText com emissive map
-const BLOOM_LAYER = new Layers()
-BLOOM_LAYER.set(2)
-
 // Configurações base para o material com branco intenso
 const MATERIAL_SETTINGS = {
   emissiveColor: new Color(1, 1, 1), // Branco puro em RGB
-  emissiveIntensity: 2,
+  emissiveIntensity: 4.3,
   transparent: false,
-  alphaTest: 0.01,
+  alphaTest: 0.05,
 }
 
 // Cache de materiais
@@ -76,21 +69,7 @@ const useHeartTextMaterial = () => {
 export function HeartText({ onSectionChange, ...props }) {
   const { nodes } = useGLTF("/models/HeartText.glb")
   const material = useHeartTextMaterial()
-  const sceneRef = useRef(null)
-  const emissiveGroupRef = useRef(null)
   const materialsRef = useRef([material])
-
-  // Aplica layer de bloom nos elementos emissivos após renderização
-  useEffect(() => {
-    if (emissiveGroupRef.current) {
-      // Configura a camada para todos os meshes filhos
-      emissiveGroupRef.current.traverse(child => {
-        if (child.isMesh && child.material.emissive) {
-          child.layers.enable(2) // Habilita a camada 2 para elementos com emissive
-        }
-      })
-    }
-  }, [])
 
   // Cleanup
   useEffect(() => {
@@ -104,34 +83,16 @@ export function HeartText({ onSectionChange, ...props }) {
   }, [])
 
   return (
-    <>
-      <group {...props} dispose={null} ref={sceneRef}>
-        {/* Grupo específico para elementos que receberão bloom */}
-        <group ref={emissiveGroupRef}>
-          <mesh
-            geometry={nodes.HeText.geometry}
-            material={material}
-            position={[0, 0.145, 2.005]}
-            castShadow
-            receiveShadow
-          />
-        </group>
-      </group>
-
-      {/* EffectComposer com configurações otimizadas para branco intenso */}
-      {/* <EffectComposer>
-        <SelectiveBloom
-          lights={[]}
-          selection={sceneRef}
-          selectionLayer={2}
-          luminanceThreshold={0.59} // Reduzido para capturar mais das áreas brancas
-          luminanceSmoothing={0.8} // Adicionado para transição mais suave
-          mipmapBlur
-          intensity={1} // Aumentado para bloom mais intenso
-          radius={0.5} // Aumentado para glow mais difuso
-        />
-      </EffectComposer> */}
-    </>
+    <group {...props} dispose={null}>
+      <mesh
+        geometry={nodes.HeText.geometry}
+        material={material}
+        position={[0, 0.145, 2.005]}
+        castShadow
+        receiveShadow
+        layers-enable={2}
+      />
+    </group>
   )
 }
 

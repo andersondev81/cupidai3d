@@ -302,7 +302,7 @@ const useMultiAudio = () => {
 // Castle Material
 const useCastleMaterial = () => {
   const textures = useTexture({
-    map: "/texture/Castle_ColorAO.webp",
+    map: "/texture/CastleBake.webp",
     normalMap: "/texture/Castle_Normal.webp",
     roughnessMap: "/texture/Castle_Roughness.webp",
     emissiveMap: "/texture/Castle_Emissive.webp",
@@ -410,9 +410,9 @@ const useHoofMaterial = () => {
 //atm Material
 const useAtmMaterial = () => {
   const textures = useTexture({
-    map: "/texture/atmBake.webp",
-    // roughnessMap: "/texture/atmRoughness.webp",
-    // metalnessMap: "/texture/atmMetalness.webp",
+    map: "/texture/atmColor.webp",
+    roughnessMap: "/texture/atmRoughness.webp",
+    metalnessMap: "/texture/atmMetalness.webp",
     materialEmissive: "/texture/atmEmissive.webp",
   })
 
@@ -431,15 +431,13 @@ const useAtmMaterial = () => {
         map: textures.map,
         roughnessMap: textures.roughnessMap,
         metalnessMap: textures.metalnessMap,
-        emissive: new Color(0xfff), // Adicionando cor base emissiva (branco)
         emissiveMap: textures.materialEmissive,
         transparent: false,
-        alphaTest: 0.5,
+        alphaTest: 0.05,
         side: DoubleSide,
         blending: NormalBlending,
-        // roughness: 1,
-        // metalness: 0,
-        emissiveIntensity: 4,
+        emissive: new Color(0xf6d8ff),
+        emissiveIntensity: 3.2,
       }),
     [textures]
   )
@@ -510,12 +508,14 @@ const useWaterMaterial = () => {
     videoTexture.magFilter = LinearFilter
     videoTexture.flipY = false
 
-    return new MeshStandardMaterial({
+    return new MeshPhysicalMaterial({
       map: videoTexture,
       transparent: false,
       roughness: 0.2,
       metalness: 0,
       side: DoubleSide,
+      emissive: new Color(0xffa6f3),
+      emissiveIntensity: 2,
     })
   }, [])
 }
@@ -547,6 +547,7 @@ const CastleModel = ({ onCastleClick }) => {
         position={[1.665, 1.259, 0.854]}
         rotation={[1.458, 0.219, 0.486]}
         scale={0.01}
+        layers-enable={2}
       />
       <group position={[-0.056, 1.247, -2.117]}>
         <RotateAxis axis="y" speed={0.7} rotationType="euler">
@@ -559,6 +560,7 @@ const CastleModel = ({ onCastleClick }) => {
             geometry={nodes.LogoCupid.geometry}
             material={material}
             position={[0.001, 4.18, -0.006]}
+            layers-enable={2}
           />
         </RotateAxis>
       </group>
@@ -573,12 +575,14 @@ const CastleModel = ({ onCastleClick }) => {
           geometry={nodes.heartVid.geometry}
           material={portal}
           position={[0, 1.698, 2.119]}
+          layers-enable={1}
         />
       </Select>
       <mesh
         geometry={nodes.water.geometry}
         material={waterMaterial}
         position={[0, 0.704, 2.406]}
+        layers-enable={2}
       />
       <FountainParticles
         count={80}
@@ -586,6 +590,7 @@ const CastleModel = ({ onCastleClick }) => {
         size={0.03}
         speed={0.65}
         spread={0.3}
+        layers-enable={2}
       />
     </group>
   )

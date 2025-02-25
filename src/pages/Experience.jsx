@@ -9,6 +9,7 @@ import { Pole } from "../assets/models/Pole"
 import { Perf } from "r3f-perf"
 import { Stairs } from "../assets/models/Stairs"
 import { HeartText } from "../assets/models/HeartText"
+import { EffectsTree } from "../components/helpers/EffectsTree"
 // Iframes
 import ScrolIframe from "../assets/models/ScrolIframe"
 import AtmIframe from "../assets/models/AtmIframe"
@@ -164,16 +165,17 @@ const SceneController = React.memo(({ section, cameraRef }) => {
 
   return (
     <>
-      {/* <fog attach="fog" args={["#ffff", 0, 40]} /> */}
+      {/* <fog attach="fog" args={["#ffff", 0, 120]} /> */}
+
       <Environment
-        files="/images/sky_linekotsi_16_HDRI.hdr"
+        files="/images/VinoSky.hdr"
         resolution={256}
-        background={true} // Mantém o HDR como background
-        backgroundBlurriness={0} // Evita blur no background
-        environmentIntensity={0} // Define intensidade zero para a iluminação do environment
-        preset={null} // Remove presets de iluminação
+        background={true}
+        backgroundBlurriness={0}
+        environmentIntensity={0}
+        preset={null}
       />
-      <Environment preset="night" environmentIntensity={0.01} />
+      <Environment preset="night" />
 
       {process.env.NODE_ENV === "production" && <Perf position="top-left" />}
     </>
@@ -182,6 +184,7 @@ const SceneController = React.memo(({ section, cameraRef }) => {
 
 const SceneContent = React.memo(({ activeSection, onSectionChange }) => (
   <>
+    <EffectsTree />
     <Castle activeSection={activeSection} receiveShadow scale={[2, 2, 2]} />
     <Stairs />
     <CloudsD />
