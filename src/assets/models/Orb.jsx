@@ -197,10 +197,10 @@ const Orb = () => {
 
   return (
     <>
-      <group ref={sceneRef} position={[0, 0, 0]} rotation={[0, 0, 0]}>
+      <group ref={sceneRef} position={[0, 0.15, 0]} rotation={[0, 0, 0]}>
         <Float
-          floatIntensity={0.5}
-          speed={4}
+          floatIntensity={0.3}
+          speed={3}
           rotationIntensity={0}
           floatingRange={[-0.1, 0.1]} // Reduzido o range de flutuação
         >
@@ -216,7 +216,7 @@ const Orb = () => {
           selectionLayer={1} // Usa a camada 1 para identificar objetos
           luminanceThreshold={1.1}
           mipmapBlur
-          intensity={40}
+          intensity={6}
           radius={0.3}
         />
       </EffectComposer>

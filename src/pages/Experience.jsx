@@ -166,14 +166,14 @@ const SceneController = React.memo(({ section, cameraRef }) => {
     <>
       {/* <fog attach="fog" args={["#ffff", 0, 40]} /> */}
       <Environment
-        files="/images/sky20.hdr"
+        files="/images/sky_linekotsi_16_HDRI.hdr"
         resolution={256}
         background={true} // Mantém o HDR como background
         backgroundBlurriness={0} // Evita blur no background
         environmentIntensity={0} // Define intensidade zero para a iluminação do environment
         preset={null} // Remove presets de iluminação
       />
-      <Environment preset="sunset" environmentIntensity={0.01} />
+      <Environment preset="night" environmentIntensity={0.01} />
 
       {process.env.NODE_ENV === "production" && <Perf position="top-left" />}
     </>
