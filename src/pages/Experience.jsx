@@ -8,7 +8,7 @@ import { CastleUi } from "../assets/models/CastleUi"
 import { Pole } from "../assets/models/Pole"
 import { Perf } from "r3f-perf"
 import { Stairs } from "../assets/models/Stairs"
-
+import { HeartText } from "../assets/models/HeartText"
 // Iframes
 import ScrolIframe from "../assets/models/ScrolIframe"
 import AtmIframe from "../assets/models/AtmIframe"
@@ -21,6 +21,7 @@ import CloudsD from "../assets/models/CloudsD"
 // import OldCloudsD from "../assets/models/OldCloudsD"
 
 import Modeload from "../components/helpers/Modeload"
+import { HeartText as HeartTextModel } from "../assets/models/HeartText"
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -164,14 +165,16 @@ const SceneController = React.memo(({ section, cameraRef }) => {
   return (
     <>
       {/* <fog attach="fog" args={["#ffff", 0, 40]} /> */}
-      {/* <Environment
-        files="/images/PanoramaV1.hdr"
-        background
-        blur={0.6}
-        envMapIntensity={1.5}
+      <Environment
+        files="/images/sky20.hdr"
         resolution={256}
-      /> */}
-      <Environment preset="warehouse" />
+        background={true} // Mantém o HDR como background
+        backgroundBlurriness={0} // Evita blur no background
+        environmentIntensity={0} // Define intensidade zero para a iluminação do environment
+        preset={null} // Remove presets de iluminação
+      />
+      <Environment preset="sunset" environmentIntensity={0.01} />
+
       {process.env.NODE_ENV === "production" && <Perf position="top-left" />}
     </>
   )
@@ -183,6 +186,7 @@ const SceneContent = React.memo(({ activeSection, onSectionChange }) => (
     <Stairs />
     <CloudsD />
     <Orb />
+    <HeartText />
     <Pole
       position={[-0.8, 0, 5.8]}
       scale={[0.6, 0.6, 0.6]}
