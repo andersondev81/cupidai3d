@@ -328,7 +328,7 @@ main
         map: textures.map,
         roughnessMap: textures.roughnessMap,
         emissiveMap: textures.emissiveMap,
-        emissive: new Color(0xf6d8ff),
+        emissive: new Color(0xf6d8fc),
         emissiveIntensity: 2,
         transparent: false,
         alphaTest: 0.05,
