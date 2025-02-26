@@ -24,6 +24,7 @@ import CloudsD from "../assets/models/CloudsD";
 
 import Modeload from "../components/helpers/Modeload";
 
+
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -101,8 +102,6 @@ const CANVAS_CONFIG = {
 
 const useCameraAnimation = (section, cameraRef) => {
   const { camera } = useThree();
-
-  const [isStarted, setIsStarted] = useState(false);
   const animationRef = useRef({
     progress: 0,
     isActive: false,
@@ -178,8 +177,6 @@ const useCameraAnimation = (section, cameraRef) => {
       animationRef.current.isActive = false;
     };
   }, [section, camera, cameraRef]);
-
-  return isStarted;
 };
 
 // Scene Controller component with environment controls
@@ -228,8 +225,6 @@ const SceneController = React.memo(({ section, cameraRef }) => {
 
   return (
     <>
-      {/* <fog attach="fog" args={["#ffff", 0, 120]} /> */}
-
       <Environment
         files={environmentFile}
         resolution={256}
@@ -247,34 +242,69 @@ const SceneController = React.memo(({ section, cameraRef }) => {
         />
       )}
 
-      {process.env.NODE_ENV === "production" && <Perf position="top-left" />}
+      {process.env.NODE_ENV !== "production" && <Perf position="top-left" />}
     </>
   );
 });
 
-const SceneContent = React.memo(({ activeSection, onSectionChange }) => (
+// Split the scene content into smaller components for better performance
+const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
   <>
-    <EffectsTree />
     <Castle activeSection={activeSection} receiveShadow scale={[2, 2, 2]} />
-    <Stairs />
-    <CloudsD />
-    <Orb />
-    <HeartText />
     <Pole
       position={[-0.8, 0, 5.8]}
       scale={[0.6, 0.6, 0.6]}
       onSectionChange={onSectionChange}
     />
-    {/* Iframes */}
+  </>
+));
+
+const SecondaryContent = React.memo(() => (
+  <>
+    <CloudsD />
+    <Orb />
+    <Stairs />
+    <HeartText />
+  </>
+));
+
+const TertiaryContent = React.memo(() => (
+  <>
     <ScrolIframe />
     <AtmIframe />
     <MirrorIframe />
   </>
 ));
 
+const SceneContent = React.memo(({ activeSection, onSectionChange }) => {
+  const [loadingStage, setLoadingStage] = useState(0);
+
+  useEffect(() => {
+    const primaryTimer = setTimeout(() => setLoadingStage(1), 100);
+    const secondaryTimer = setTimeout(() => setLoadingStage(2), 1000);
+
+    return () => {
+      clearTimeout(primaryTimer);
+      clearTimeout(secondaryTimer);
+    };
+  }, []);
+
+  return (
+    <>
+      <EffectsTree />
+      <PrimaryContent
+        activeSection={activeSection}
+        onSectionChange={onSectionChange}
+      />
+      {loadingStage >= 1 && <SecondaryContent />}
+      {loadingStage >= 2 && <TertiaryContent />}
+    </>
+  );
+});
+
 // Main Experience Component
 const Experience = () => {
-  const [isStarted, setIsStarted] = useState(false); // Adiciona o estado isStarted
+  const [isStarted, setIsStarted] = useState(false);
   const [currentSection, setCurrentSection] = useState(0);
   const [activeSection, setActiveSection] = useState("intro");
   const cameraRef = useRef(null);
@@ -327,4 +357,5 @@ const Experience = () => {
     </div>
   );
 };
+
 export default Experience;
