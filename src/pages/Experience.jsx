@@ -1,42 +1,42 @@
-import { Environment } from "@react-three/drei";
-import { Canvas, useThree } from "@react-three/fiber";
-import { useControls } from "leva";
-import { Perf } from "r3f-perf";
-import React, { Suspense, useEffect, useRef, useState } from "react";
-import * as THREE from "three";
-import Castle from "../assets/models/Castle";
-import { CastleUi } from "../assets/models/CastleUi";
-import { HeartText } from "../assets/models/HeartText";
-import { Pole } from "../assets/models/Pole";
-import { Stairs } from "../assets/models/Stairs";
-import { CAMERA_CONFIG } from "../components/cameraConfig";
-import { EffectsTree } from "../components/helpers/EffectsTree";
+import { Environment } from "@react-three/drei"
+import { Canvas, useThree } from "@react-three/fiber"
+import { useControls } from "leva"
+import { Perf } from "r3f-perf"
+import React, { Suspense, useEffect, useRef, useState } from "react"
+import * as THREE from "three"
+import Castle from "../assets/models/Castle"
+import { CastleUi } from "../assets/models/CastleUi"
+import { HeartText } from "../assets/models/HeartText"
+import { Pole } from "../assets/models/Pole"
+import { Stairs } from "../assets/models/Stairs"
+import { CAMERA_CONFIG } from "../components/cameraConfig"
+import { EffectsTree } from "../components/helpers/EffectsTree"
 // Iframes
-import AtmIframe from "../assets/models/AtmIframe";
-import MirrorIframe from "../assets/models/MirrorIframe";
-import ScrolIframe from "../assets/models/ScrolIframe";
+import AtmIframe from "../assets/models/AtmIframe"
+import MirrorIframe from "../assets/models/MirrorIframe"
+import ScrolIframe from "../assets/models/ScrolIframe"
 
-import Orb from "../assets/models/Orb";
+import Orb from "../assets/models/Orb"
 // import OldOrb from "../assets/models/OldOrb"
 
-import CloudsD from "../assets/models/CloudsD";
+import CloudsD from "../assets/models/CloudsD"
 // import OldCloudsD from "../assets/models/OldCloudsD"
 
-import Modeload from "../components/helpers/Modeload";
+import Modeload from "../components/helpers/Modeload"
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
   constructor(props) {
-    super(props);
-    this.state = { hasError: false, error: null };
+    super(props)
+    this.state = { hasError: false, error: null }
   }
 
   static getDerivedStateFromError(error) {
-    return { hasError: true, error };
+    return { hasError: true, error }
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error("3D Scene Error:", error, errorInfo);
+    console.error("3D Scene Error:", error, errorInfo)
   }
 
   render() {
@@ -53,9 +53,9 @@ class ErrorBoundary extends React.Component {
             </button>
           </div>
         </div>
-      );
+      )
     }
-    return this.props.children;
+    return this.props.children
   }
 }
 
@@ -64,22 +64,22 @@ const ENVIRONMENT_OPTIONS = {
   "Sky Linekotsi": "/images/sky_linekotsi_16_HDRI.hdr",
   "Sky 20": "/images/sky20.hdr",
   "Vino Sky": "/images/VinoSky.hdr",
-};
+}
 
 // Environment presets
 const ENVIRONMENT_PRESETS = {
-  "None": null,
-  "Apartment": "apartment",
-  "City": "city",
-  "Dawn": "dawn",
-  "Forest": "forest",
-  "Lobby": "lobby",
-  "Night": "night",
-  "Park": "park",
-  "Studio": "studio",
-  "Sunset": "sunset",
-  "Warehouse": "warehouse",
-};
+  None: null,
+  Apartment: "apartment",
+  City: "city",
+  Dawn: "dawn",
+  Forest: "forest",
+  Lobby: "lobby",
+  Night: "night",
+  Park: "park",
+  Studio: "studio",
+  Sunset: "sunset",
+  Warehouse: "warehouse",
+}
 
 // Optimized Canvas configuration
 const CANVAS_CONFIG = {
@@ -90,32 +90,33 @@ const CANVAS_CONFIG = {
     depth: true,
     alpha: false,
   },
-  dpr: [1, 1.5], // Limit pixel ratio for better performance
+  dpr: [1, 1.5],
   camera: {
     fov: 50,
     near: 0.1,
     far: 1000,
     position: [15.9, 6.8, -11.4],
   },
-};
+  shadows: false, // Disable shadows in the renderer
+}
 
 const useCameraAnimation = (section, cameraRef) => {
-  const { camera } = useThree();
+  const { camera } = useThree()
 
-  const [isStarted, setIsStarted] = useState(false);
+  const [isStarted, setIsStarted] = useState(false)
   const animationRef = useRef({
     progress: 0,
     isActive: false,
     startPosition: new THREE.Vector3(),
     startFov: 50,
-  });
+  })
 
   useEffect(() => {
-    if (!camera) return;
+    if (!camera) return
 
-    const sectionKey = section in CAMERA_CONFIG.sections ? section : "intro";
-    const config = CAMERA_CONFIG.sections[sectionKey];
-    const { intensity, curve } = CAMERA_CONFIG.transitions;
+    const sectionKey = section in CAMERA_CONFIG.sections ? section : "intro"
+    const config = CAMERA_CONFIG.sections[sectionKey]
+    const { intensity, curve } = CAMERA_CONFIG.transitions
 
     animationRef.current = {
       ...animationRef.current,
@@ -123,69 +124,69 @@ const useCameraAnimation = (section, cameraRef) => {
       startPosition: camera.position.clone(),
       startFov: camera.fov,
       config,
-    };
+    }
 
-    let animationFrameId;
+    let animationFrameId
 
     const animate = () => {
-      if (!animationRef.current.isActive) return;
+      if (!animationRef.current.isActive) return
 
-      animationRef.current.progress += intensity;
-      const t = Math.min(animationRef.current.progress, 1);
-      const { config, startPosition, startFov } = animationRef.current;
+      animationRef.current.progress += intensity
+      const t = Math.min(animationRef.current.progress, 1)
+      const { config, startPosition, startFov } = animationRef.current
 
-      const curveValue = curve(t);
-      const offsetZ = curveValue * config.transition.zOffset;
+      const curveValue = curve(t)
+      const offsetZ = curveValue * config.transition.zOffset
       const targetFovOffset =
-        curveValue * config.fov * config.transition.fovMultiplier;
+        curveValue * config.fov * config.transition.fovMultiplier
 
       const targetPosition = new THREE.Vector3()
         .lerpVectors(startPosition, config.position, t)
-        .add(new THREE.Vector3(0, 0, offsetZ));
+        .add(new THREE.Vector3(0, 0, offsetZ))
 
       const targetFov =
-        THREE.MathUtils.lerp(startFov, config.fov, t) - targetFovOffset;
+        THREE.MathUtils.lerp(startFov, config.fov, t) - targetFovOffset
 
-      camera.position.copy(targetPosition);
-      camera.fov = targetFov;
-      camera.updateProjectionMatrix();
+      camera.position.copy(targetPosition)
+      camera.fov = targetFov
+      camera.updateProjectionMatrix()
 
       if (t < 1) {
-        animationFrameId = requestAnimationFrame(animate);
+        animationFrameId = requestAnimationFrame(animate)
       } else {
-        animationRef.current.isActive = false;
-        animationRef.current.progress = 0;
+        animationRef.current.isActive = false
+        animationRef.current.progress = 0
       }
-    };
+    }
 
-    animate();
+    animate()
 
     if (cameraRef) {
       cameraRef.current = {
         goToHome: () => {
-          camera.position.set(15.9, 6.8, -11.4);
-          camera.updateProjectionMatrix();
-          animationRef.current.isActive = false;
-          animationRef.current.progress = 0;
+          camera.position.set(15.9, 6.8, -11.4)
+          camera.updateProjectionMatrix()
+          animationRef.current.isActive = false
+          animationRef.current.progress = 0
         },
-      };
+      }
     }
 
     return () => {
       if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
+        cancelAnimationFrame(animationFrameId)
       }
-      animationRef.current.isActive = false;
-    };
-  }, [section, camera, cameraRef]);
+      animationRef.current.isActive = false
+    }
+  }, [section, camera, cameraRef])
 
-  return isStarted;
-};
+  return isStarted
+}
 
 // Scene Controller component with environment controls
 const SceneController = React.memo(({ section, cameraRef }) => {
-  useCameraAnimation(section, cameraRef);
-  const { scene } = useThree();
+  useCameraAnimation(section, cameraRef)
+  const { scene } = useThree()
 
   // Environment control using Leva
   const {
@@ -194,7 +195,7 @@ const SceneController = React.memo(({ section, cameraRef }) => {
     preset,
     presetIntensity,
     backgroundBlur,
-    environmentIntensity
+    environmentIntensity,
   } = useControls(
     "Environment",
     {
@@ -210,21 +211,21 @@ const SceneController = React.memo(({ section, cameraRef }) => {
       preset: {
         value: "Night",
         options: Object.keys(ENVIRONMENT_PRESETS),
-        label: "Lighting Preset"
+        label: "Lighting Preset",
       },
     },
     { collapsed: false }
-  );
+  )
 
   // Get the file path for the selected environment
-  const environmentFile = ENVIRONMENT_OPTIONS[environment];
-  const presetValue = ENVIRONMENT_PRESETS[preset];
+  const environmentFile = ENVIRONMENT_OPTIONS[environment]
+  const presetValue = ENVIRONMENT_PRESETS[preset]
 
   useEffect(() => {
     if (!showBackground) {
-      scene.background = null;
+      scene.background = null
     }
-  }, [showBackground, scene]);
+  }, [showBackground, scene])
 
   return (
     <>
@@ -249,13 +250,13 @@ const SceneController = React.memo(({ section, cameraRef }) => {
 
       {process.env.NODE_ENV === "production" && <Perf position="top-left" />}
     </>
-  );
-});
+  )
+})
 
 const SceneContent = React.memo(({ activeSection, onSectionChange }) => (
   <>
     <EffectsTree />
-    <Castle activeSection={activeSection} receiveShadow scale={[2, 2, 2]} />
+    <Castle activeSection={activeSection} scale={[2, 2, 2]} />
     <Stairs />
     <CloudsD />
     <Orb />
@@ -270,23 +271,23 @@ const SceneContent = React.memo(({ activeSection, onSectionChange }) => (
     <AtmIframe />
     <MirrorIframe />
   </>
-));
+))
 
 // Main Experience Component
 const Experience = () => {
-  const [isStarted, setIsStarted] = useState(false); // Adiciona o estado isStarted
-  const [currentSection, setCurrentSection] = useState(0);
-  const [activeSection, setActiveSection] = useState("intro");
-  const cameraRef = useRef(null);
+  const [isStarted, setIsStarted] = useState(false) // Adiciona o estado isStarted
+  const [currentSection, setCurrentSection] = useState(0)
+  const [activeSection, setActiveSection] = useState("intro")
+  const cameraRef = useRef(null)
 
   const handleSectionChange = (index, sectionName) => {
-    setCurrentSection(index);
-    setActiveSection(sectionName);
-  };
+    setCurrentSection(index)
+    setActiveSection(sectionName)
+  }
 
   const handleStart = () => {
-    setIsStarted(true);
-  };
+    setIsStarted(true)
+  }
 
   if (!isStarted) {
     return (
@@ -295,7 +296,7 @@ const Experience = () => {
           <Modeload onStart={handleStart} />
         </Canvas>
       </div>
-    );
+    )
   }
 
   return (
@@ -325,6 +326,6 @@ const Experience = () => {
         </div>
       </ErrorBoundary>
     </div>
-  );
-};
-export default Experience;
+  )
+}
+export default Experience

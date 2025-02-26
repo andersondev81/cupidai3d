@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<!-- saved from url=(0022)http://localhost:5173/ -->
+<html lang="en" data-lt-installed="true"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="module">
+import RefreshRuntime from "/@react-refresh"
+RefreshRuntime.injectIntoGlobalHook(window)
+window.$RefreshReg$ = () => {}
+window.$RefreshSig$ = () => (type) => type
+window.__vite_plugin_react_preamble_installed__ = true
+</script>
+
+    <script type="module" src="./Vite + React_files/client"></script>
+
+    
+    <link rel="icon" type="image/jpeg" href="http://localhost:5173/images/logo.jpeg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vite + React</title>
+  <style type="text/css" data-vite-dev-id="E:/cupidai/cupidai3d/src/index.css">/* Importando as diretrizes do Tailwind CSS */
+/* ! tailwindcss v3.3.5 | MIT License | https://tailwindcss.com */
+/*
+1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)
+2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)
+*/
+*,
+::before,
+::after {
+  box-sizing: border-box; /* 1 */
+  border-width: 0; /* 2 */
+  border-style: solid; /* 2 */
+  border-color: #e5e7eb; /* 2 */
+}
+::before,
+::after {
+  --tw-content: '';
+}
+/*
+1. Use a consistent sensible line-height in all browsers.
+2. Prevent adjustments of font size after orientation changes in iOS.
+3. Use a more readable tab size.
+4. Use the user's configured `sans` font-family by default.
+5. Use the user's configured `sans` font-feature-settings by default.
+6. Use the user's configured `sans` font-variation-settings by default.
+*/
+html {
+  line-height: 1.5; /* 1 */
+  -webkit-text-size-adjust: 100%; /* 2 */
+  -moz-tab-size: 4; /* 3 */
+  -o-tab-size: 4;
+     tab-size: 4; /* 3 */
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; /* 4 */
+  font-feature-settings: normal; /* 5 */
+  font-variation-settings: normal; /* 6 */
+}
+/*
+1. Remove the margin in all browsers.
+2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.
+*/
+body {
+  margin: 0; /* 1 */
+  line-height: inherit; /* 2 */
+}
+/*
+1. Add the correct height in Firefox.
+2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)
+3. Ensure horizontal rules are visible by default.
+*/
+hr {
+  height: 0; /* 1 */
+  color: inherit; /* 2 */
+  border-top-width: 1px; /* 3 */
+}
+/*
+Add the correct text decoration in Chrome, Edge, and Safari.
+*/
+abbr:where([title]) {
+  -webkit-text-decoration: underline dotted;
+          text-decoration: underline dotted;
+}
+/*
+Remove the default font size and weight for headings.
+*/
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: inherit;
+  font-weight: inherit;
+}
+/*
+Reset links to optimize for opt-in styling instead of opt-out.
+*/
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+/*
+Add the correct font weight in Edge and Safari.
+*/
+b,
+strong {
+  font-weight: bolder;
+}
+/*
+1. Use the user's configured `mono` font family by default.
+2. Correct the odd `em` font sizing in all browsers.
+*/
+code,
+kbd,
+samp,
+pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; /* 1 */
+  font-size: 1em; /* 2 */
+}
+/*
+Add the correct font size in all browsers.
+*/
+small {
+  font-size: 80%;
+}
+/*
+Prevent `sub` and `sup` elements from affecting the line height in all browsers.
+*/
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+sub {
+  bottom: -0.25em;
+}
+sup {
+  top: -0.5em;
+}
+/*
+1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)
+2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)
+3. Remove gaps between table borders by default.
+*/
+table {
+  text-indent: 0; /* 1 */
+  border-color: inherit; /* 2 */
+  border-collapse: collapse; /* 3 */
+}
+/*
+1. Change the font styles in all browsers.
+2. Remove the margin in Firefox and Safari.
+3. Remove default padding in all browsers.
+*/
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit; /* 1 */
+  font-feature-settings: inherit; /* 1 */
+  font-variation-settings: inherit; /* 1 */
+  font-size: 100%; /* 1 */
+  font-weight: inherit; /* 1 */
+  line-height: inherit; /* 1 */
+  color: inherit; /* 1 */
+  margin: 0; /* 2 */
+  padding: 0; /* 3 */
+}
+/*
+Remove the inheritance of text transform in Edge and Firefox.
+*/
+button,
+select {
+  text-transform: none;
+}
+/*
+1. Correct the inability to style clickable types in iOS and Safari.
+2. Remove default button styles.
+*/
+button,
+[type='button'],
+[type='reset'],
+[type='submit'] {
+  -webkit-appearance: button; /* 1 */
+  background-color: transparent; /* 2 */
+  background-image: none; /* 2 */
+}
+/*
+Use the modern Firefox focus style for all focusable elements.
+*/
+:-moz-focusring {
+  outline: auto;
+}
+/*
+Remove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)
+*/
+:-moz-ui-invalid {
+  box-shadow: none;
+}
+/*
+Add the correct vertical alignment in Chrome and Firefox.
+*/
+progress {
+  vertical-align: baseline;
+}
+/*
+Correct the cursor style of increment and decrement buttons in Safari.
+*/
+::-webkit-inner-spin-button,
+::-webkit-outer-spin-button {
+  height: auto;
+}
+/*
+1. Correct the odd appearance in Chrome and Safari.
+2. Correct the outline style in Safari.
+*/
+[type='search'] {
+  -webkit-appearance: textfield; /* 1 */
+  outline-offset: -2px; /* 2 */
+}
+/*
+Remove the inner padding in Chrome and Safari on macOS.
+*/
+::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+/*
+1. Correct the inability to style clickable types in iOS and Safari.
+2. Change font properties to `inherit` in Safari.
+*/
+::-webkit-file-upload-button {
+  -webkit-appearance: button; /* 1 */
+  font: inherit; /* 2 */
+}
+/*
+Add the correct display in Chrome and Safari.
+*/
+summary {
+  display: list-item;
+}
+/*
+Removes the default spacing and border for appropriate elements.
+*/
+blockquote,
+dl,
+dd,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+hr,
+figure,
+p,
+pre {
+  margin: 0;
+}
+fieldset {
+  margin: 0;
+  padding: 0;
+}
+legend {
+  padding: 0;
+}
+ol,
+ul,
+menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+/*
+Reset default styling for dialogs.
+*/
+dialog {
+  padding: 0;
+}
+/*
+Prevent resizing textareas horizontally by default.
+*/
+textarea {
+  resize: vertical;
+}
+/*
+1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)
+2. Set the default placeholder color to the user's configured gray 400 color.
+*/
+input::-moz-placeholder, textarea::-moz-placeholder {
+  opacity: 1; /* 1 */
+  color: #9ca3af; /* 2 */
+}
+input::placeholder,
+textarea::placeholder {
+  opacity: 1; /* 1 */
+  color: #9ca3af; /* 2 */
+}
+/*
+Set the default cursor for buttons.
+*/
+button,
+[role="button"] {
+  cursor: pointer;
+}
+/*
+Make sure disabled buttons don't get the pointer cursor.
+*/
+:disabled {
+  cursor: default;
+}
+/*
+1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)
+2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)
+   This can trigger a poorly considered lint error in some tools but is included by design.
+*/
+img,
+svg,
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
+  display: block; /* 1 */
+  vertical-align: middle; /* 2 */
+}
+/*
+Constrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)
+*/
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+/* Make elements with the HTML hidden attribute stay hidden by default */
+[hidden] {
+  display: none;
+}
+*, ::before, ::after {
+  --tw-border-spacing-x: 0;
+  --tw-border-spacing-y: 0;
+  --tw-translate-x: 0;
+  --tw-translate-y: 0;
+  --tw-rotate: 0;
+  --tw-skew-x: 0;
+  --tw-skew-y: 0;
+  --tw-scale-x: 1;
+  --tw-scale-y: 1;
+  --tw-pan-x:  ;
+  --tw-pan-y:  ;
+  --tw-pinch-zoom:  ;
+  --tw-scroll-snap-strictness: proximity;
+  --tw-gradient-from-position:  ;
+  --tw-gradient-via-position:  ;
+  --tw-gradient-to-position:  ;
+  --tw-ordinal:  ;
+  --tw-slashed-zero:  ;
+  --tw-numeric-figure:  ;
+  --tw-numeric-spacing:  ;
+  --tw-numeric-fraction:  ;
+  --tw-ring-inset:  ;
+  --tw-ring-offset-width: 0px;
+  --tw-ring-offset-color: #fff;
+  --tw-ring-color: rgb(59 130 246 / 0.5);
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-shadow: 0 0 #0000;
+  --tw-shadow-colored: 0 0 #0000;
+  --tw-blur:  ;
+  --tw-brightness:  ;
+  --tw-contrast:  ;
+  --tw-grayscale:  ;
+  --tw-hue-rotate:  ;
+  --tw-invert:  ;
+  --tw-saturate:  ;
+  --tw-sepia:  ;
+  --tw-drop-shadow:  ;
+  --tw-backdrop-blur:  ;
+  --tw-backdrop-brightness:  ;
+  --tw-backdrop-contrast:  ;
+  --tw-backdrop-grayscale:  ;
+  --tw-backdrop-hue-rotate:  ;
+  --tw-backdrop-invert:  ;
+  --tw-backdrop-opacity:  ;
+  --tw-backdrop-saturate:  ;
+  --tw-backdrop-sepia:  ;
+}
+::backdrop {
+  --tw-border-spacing-x: 0;
+  --tw-border-spacing-y: 0;
+  --tw-translate-x: 0;
+  --tw-translate-y: 0;
+  --tw-rotate: 0;
+  --tw-skew-x: 0;
+  --tw-skew-y: 0;
+  --tw-scale-x: 1;
+  --tw-scale-y: 1;
+  --tw-pan-x:  ;
+  --tw-pan-y:  ;
+  --tw-pinch-zoom:  ;
+  --tw-scroll-snap-strictness: proximity;
+  --tw-gradient-from-position:  ;
+  --tw-gradient-via-position:  ;
+  --tw-gradient-to-position:  ;
+  --tw-ordinal:  ;
+  --tw-slashed-zero:  ;
+  --tw-numeric-figure:  ;
+  --tw-numeric-spacing:  ;
+  --tw-numeric-fraction:  ;
+  --tw-ring-inset:  ;
+  --tw-ring-offset-width: 0px;
+  --tw-ring-offset-color: #fff;
+  --tw-ring-color: rgb(59 130 246 / 0.5);
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-shadow: 0 0 #0000;
+  --tw-shadow-colored: 0 0 #0000;
+  --tw-blur:  ;
+  --tw-brightness:  ;
+  --tw-contrast:  ;
+  --tw-grayscale:  ;
+  --tw-hue-rotate:  ;
+  --tw-invert:  ;
+  --tw-saturate:  ;
+  --tw-sepia:  ;
+  --tw-drop-shadow:  ;
+  --tw-backdrop-blur:  ;
+  --tw-backdrop-brightness:  ;
+  --tw-backdrop-contrast:  ;
+  --tw-backdrop-grayscale:  ;
+  --tw-backdrop-hue-rotate:  ;
+  --tw-backdrop-invert:  ;
+  --tw-backdrop-opacity:  ;
+  --tw-backdrop-saturate:  ;
+  --tw-backdrop-sepia:  ;
+}
+.container {
+  width: 100%;
+}
+@media (min-width: 640px) {
+  .container {
+    max-width: 640px;
+  }
+}
+@media (min-width: 768px) {
+  .container {
+    max-width: 768px;
+  }
+}
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1024px;
+  }
+}
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1280px;
+  }
+}
+@media (min-width: 1536px) {
+  .container {
+    max-width: 1536px;
+  }
+}
+.pointer-events-none {
+  pointer-events: none;
+}
+.pointer-events-auto {
+  pointer-events: auto;
+}
+.static {
+  position: static;
+}
+.fixed {
+  position: fixed;
+}
+.absolute {
+  position: absolute;
+}
+.relative {
+  position: relative;
+}
+.inset-0 {
+  inset: 0px;
+}
+.inset-4 {
+  inset: 1rem;
+}
+.inset-y-0 {
+  top: 0px;
+  bottom: 0px;
+}
+.left-0 {
+  left: 0px;
+}
+.right-4 {
+  right: 1rem;
+}
+.top-4 {
+  top: 1rem;
+}
+.z-0 {
+  z-index: 0;
+}
+.z-10 {
+  z-index: 10;
+}
+.z-50 {
+  z-index: 50;
+}
+.z-\[60\] {
+  z-index: 60;
+}
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+.mb-4 {
+  margin-bottom: 1rem;
+}
+.mt-16 {
+  margin-top: 4rem;
+}
+.flex {
+  display: flex;
+}
+.grid {
+  display: grid;
+}
+.h-32 {
+  height: 8rem;
+}
+.h-\[2px\] {
+  height: 2px;
+}
+.h-full {
+  height: 100%;
+}
+.h-screen {
+  height: 100vh;
+}
+.w-32 {
+  width: 8rem;
+}
+.w-full {
+  width: 100%;
+}
+.min-w-\[320px\] {
+  min-width: 320px;
+}
+.max-w-4xl {
+  max-width: 56rem;
+}
+.translate-y-0 {
+  --tw-translate-y: 0px;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+.translate-y-8 {
+  --tw-translate-y: 2rem;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+.transform {
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+.cursor-pointer {
+  cursor: pointer;
+}
+.resize {
+  resize: both;
+}
+.flex-col {
+  flex-direction: column;
+}
+.items-center {
+  align-items: center;
+}
+.justify-center {
+  justify-content: center;
+}
+.gap-4 {
+  gap: 1rem;
+}
+.gap-6 {
+  gap: 1.5rem;
+}
+.gap-8 {
+  gap: 2rem;
+}
+.space-y-12 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(3rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(3rem * var(--tw-space-y-reverse));
+}
+.space-y-4 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(1rem * var(--tw-space-y-reverse));
+}
+.space-y-6 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(1.5rem * var(--tw-space-y-reverse));
+}
+.overflow-hidden {
+  overflow: hidden;
+}
+.overflow-y-auto {
+  overflow-y: auto;
+}
+.rounded {
+  border-radius: 0.25rem;
+}
+.rounded-2xl {
+  border-radius: 1rem;
+}
+.rounded-full {
+  border-radius: 9999px;
+}
+.rounded-lg {
+  border-radius: 0.5rem;
+}
+.rounded-md {
+  border-radius: 0.375rem;
+}
+.rounded-xl {
+  border-radius: 0.75rem;
+}
+.border {
+  border-width: 1px;
+}
+.border-pink-100 {
+  --tw-border-opacity: 1;
+  border-color: rgb(252 231 243 / var(--tw-border-opacity));
+}
+.bg-black\/30 {
+  background-color: rgb(0 0 0 / 0.3);
+}
+.bg-blue-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(59 130 246 / var(--tw-bg-opacity));
+}
+.bg-gray-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(107 114 128 / var(--tw-bg-opacity));
+}
+.bg-gray-900 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(17 24 39 / var(--tw-bg-opacity));
+}
+.bg-green-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(34 197 94 / var(--tw-bg-opacity));
+}
+.bg-pink-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(236 72 153 / var(--tw-bg-opacity));
+}
+.bg-white {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
+}
+.bg-white\/10 {
+  background-color: rgb(255 255 255 / 0.1);
+}
+.bg-white\/80 {
+  background-color: rgb(255 255 255 / 0.8);
+}
+.bg-white\/90 {
+  background-color: rgb(255 255 255 / 0.9);
+}
+.bg-white\/95 {
+  background-color: rgb(255 255 255 / 0.95);
+}
+.bg-gradient-to-b {
+  background-image: linear-gradient(to bottom, var(--tw-gradient-stops));
+}
+.from-pink-50 {
+  --tw-gradient-from: #fdf2f8 var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(253 242 248 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+.to-white {
+  --tw-gradient-to: #fff var(--tw-gradient-to-position);
+}
+.p-12 {
+  padding: 3rem;
+}
+.p-2 {
+  padding: 0.5rem;
+}
+.p-4 {
+  padding: 1rem;
+}
+.p-6 {
+  padding: 1.5rem;
+}
+.p-8 {
+  padding: 2rem;
+}
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+.px-6 {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+.px-8 {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+.py-2 {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+.py-3 {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+.py-4 {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+.py-8 {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+.pb-60 {
+  padding-bottom: 15rem;
+}
+.text-center {
+  text-align: center;
+}
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+.text-3xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+}
+.text-4xl {
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+}
+.text-5xl {
+  font-size: 3rem;
+  line-height: 1;
+}
+.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+.text-xl {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+.font-bold {
+  font-weight: 700;
+}
+.font-medium {
+  font-weight: 500;
+}
+.font-semibold {
+  font-weight: 600;
+}
+.leading-relaxed {
+  line-height: 1.625;
+}
+.text-black {
+  --tw-text-opacity: 1;
+  color: rgb(0 0 0 / var(--tw-text-opacity));
+}
+.text-gray-700 {
+  --tw-text-opacity: 1;
+  color: rgb(55 65 81 / var(--tw-text-opacity));
+}
+.text-gray-800 {
+  --tw-text-opacity: 1;
+  color: rgb(31 41 55 / var(--tw-text-opacity));
+}
+.text-pink-400 {
+  --tw-text-opacity: 1;
+  color: rgb(244 114 182 / var(--tw-text-opacity));
+}
+.text-pink-500 {
+  --tw-text-opacity: 1;
+  color: rgb(236 72 153 / var(--tw-text-opacity));
+}
+.text-pink-600 {
+  --tw-text-opacity: 1;
+  color: rgb(219 39 119 / var(--tw-text-opacity));
+}
+.text-stone-100 {
+  --tw-text-opacity: 1;
+  color: rgb(245 245 244 / var(--tw-text-opacity));
+}
+.text-white {
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+.opacity-0 {
+  opacity: 0;
+}
+.opacity-100 {
+  opacity: 1;
+}
+.shadow {
+  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+.shadow-lg {
+  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+.shadow-md {
+  --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+.backdrop-blur-md {
+  --tw-backdrop-blur: blur(12px);
+  -webkit-backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+          backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+}
+.transition {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-backdrop-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.transition-colors {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.transition-opacity {
+  transition-property: opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.duration-1000 {
+  transition-duration: 1000ms;
+}
+.duration-300 {
+  transition-duration: 300ms;
+}
+.duration-500 {
+  transition-duration: 500ms;
+}
+.ease-out {
+  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* Definindo as fontes com fallback para maior compatibilidade */
+@font-face {
+  font-family: "Open Sans";
+  src: url("/fonts/OpenSans-Regular.ttf") format("woff2"),
+    url("/fonts/OpenSans-Regular.woff") format("woff"),
+    url("/fonts/OpenSans-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("/fonts/OpenSans-Italic.woff2") format("woff2"),
+    url("/fonts/OpenSans-Italic.woff") format("woff"),
+    url("/fonts/OpenSans-Italic.ttf") format("truetype");
+  font-weight: normal;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("/fonts/OpenSans-Bold.ttf") format("woff2"),
+    url("/fonts/OpenSans-Bold.ttf") format("woff"),
+    url("/fonts/OpenSans-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("/fonts/OpenSans-SemiBold.ttf") format("woff2"),
+    url("/fonts/OpenSans-SemiBold.woff2") format("woff"),
+    url("/fonts/OpenSans-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+/* Estilos globais para o HTML */
+html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: #f0f0f0; /* Cor de fundo para as laterais */
+}
+
+/* Estilos gerais para o corpo do site */
+body {
+  margin: 0 auto; /* Centraliza o conteúdo */
+  padding: 0; /* Remove espaços internos */
+  /* Limita a largura máxima do conteúdo */
+  width: 100%; /* Ajusta responsivamente */
+  height: 100%;
+  box-sizing: border-box; /* Inclui padding e bordas no tamanho total */
+  font-family: "Open Sans", sans-serif; /* Definindo a fonte global */
+  touch-action: none;
+  overscroll-behavior-y: none;
+  margin: 0;
+  background-image: linear-gradient(0deg, #d9afd9 0%, #97d9e1 100%);
+}
+
+/* Estilos para os títulos */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Open Sans", sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Tamanhos de fonte para os títulos */
+h1 {
+  font-size: 32px;
+}
+h2 {
+  font-size: 28px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 20px;
+}
+h5 {
+  font-size: 18px;
+}
+h6 {
+  font-size: 16px;
+}
+
+/* Estilos para parágrafos, spans e divs */
+p,
+span,
+div {
+  font-family: "Open Sans", sans-serif;
+  font-weight: normal;
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: 0.2px;
+}
+
+/* Estilos para links e botões */
+a,
+button {
+  font-family: "Open Sans", sans-serif;
+  font-weight: bold;
+}
+
+/* Estilos para o botão */
+button {
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* Efeitos de hover e foco no botão */
+button:hover {
+  background-color: transparent;
+}
+
+button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 121, 107, 0.5);
+}
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
+canvas {
+  touch-action: none;
+}
+
+.atm-screen {
+  width: 1024px; /* Ajuste para o tamanho que você precisa */
+  height: 670px; /* Ajuste para o tamanho que você precisa */
+  overflow: hidden;
+}
+
+.atm-screen iframe {
+  width: 1024px; /* Mesmo tamanho do wrapper */
+  height: 670px; /* Mesmo tamanho do wrapper */
+  border: none;
+  border-radius: 20px;
+  background: #ffffff;
+}
+.atm-screen iframe::-webkit-scrollbar {
+  display: none;
+}
+
+/* Garante que o conteúdo do iframe também não tenha scrollbar */
+.atm-screen iframe html,
+.atm-screen iframe body {
+  overflow: hidden;
+}
+.hover\:bg-blue-600:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(37 99 235 / var(--tw-bg-opacity));
+}
+.hover\:bg-gray-600:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(75 85 99 / var(--tw-bg-opacity));
+}
+.hover\:bg-green-600:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(22 163 74 / var(--tw-bg-opacity));
+}
+.hover\:bg-pink-100:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(252 231 243 / var(--tw-bg-opacity));
+}
+.hover\:bg-pink-600:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(219 39 119 / var(--tw-bg-opacity));
+}
+.hover\:bg-white:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
+}
+.hover\:text-pink-700:hover {
+  --tw-text-opacity: 1;
+  color: rgb(190 24 93 / var(--tw-text-opacity));
+}
+.hover\:shadow-pink-300:hover {
+  --tw-shadow-color: #f9a8d4;
+  --tw-shadow: var(--tw-shadow-colored);
+}
+.focus\:outline-none:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+.focus\:ring-2:focus {
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+}
+.focus\:ring-white\/50:focus {
+  --tw-ring-color: rgb(255 255 255 / 0.5);
+}
+@media (min-width: 768px) {
+  .md\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .md\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+</style><style></style></head>
+  <body>
+    <div id="root"><div class="relative w-full h-screen"><div class="absolute inset-0 z-0"><div class="w-full h-full" style="position: relative; width: 100%; height: 100%; overflow: hidden; pointer-events: auto; touch-action: none; user-select: none;" data-camera-controls-version="2.5.0"><div style="width: 100%; height: 100%;"><canvas style="display: block; width: 1287.33px; height: 1387.33px;" data-engine="three.js r153" width="1931" height="2081"></canvas></div></div></div><div class="absolute inset-0 z-10 pointer-events-none"><div class="w-full h-full"><main class="relative h-full w-full"><section class="absolute inset-4 flex flex-col justify-center text-center transition-opacity duration-1000  opacity-0 pointer-events-none"></section><section class="absolute inset-4 flex flex-col justify-center text-center transition-opacity duration-1000  opacity-0 pointer-events-none"><div class="flex flex-col items-center gap-6"><h1 class="text-4xl font-bold text-stone-100">AI Dating Coach</h1><div class="flex gap-4"><button class="flex items-center justify-center rounded-md px-6 py-3 transition-all bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto">Back to Main</button></div></div></section><section class="absolute inset-4 flex flex-col justify-center text-center transition-opacity duration-1000  opacity-0 pointer-events-none"><div class="flex flex-col items-center gap-6"><h1 class="text-4xl font-bold text-stone-100">Download the App</h1><div class="flex gap-4"><button class="flex items-center justify-center rounded-md px-6 py-3 transition-all bg-green-500 hover:bg-green-600 text-white pointer-events-auto">iOS Version</button><button class="flex items-center justify-center rounded-md px-6 py-3 transition-all bg-green-500 hover:bg-green-600 text-white pointer-events-auto">Android Version</button><button class="flex items-center justify-center rounded-md px-6 py-3 transition-all bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto">Back</button></div></div></section><section class="absolute inset-4 flex flex-col justify-center text-center transition-opacity duration-1000  opacity-0 pointer-events-none"><div class="flex flex-col items-center gap-6 pb-60"><h1 class="text-4xl font-bold text-stone-100">Token Information</h1><button class="flex items-center justify-center rounded-md px-6 py-3 transition-all bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto">Back to Main</button></div></section><section class="absolute inset-4 flex flex-col justify-center text-center transition-opacity duration-1000  opacity-0 pointer-events-none"><div class="flex flex-col items-center gap-6"><h1 class="text-4xl font-bold text-stone-100">Development Roadmap</h1><div class="flex gap-4"><button class="flex items-center justify-center rounded-md px-6 py-3 transition-all bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto">Main Menu</button></div></div></section></main></div></div></div></div>
+    <script type="module" src="./Vite + React_files/main.jsx"></script>
+  
+
+<div id="leva__root"><div class="leva-c-kWgxhW leva-c-kWgxhW-bCBHqk-fill-false leva-c-kWgxhW-eXrJvq-flat-false leva-c-kWgxhW-czBHep-hideTitleBar-false" style="display: block;"><div class="leva-c-hwBXYF leva-c-hwBXYF-kbKHjH-mode-drag"><i class="leva-c-ctBOWy"><svg width="12" height="8" viewBox="0 0 9 5" xmlns="http://www.w3.org/2000/svg" class="leva-c-cHvNmv" style="transform: rotate(0deg);"><path d="M3.8 4.4c.4.3 1 .3 1.4 0L8 1.7A1 1 0 007.4 0H1.6a1 1 0 00-.7 1.7l3 2.7z"></path></svg></i><div class="leva-c-iLtnIm leva-c-iLtnIm-bOgTWZ-drag-true"><svg width="20" height="10" viewBox="0 0 28 14" xmlns="http://www.w3.org/2000/svg"><circle cx="2" cy="2" r="2"></circle><circle cx="14" cy="2" r="2"></circle><circle cx="26" cy="2" r="2"></circle><circle cx="2" cy="12" r="2"></circle><circle cx="14" cy="12" r="2"></circle><circle cx="26" cy="12" r="2"></circle></svg></div><i class="leva-c-ctBOWy"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 0 20 20"><path d="M9 9a2 2 0 114 0 2 2 0 01-4 0z"></path><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a4 4 0 00-3.446 6.032l-2.261 2.26a1 1 0 101.414 1.415l2.261-2.261A4 4 0 1011 5z" clip-rule="evenodd"></path></svg></i></div><div class="leva-c-fxiFTg leva-c-fxiFTg-dbaoCM-toggled-false"><input placeholder="[Open filter with CMD+SHIFT+L]" class="leva-c-iYYzmZ" value=""><i class="leva-c-ctBOWy" style="visibility: hidden;"><svg xmlns="http://www.w3.org/2000/svg" height="14" width="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg></i></div><div class="leva-c-hBtFDW leva-c-hBtFDW-hTGpNn-cv leva-c-hBtFDW-gOvGdg-cv"><div class="leva-c-dmsJDs leva-c-dmsJDs-lpvxwm-toggled-true leva-c-dmsJDs-hXSjjU-isRoot-true"><div class="leva-c-PJLV" style="--leva-colors-folderWidgetColor: #8c92a4; --leva-colors-folderTextColor: #fefefe;"><div class="leva-c-dosbYs"><svg width="9" height="5" viewBox="0 0 9 5" xmlns="http://www.w3.org/2000/svg" class="leva-c-cHvNmv" style="transform: rotate(0deg);"><path d="M3.8 4.4c.4.3 1 .3 1.4 0L8 1.7A1 1 0 007.4 0H1.6a1 1 0 00-.7 1.7l3 2.7z"></path></svg><div>Environment</div></div><div class="leva-c-hBtFDW leva-c-hBtFDW-lbFLlY-isRoot-false"><div class="leva-c-dmsJDs leva-c-dmsJDs-lpvxwm-toggled-true"><div class="leva-c-bDGmTT"><div class="leva-c-grzFYX leva-c-jzsQCy"><div class="leva-c-iSkYoW"><label for="Environment.environment" title="HDR File" class="leva-c-dKMqBT">HDR File</label><div title="Click to copy HDR File value"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg></div></div><div class="leva-c-dkRbIj"><select id="Environment.environment" class="leva-c-bHmsMj"><option value="0">Sky Linekotsi</option><option value="1">Sky 20</option><option value="2">Vino Sky</option></select><div class="leva-c-fOquTv">Vino Sky</div><svg width="9" height="5" viewBox="0 0 9 5" xmlns="http://www.w3.org/2000/svg" class="leva-c-cHvNmv" style="transform: rotate(0deg);"><path d="M3.8 4.4c.4.3 1 .3 1.4 0L8 1.7A1 1 0 007.4 0H1.6a1 1 0 00-.7 1.7l3 2.7z"></path></svg></div></div></div><div class="leva-c-bDGmTT"><div class="leva-c-grzFYX leva-c-jzsQCy"><div class="leva-c-iSkYoW"><label for="Environment.showBackground" title="Show Background" class="leva-c-dKMqBT">Show Background</label><div title="Click to copy Show Background value"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg></div></div><div class="leva-c-TldsY"><input id="Environment.showBackground" type="checkbox" checked=""><label for="Environment.showBackground"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></label></div></div></div><div class="leva-c-bDGmTT"><div class="leva-c-grzFYX leva-c-jzsQCy"><div class="leva-c-iSkYoW"><label for="Environment.preset" title="Lighting Preset" class="leva-c-dKMqBT">Lighting Preset</label><div title="Click to copy Lighting Preset value"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg></div></div><div class="leva-c-dkRbIj"><select id="Environment.preset" class="leva-c-bHmsMj"><option value="0">None</option><option value="1">Apartment</option><option value="2">City</option><option value="3">Dawn</option><option value="4">Forest</option><option value="5">Lobby</option><option value="6">Night</option><option value="7">Park</option><option value="8">Studio</option><option value="9">Sunset</option><option value="10">Warehouse</option></select><div class="leva-c-fOquTv">Sunset</div><svg width="9" height="5" viewBox="0 0 9 5" xmlns="http://www.w3.org/2000/svg" class="leva-c-cHvNmv" style="transform: rotate(0deg);"><path d="M3.8 4.4c.4.3 1 .3 1.4 0L8 1.7A1 1 0 007.4 0H1.6a1 1 0 00-.7 1.7l3 2.7z"></path></svg></div></div></div></div></div></div><div class="leva-c-PJLV" style="--leva-colors-folderWidgetColor: #8c92a4; --leva-colors-folderTextColor: #fefefe;"><div class="leva-c-dosbYs"><svg width="9" height="5" viewBox="0 0 9 5" xmlns="http://www.w3.org/2000/svg" class="leva-c-cHvNmv" style="transform: rotate(0deg);"><path d="M3.8 4.4c.4.3 1 .3 1.4 0L8 1.7A1 1 0 007.4 0H1.6a1 1 0 00-.7 1.7l3 2.7z"></path></svg><div>bloom</div></div><div class="leva-c-hBtFDW leva-c-hBtFDW-lbFLlY-isRoot-false"><div class="leva-c-dmsJDs leva-c-dmsJDs-lpvxwm-toggled-true"><div class="leva-c-bDGmTT"><div class="leva-c-grzFYX leva-c-jzsQCy"><div class="leva-c-iSkYoW"><label for="bloom.enabled" title="enabled" class="leva-c-dKMqBT">enabled</label><div title="Click to copy enabled value"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg></div></div><div class="leva-c-TldsY"><input id="bloom.enabled" type="checkbox" checked=""><label for="bloom.enabled"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></label></div></div></div><div class="leva-c-bDGmTT"><div class="leva-c-grzFYX leva-c-jzsQCy"><div class="leva-c-iSkYoW"><label for="bloom.luminanceThreshold" title="luminanceThreshold" class="leva-c-dKMqBT">luminanceThreshold</label><div title="Click to copy luminanceThreshold value"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg></div></div><div class="leva-c-PJLV leva-c-PJLV-gsjcND-hasRange-true"><div class="leva-c-hwSNBG"><div class="leva-c-bbMqub"><div class="leva-c-knrmXZ" style="left: 0px; right: 45%;"></div></div><div class="leva-c-gUBGce" style="left: calc(55% - 4.4px);"></div></div><div class="leva-c-kXfPOu"><input id="bloom.luminanceThreshold" type="text" autocomplete="off" spellcheck="false" class="leva-c-ghmOOI leva-c-ghmOOI-gsXdEb-levaType-number" value="1.10"></div></div></div></div><div class="leva-c-bDGmTT"><div class="leva-c-grzFYX leva-c-jzsQCy"><div class="leva-c-iSkYoW"><label for="bloom.intensity" title="intensity" class="leva-c-dKMqBT">intensity</label><div title="Click to copy intensity value"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg></div></div><div class="leva-c-PJLV leva-c-PJLV-gsjcND-hasRange-true"><div class="leva-c-hwSNBG"><div class="leva-c-bbMqub"><div class="leva-c-knrmXZ" style="left: 0px; right: 73.2143%;"></div></div><div class="leva-c-gUBGce" style="left: calc(26.7857% - 2.14286px);"></div></div><div class="leva-c-kXfPOu"><input id="bloom.intensity" type="text" autocomplete="off" spellcheck="false" class="leva-c-ghmOOI leva-c-ghmOOI-gsXdEb-levaType-number" value="7.5"></div></div></div></div><div class="leva-c-bDGmTT"><div class="leva-c-grzFYX leva-c-jzsQCy"><div class="leva-c-iSkYoW"><label for="bloom.mipmapBlur" title="mipmapBlur" class="leva-c-dKMqBT">mipmapBlur</label><div title="Click to copy mipmapBlur value"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg></div></div><div class="leva-c-TldsY"><input id="bloom.mipmapBlur" type="checkbox" checked=""><label for="bloom.mipmapBlur"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></label></div></div></div><div class="leva-c-bDGmTT"><div class="leva-c-grzFYX leva-c-jzsQCy"><div class="leva-c-iSkYoW"><label for="bloom.kernelSize" title="kernelSize" class="leva-c-dKMqBT">kernelSize</label><div title="Click to copy kernelSize value"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg></div></div><div class="leva-c-dkRbIj"><select id="bloom.kernelSize" class="leva-c-bHmsMj"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select><div class="leva-c-fOquTv">4</div><svg width="9" height="5" viewBox="0 0 9 5" xmlns="http://www.w3.org/2000/svg" class="leva-c-cHvNmv" style="transform: rotate(0deg);"><path d="M3.8 4.4c.4.3 1 .3 1.4 0L8 1.7A1 1 0 007.4 0H1.6a1 1 0 00-.7 1.7l3 2.7z"></path></svg></div></div></div><div class="leva-c-bDGmTT"><div class="leva-c-grzFYX leva-c-jzsQCy"><div class="leva-c-iSkYoW"><label for="bloom.luminanceSmoothing" title="luminanceSmoothing" class="leva-c-dKMqBT">luminanceSmoothing</label><div title="Click to copy luminanceSmoothing value"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg></div></div><div class="leva-c-PJLV leva-c-PJLV-gsjcND-hasRange-true"><div class="leva-c-hwSNBG"><div class="leva-c-bbMqub"><div class="leva-c-knrmXZ" style="left: 0px; right: 53%;"></div></div><div class="leva-c-gUBGce" style="left: calc(47% - 3.76px);"></div></div><div class="leva-c-kXfPOu"><input id="bloom.luminanceSmoothing" type="text" autocomplete="off" spellcheck="false" class="leva-c-ghmOOI leva-c-ghmOOI-gsXdEb-levaType-number" value="0.94"></div></div></div></div><div class="leva-c-bDGmTT"><div class="leva-c-grzFYX leva-c-jzsQCy"><div class="leva-c-iSkYoW"><label for="bloom.radius" title="radius" class="leva-c-dKMqBT">radius</label><div title="Click to copy radius value"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg></div></div><div class="leva-c-PJLV leva-c-PJLV-gsjcND-hasRange-true"><div class="leva-c-hwSNBG"><div class="leva-c-bbMqub"><div class="leva-c-knrmXZ" style="left: 0px; right: 58%;"></div></div><div class="leva-c-gUBGce" style="left: calc(42% - 3.36px);"></div></div><div class="leva-c-kXfPOu"><input id="bloom.radius" type="text" autocomplete="off" spellcheck="false" class="leva-c-ghmOOI leva-c-ghmOOI-gsXdEb-levaType-number" value="0.42"></div></div></div></div></div></div></div><div class="leva-c-PJLV" style="--leva-colors-folderWidgetColor: #8c92a4; --leva-colors-folderTextColor: #fefefe;"><div class="leva-c-dosbYs"><svg width="9" height="5" viewBox="0 0 9 5" xmlns="http://www.w3.org/2000/svg" class="leva-c-cHvNmv" style="transform: rotate(0deg);"><path d="M3.8 4.4c.4.3 1 .3 1.4 0L8 1.7A1 1 0 007.4 0H1.6a1 1 0 00-.7 1.7l3 2.7z"></path></svg><div>settings</div></div><div class="leva-c-hBtFDW leva-c-hBtFDW-lbFLlY-isRoot-false"><div class="leva-c-dmsJDs leva-c-dmsJDs-lpvxwm-toggled-true"><div class="leva-c-grzFYX leva-c-jzsQCy"><div class="leva-c-iSkYoW leva-c-iSkYoW-dwnBBx-align-top"><label title="fps" class="leva-c-dKMqBT">fps</label></div><div>7.6e+5</div></div><div class="leva-c-bDGmTT"><div class="leva-c-grzFYX leva-c-jzsQCy"><div class="leva-c-iSkYoW"><label for="settings.smoothTime" title="smoothTime" class="leva-c-dKMqBT">smoothTime</label><div title="Click to copy smoothTime value"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg></div></div><div class="leva-c-PJLV leva-c-PJLV-gsjcND-hasRange-true"><div class="leva-c-hwSNBG"><div class="leva-c-bbMqub"><div class="leva-c-knrmXZ" style="left: 0px; right: 73.6842%;"></div></div><div class="leva-c-gUBGce" style="left: calc(26.3158% - 2.10526px);"></div></div><div class="leva-c-kXfPOu"><input id="settings.smoothTime" type="text" autocomplete="off" spellcheck="false" class="leva-c-ghmOOI leva-c-ghmOOI-gsXdEb-levaType-number" value="0.6"></div></div></div></div><div class="leva-c-grzFYX"><button class="leva-c-ihqPFh">getLookAt</button></div></div></div></div></div></div></div></div></body></html>
