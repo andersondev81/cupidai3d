@@ -22,9 +22,9 @@ const materialCache = new Map()
 const useHeartTextMaterial = () => {
   // Carregar texturas do HeartText
   const textures = useTexture({
-    map: "/texture/HeText_Color.webp",
-    metalnessMap: "/texture/HeText_Metalness.webp",
-    roughnessMap: "/texture/HeText_Roughness.webp",
+    map: "/texture/HeTextBake.webp",
+    // metalnessMap: "/texture/HeText_Metalness.webp",
+    // roughnessMap: "/texture/HeText_Roughness.webp",
     emissiveMap: "/texture/HeText_Emissive.webp",
   })
 
@@ -57,6 +57,8 @@ const useHeartTextMaterial = () => {
           emissiveIntensity: MATERIAL_SETTINGS.emissiveIntensity,
           side: DoubleSide,
           blending: NormalBlending,
+          metalness: 1,
+          roughness: 0.4,
         })
       )
     }

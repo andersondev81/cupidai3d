@@ -1,4 +1,5 @@
 import { CameraControls, useGLTF, useTexture } from "@react-three/drei"
+import { Select } from "@react-three/postprocessing"
 import { button, monitor, useControls } from "leva"
 import React, { Suspense, useEffect, useMemo, useRef } from "react"
 import {
@@ -12,7 +13,6 @@ import {
   NormalBlending,
   VideoTexture,
 } from "three"
-import { Select } from "@react-three/postprocessing"
 import FountainParticles from "../../components/FountainParticles"
 import RotateAxis from "../../components/helpers/RotateAxis"
 
@@ -302,7 +302,7 @@ const useMultiAudio = () => {
 // Castle Material
 const useCastleMaterial = () => {
   const textures = useTexture({
-    map: "/texture/CastleNewBaked.webp",
+    map: "/texture/CastleNewBake.webp",
     normalMap: "/texture/Castle_Normal.webp",
     roughnessMap: "/texture/Castle_Roughness.webp",
     emissiveMap: "/texture/CastleEmissiveV2.webp",
@@ -370,7 +370,6 @@ const useGodsMaterial = () => {
 const useHoofMaterial = () => {
   const textures = useTexture({
     map: "/texture/HoofGlassBake.webp",
-    // alphaMap: "/texture/HoofGlass_Alpha.webp",
     roughnessMap: "/texture/HoofGlassBake.webp",
   })
 
@@ -538,6 +537,8 @@ const CastleModel = ({ onCastleClick }) => {
         geometry={nodes.castle.geometry}
         material={material}
         layers-enable={2}
+        castShadow={false}
+        receiveShadow={false}
       />
 
       <mesh geometry={nodes.gods.geometry} material={godsMaterial} />
@@ -546,6 +547,8 @@ const CastleModel = ({ onCastleClick }) => {
         material={hoofMaterial}
         position={[0, 3.343, 0]}
         layers-enable={2}
+        castShadow={false}
+        receiveShadow={false}
       />
       <mesh
         geometry={nodes.atm.geometry}
@@ -554,10 +557,17 @@ const CastleModel = ({ onCastleClick }) => {
         rotation={[1.458, 0.219, 0.486]}
         scale={0.01}
         layers-enable={2}
+        castShadow={false}
+        receiveShadow={false}
       />
       <group position={[-0.056, 1.247, -2.117]}>
         <RotateAxis axis="y" speed={0.7} rotationType="euler">
-          <mesh geometry={nodes.blow.geometry} material={material} />
+          <mesh
+            geometry={nodes.blow.geometry}
+            material={material}
+            castShadow={false}
+            receiveShadow={false}
+          />
         </RotateAxis>
       </group>
       <group>
@@ -567,6 +577,8 @@ const CastleModel = ({ onCastleClick }) => {
             material={material}
             position={[0.001, 4.18, -0.006]}
             layers-enable={2}
+            castShadow={false}
+            receiveShadow={false}
           />
         </RotateAxis>
       </group>
@@ -575,6 +587,8 @@ const CastleModel = ({ onCastleClick }) => {
         material={scrollMaterial}
         position={[0, 0.648, 0]}
         rotation={[Math.PI / 2, 0, 0]}
+        castShadow={false}
+        receiveShadow={false}
       />
       <Select disabled>
         <mesh
@@ -582,6 +596,8 @@ const CastleModel = ({ onCastleClick }) => {
           material={portal}
           position={[0, 1.698, 2.119]}
           layers-enable={1}
+          castShadow={false}
+          receiveShadow={false}
         />
       </Select>
       <mesh
@@ -589,6 +605,8 @@ const CastleModel = ({ onCastleClick }) => {
         material={waterMaterial}
         position={[0, 0.704, 2.406]}
         layers-enable={2}
+        castShadow={false}
+        receiveShadow={false}
       />
       <FountainParticles
         count={80}
@@ -597,6 +615,8 @@ const CastleModel = ({ onCastleClick }) => {
         speed={0.65}
         spread={0.3}
         layers-enable={2}
+        castShadow={false}
+        receiveShadow={false}
       />
     </group>
   )
