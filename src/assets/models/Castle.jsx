@@ -302,10 +302,10 @@ const useMultiAudio = () => {
 // Castle Material
 const useCastleMaterial = () => {
   const textures = useTexture({
-    map: "/texture/CastleBake.webp",
+    map: "/texture/CastleNewBaked.webp",
     normalMap: "/texture/Castle_Normal.webp",
     roughnessMap: "/texture/Castle_Roughness.webp",
-    emissiveMap: "/texture/Castle_Emissive.webp",
+    emissiveMap: "/texture/CastleEmissiveV2.webp",
   })
 
   useMemo(() => {
@@ -321,13 +321,12 @@ const useCastleMaterial = () => {
     () =>
       new MeshPhysicalMaterial({
         map: textures.map,
-        // normalMap: textures.normalMap,
         roughnessMap: textures.roughnessMap,
         emissiveMap: textures.emissiveMap,
-        emissive: new Color(0xffffff), // Adicionando a cor emissiva
-        emissiveIntensity: 0.5,
+        emissive: new Color(0xf6d8ff),
+        emissiveIntensity: 2,
         transparent: false,
-        alphaTest: 0.5,
+        alphaTest: 0.05,
         side: DoubleSide,
         blending: NormalBlending,
         roughness: 1.6,
@@ -396,6 +395,8 @@ const useHoofMaterial = () => {
         blending: NormalBlending,
         roughness: 0.2,
         metalness: 1,
+        emissive: new Color(0xf6d8ff),
+        emissiveIntensity: 1.8,
         // transmission: 0.95,
         // ior: 1.5,
         // thickness: 0.5,
@@ -533,13 +534,18 @@ const CastleModel = ({ onCastleClick }) => {
 
   return (
     <group dispose={null}>
-      <mesh geometry={nodes.castle.geometry} material={material} />
+      <mesh
+        geometry={nodes.castle.geometry}
+        material={material}
+        layers-enable={2}
+      />
 
       <mesh geometry={nodes.gods.geometry} material={godsMaterial} />
       <mesh
         geometry={nodes.hoofGlassA.geometry}
         material={hoofMaterial}
         position={[0, 3.343, 0]}
+        layers-enable={2}
       />
       <mesh
         geometry={nodes.atm.geometry}
