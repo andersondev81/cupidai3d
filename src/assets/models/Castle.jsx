@@ -662,51 +662,51 @@ const Castle = ({ activeSection }) => {
     }
   }
 
-  // useEffect(() => {
-  //   if (!controls.current) return;
+  useEffect(() => {
+    if (!controls.current) return;
 
-  //   window.controls = controls;
-  //   initAudio();
+    window.controls = controls;
+    initAudio();
 
-  //   // REMOVIDO TODAS AS RESTRIÇÕES
-  //   const defaultPosition = getCameraPosition("default");
-  //   controls.current.setLookAt(...defaultPosition, false);
+    // REMOVIDO TODAS AS RESTRIÇÕES
+    const defaultPosition = getCameraPosition("default");
+    controls.current.setLookAt(...defaultPosition, false);
 
-  //   setTimeout(() => {
-  //     playTransition("nav");
-  //   }, TRANSITION_DELAY);
+    setTimeout(() => {
+      playTransition("nav");
+    }, TRANSITION_DELAY);
 
-  //   return cleanup;
-  // }, []);
+    return cleanup;
+  }, []);
 
   // Initialize camera and audio
 
-  // useEffect(() => {
-  //   if (!controls.current) return
+  useEffect(() => {
+    if (!controls.current) return
 
-  //   window.controls = controls
-  //   // initAudio()
+    window.controls = controls
+    // initAudio()
 
-  //   controls.current.minPolarAngle = Math.PI * 0.15
-  //   controls.current.maxPolarAngle = Math.PI * 0.55
-  //   controls.current.minDistance = 5
-  //   controls.current.maxDistance = 20
-  //   controls.current.boundaryFriction = 1
-  //   controls.current.boundaryEnclosesCamera = true
-  //   controls.current.verticalDragToForward = false
-  //   controls.current.dollyToCursor = false
-  //   controls.current.minY = 1
-  //   controls.current.maxY = 15
+    controls.current.minPolarAngle = Math.PI * 0.15
+    controls.current.maxPolarAngle = Math.PI * 0.55
+    controls.current.minDistance = 5
+    controls.current.maxDistance = 20
+    controls.current.boundaryFriction = 1
+    controls.current.boundaryEnclosesCamera = true
+    controls.current.verticalDragToForward = false
+    controls.current.dollyToCursor = false
+    controls.current.minY = 1
+    controls.current.maxY = 15
 
-  //   const defaultPosition = getCameraPosition("default")
-  //   controls.current.setLookAt(...defaultPosition, false)
+    const defaultPosition = getCameraPosition("default")
+    controls.current.setLookAt(...defaultPosition, false)
 
-  //   setTimeout(() => {
-  //     playTransition("nav")
-  //   }, TRANSITION_DELAY)
+    setTimeout(() => {
+      playTransition("nav")
+    }, TRANSITION_DELAY)
 
-  //   return cleanup
-  // }, [])
+    return cleanup
+  }, [])
   // Handle active section changes
   useEffect(() => {
     if (activeSection) {

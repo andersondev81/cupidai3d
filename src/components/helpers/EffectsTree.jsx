@@ -4,7 +4,7 @@ import { useControls } from "leva"
 
 export const EffectsTree = () => {
   const bloomConfig = useControls("bloom", {
-    enabled: true,
+    enabled: false,
     luminanceThreshold: { value: 1.1, min: 0, max: 2 },
     intensity: { value: 7.5, min: 0, max: 28 },
     mipmapBlur: true,
