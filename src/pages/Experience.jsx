@@ -242,7 +242,7 @@ const SceneController = React.memo(({ section, cameraRef }) => {
         />
       )}
 
-      {process.env.NODE_ENV !== "production" && <Perf position="top-left" />}
+      {process.env.NODE_ENV !== "development" && <Perf position="top-left" />}
     </>
   );
 });
