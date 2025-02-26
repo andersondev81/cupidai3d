@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { AboutOverlay } from "./AboutOverlay";
+import React, { useState, useEffect } from "react";
+import { AboutOverlay } from "/src/assets/models/AboutOverlay.jsx"; // Caminho correto de importação
 
 export const sections = [
   "nav",
@@ -33,6 +33,17 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
   const [showAboutOverlay, setShowAboutOverlay] = useState(false);
   const currentSectionKey = sections[section];
 
+  // Show overlay automatically when about section is active
+  useEffect(() => {
+    if (currentSectionKey === "about") {
+      // Adicionando um pequeno timeout para garantir que a transição da câmera aconteça primeiro
+      const timer = setTimeout(() => {
+        setShowAboutOverlay(true);
+      }, 100); // Um pequeno delay para garantir que seja exibido após a transição
+      return () => clearTimeout(timer);
+    }
+  }, [currentSectionKey]);
+
   const handleHomeNavigation = () => {
     if (cameraRef) {
       cameraRef.goToHome();
@@ -40,37 +51,19 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
     }
   };
 
+  const handleCloseOverlay = () => {
+    setShowAboutOverlay(false);
+    // Navigate back to home if we're in the about section
+    if (currentSectionKey === "about") {
+      handleHomeNavigation();
+    }
+  };
+
   return (
     <main className="relative h-full w-full">
-      {/* Seção About */}
+      {/* Seção About - Vazia agora, pois o overlay será mostrado automaticamente */}
       <Section isActive={currentSectionKey === "about"}>
-        <div className="flex flex-col items-center gap-6">
-          <h1 className="text-4xl font-bold text-stone-100">
-            About this Project
-          </h1>
-          <p className="text-stone-200 max-w-2xl text-lg">
-            Discover the innovative features behind our castle-inspired
-            platform...
-          </p>
-          <div className="flex gap-4">
-            <NavigationButton
-              onClick={() => {
-                setTimeout(() => {
-                  setShowAboutOverlay(true);
-                }, 500);
-              }}
-              className="bg-blue-500 hover:bg-blue-600 text-white pointer-events-auto"
-            >
-              Learn More
-            </NavigationButton>
-            <NavigationButton
-              onClick={handleHomeNavigation}
-              className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
-            >
-              Back to Main
-            </NavigationButton>
-          </div>
-        </div>
+        {/* Intencionalmente vazio - o overlay será exibido no lugar */}
       </Section>
 
       {/* Seção AI Dating Coach */}
@@ -152,7 +145,7 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
       {/* AboutOverlay Component */}
       <AboutOverlay
         isVisible={showAboutOverlay}
-        onClose={() => setShowAboutOverlay(false)}
+        onClose={handleCloseOverlay}
       />
     </main>
   );
