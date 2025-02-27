@@ -302,10 +302,9 @@ const useMultiAudio = () => {
 // Castle Material
 const useCastleMaterial = () => {
   const textures = useTexture({
-    map: "/texture/CastleNewBake.webp",
+    map: "/texture/CastleNewBakeNoLight.png",
     normalMap: "/texture/Castle_Normal.webp",
     roughnessMap: "/texture/Castle_Roughness.webp",
-    emissiveMap: "/texture/CastleEmissiveV2.webp",
   })
 
   useMemo(() => {
@@ -323,8 +322,8 @@ const useCastleMaterial = () => {
         map: textures.map,
         roughnessMap: textures.roughnessMap,
         emissiveMap: textures.emissiveMap,
-        emissive: new Color(0xf6d8fc),
-        emissiveIntensity: 2,
+        // emissive: new Color(0xf6d8fc),
+        // emissiveIntensity: 2,
         transparent: false,
         alphaTest: 0.05,
         side: DoubleSide,
@@ -394,8 +393,7 @@ const useHoofMaterial = () => {
         blending: NormalBlending,
         roughness: 0.2,
         metalness: 1,
-        emissive: new Color(0xf6d8ff),
-        emissiveIntensity: 1.8,
+
         // transmission: 0.95,
         // ior: 1.5,
         // thickness: 0.5,
@@ -663,21 +661,21 @@ const Castle = ({ activeSection }) => {
   }
 
   useEffect(() => {
-    if (!controls.current) return;
+    if (!controls.current) return
 
-    window.controls = controls;
-    initAudio();
+    window.controls = controls
+    initAudio()
 
     // REMOVIDO TODAS AS RESTRIÇÕES
-    const defaultPosition = getCameraPosition("default");
-    controls.current.setLookAt(...defaultPosition, false);
+    const defaultPosition = getCameraPosition("default")
+    controls.current.setLookAt(...defaultPosition, false)
 
     setTimeout(() => {
-      playTransition("nav");
-    }, TRANSITION_DELAY);
+      playTransition("nav")
+    }, TRANSITION_DELAY)
 
-    return cleanup;
-  }, []);
+    return cleanup
+  }, [])
 
   // Initialize camera and audio
 
