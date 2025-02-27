@@ -33,7 +33,7 @@ function CloudsD() {
     // Aparência das nuvens
     cloudCount: { value: 30, min: 10, max: 100, step: 1 },
     opacity: { value: 1, min: 0.1, max: 1.5, step: 0.1 },
-    segments: { value: 40, min: 10, max: 160, step: 1 },
+    segments: { value: 10, min: 10, max: 160, step: 1 },
     primaryColor: { value: "#f5b1a4" },
     secondaryColor: { value: "#fadbd5" },
 

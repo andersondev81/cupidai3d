@@ -24,7 +24,6 @@ import CloudsD from "../assets/models/CloudsD"
 
 import Modeload from "../components/helpers/Modeload"
 
-
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -65,6 +64,7 @@ const ENVIRONMENT_OPTIONS = {
   "Sky Linekotsi": "/images/sky_linekotsi_16_HDRI.hdr",
   "Sky 20": "/images/sky20.hdr",
   "Vino Sky": "/images/VinoSky.hdr",
+  "Vino Sky V1": "/images/VinoSkyV1.hdr",
 }
 
 // Environment presets
@@ -184,7 +184,6 @@ const useCameraAnimation = (section, cameraRef) => {
   return isStarted
 }
 
-
 // Scene Controller component with environment controls
 const SceneController = React.memo(({ section, cameraRef }) => {
   useCameraAnimation(section, cameraRef)
@@ -202,16 +201,17 @@ const SceneController = React.memo(({ section, cameraRef }) => {
     "Environment",
     {
       environment: {
-        value: "Vino Sky",
+        value: "Vino Sky V1",
         options: Object.keys(ENVIRONMENT_OPTIONS),
         label: "HDR File",
       },
+
       showBackground: {
         value: true,
         label: "Show Background",
       },
       preset: {
-        value: "Night",
+        value: "Sunset",
         options: Object.keys(ENVIRONMENT_PRESETS),
         label: "Lighting Preset",
       },
@@ -256,7 +256,6 @@ const SceneController = React.memo(({ section, cameraRef }) => {
 // Split the scene content into smaller components for better performance
 const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
   <>
-
     <EffectsTree />
     <Castle activeSection={activeSection} scale={[2, 2, 2]} />
     <Stairs />
@@ -270,7 +269,7 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
       onSectionChange={onSectionChange}
     />
   </>
-));
+))
 
 const SecondaryContent = React.memo(() => (
   <>
@@ -279,7 +278,7 @@ const SecondaryContent = React.memo(() => (
     <Stairs />
     <HeartText />
   </>
-));
+))
 
 const TertiaryContent = React.memo(() => (
   <>
@@ -290,17 +289,17 @@ const TertiaryContent = React.memo(() => (
 ))
 
 const SceneContent = React.memo(({ activeSection, onSectionChange }) => {
-  const [loadingStage, setLoadingStage] = useState(0);
+  const [loadingStage, setLoadingStage] = useState(0)
 
   useEffect(() => {
-    const primaryTimer = setTimeout(() => setLoadingStage(1), 100);
-    const secondaryTimer = setTimeout(() => setLoadingStage(2), 1000);
+    const primaryTimer = setTimeout(() => setLoadingStage(1), 100)
+    const secondaryTimer = setTimeout(() => setLoadingStage(2), 1000)
 
     return () => {
-      clearTimeout(primaryTimer);
-      clearTimeout(secondaryTimer);
-    };
-  }, []);
+      clearTimeout(primaryTimer)
+      clearTimeout(secondaryTimer)
+    }
+  }, [])
 
   return (
     <>
@@ -312,8 +311,8 @@ const SceneContent = React.memo(({ activeSection, onSectionChange }) => {
       {loadingStage >= 1 && <SecondaryContent />}
       {loadingStage >= 2 && <TertiaryContent />}
     </>
-  );
-});
+  )
+})
 
 // Main Experience Component
 const Experience = () => {
@@ -321,7 +320,6 @@ const Experience = () => {
   const [currentSection, setCurrentSection] = useState(0)
   const [activeSection, setActiveSection] = useState("intro")
   const cameraRef = useRef(null)
-
 
   const handleSectionChange = (index, sectionName) => {
     setCurrentSection(index)
@@ -372,4 +370,3 @@ const Experience = () => {
   )
 }
 export default Experience
-
