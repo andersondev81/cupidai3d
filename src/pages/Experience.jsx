@@ -23,6 +23,7 @@ import CloudsD from "../assets/models/CloudsD"
 // import OldCloudsD from "../assets/models/OldCloudsD"
 
 import Modeload from "../components/helpers/Modeload"
+import EnvMapLoader from "../components/helpers/EnvMapLoader"
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -205,7 +206,6 @@ const SceneController = React.memo(({ section, cameraRef }) => {
         options: Object.keys(ENVIRONMENT_OPTIONS),
         label: "HDR File",
       },
-
       showBackground: {
         value: true,
         label: "Show Background",
@@ -247,6 +247,9 @@ const SceneController = React.memo(({ section, cameraRef }) => {
           environmentIntensity={presetIntensity}
         />
       )}
+
+      {/* Adicionar o componente de upload de ambiente */}
+      <EnvMapLoader />
 
       {process.env.NODE_ENV !== "development" && <Perf position="top-left" />}
     </>
