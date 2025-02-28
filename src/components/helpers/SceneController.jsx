@@ -5,7 +5,6 @@ import { useControls } from "leva"
 import { Perf } from "r3f-perf"
 import EnvMapLoader from "./EnvMapLoader"
 
-// HDR Environment options
 const ENVIRONMENT_OPTIONS = {
   "Sky Linekotsi": "/images/sky_linekotsi_16_HDRI.hdr",
   "Sky 20": "/images/sky20.hdr",
@@ -13,7 +12,6 @@ const ENVIRONMENT_OPTIONS = {
   "Vino Sky V1": "/images/VinoSkyV1.hdr",
 }
 
-// Environment presets
 const ENVIRONMENT_PRESETS = {
   None: null,
   Apartment: "apartment",
@@ -32,7 +30,6 @@ const SceneController = ({ section, cameraRef, useCameraAnimation }) => {
   useCameraAnimation(section, cameraRef)
   const { scene } = useThree()
 
-  // Environment control using Leva
   const {
     environment,
     showBackground,
@@ -61,7 +58,6 @@ const SceneController = ({ section, cameraRef, useCameraAnimation }) => {
     { collapsed: false }
   )
 
-  // Get the file path for the selected environment
   const environmentFile = ENVIRONMENT_OPTIONS[environment]
   const presetValue = ENVIRONMENT_PRESETS[preset]
 
@@ -76,7 +72,7 @@ const SceneController = ({ section, cameraRef, useCameraAnimation }) => {
         preset={null}
       />
 
-      {/* Only render second Environment component when preset is not "None" */}
+
       {presetValue && (
         <Environment
           preset={presetValue}
@@ -84,7 +80,6 @@ const SceneController = ({ section, cameraRef, useCameraAnimation }) => {
         />
       )}
 
-      {/* Adicionar o componente de upload de ambiente */}
       <EnvMapLoader />
 
       {process.env.NODE_ENV !== "development" && <Perf position="top-left" />}

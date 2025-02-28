@@ -190,7 +190,6 @@ const SceneController = React.memo(({ section, cameraRef }) => {
   useCameraAnimation(section, cameraRef)
   const { scene } = useThree()
 
-  // Environment control using Leva
   const {
     environment,
     showBackground,
@@ -219,7 +218,6 @@ const SceneController = React.memo(({ section, cameraRef }) => {
     { collapsed: false }
   )
 
-  // Get the file path for the selected environment
   const environmentFile = ENVIRONMENT_OPTIONS[environment]
   const presetValue = ENVIRONMENT_PRESETS[preset]
 
@@ -248,7 +246,6 @@ const SceneController = React.memo(({ section, cameraRef }) => {
         />
       )}
 
-      {/* Adicionar o componente de upload de ambiente */}
       <EnvMapLoader />
 
       {process.env.NODE_ENV !== "development" && <Perf position="top-left" />}

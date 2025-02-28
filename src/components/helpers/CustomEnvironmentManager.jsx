@@ -6,7 +6,6 @@ import { useControls, button, folder } from "leva"
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader"
 import { EquirectangularReflectionMapping } from "three"
 
-// Environment options from your existing code
 const ENVIRONMENT_OPTIONS = {
   "Sky Linekotsi": "/images/sky_linekotsi_16_HDRI.hdr",
   "Sky 20": "/images/sky20.hdr",
@@ -15,7 +14,6 @@ const ENVIRONMENT_OPTIONS = {
   "Custom Upload": "custom",
 }
 
-// Environment presets
 const ENVIRONMENT_PRESETS = {
   None: null,
   Apartment: "apartment",
@@ -36,21 +34,16 @@ export const CustomEnvironmentManager = () => {
   const [lastUploadedFile, setLastUploadedFile] = useState("No file selected")
   const fileInputRef = useRef(null)
 
-  // Create a function to handle file uploads
   const handleFileUpload = async (e) => {
     const file = e.target.files[0]
     if (!file) return
 
-    // Store the file for display in the controls
     setLastUploadedFile(file.name)
 
     try {
-      // Create a URL for the file
       const fileURL = URL.createObjectURL(file)
 
-      // Handle different file types
       if (file.name.toLowerCase().endsWith('.hdr')) {
-        // HDR files need to be loaded with RGBELoader
         const loader = new RGBELoader()
         const texture = await new Promise((resolve, reject) => {
           loader.load(fileURL, resolve, undefined, reject)
@@ -60,7 +53,6 @@ export const CustomEnvironmentManager = () => {
         setCustomEnvMap(texture)
 
       } else if (file.name.toLowerCase().match(/\.(jpg|jpeg|png|webp)$/)) {
-        // Regular image files can be loaded with TextureLoader
         const texture = new THREE.TextureLoader().load(fileURL)
         texture.mapping = EquirectangularReflectionMapping
         setCustomEnvMap(texture)
@@ -71,14 +63,12 @@ export const CustomEnvironmentManager = () => {
     }
   }
 
-  // Trigger file input click when button is pressed
   const openFileDialog = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click()
     }
   }
 
-  // Leva controls for environment settings
   const {
     environment,
     showBackground,
@@ -111,42 +101,34 @@ export const CustomEnvironmentManager = () => {
     }, { render: (get) => get("Environment.environment") === "Custom Upload" }),
   }, { collapsed: false })
 
-  // Apply the custom environment map when it changes
   useEffect(() => {
     if (environment === 'Custom Upload' && customEnvMap) {
-      // Apply the custom environment map
       scene.environment = customEnvMap
 
       if (showBackground) {
         scene.background = customEnvMap
-        // Apply blur if needed (requires a shader approach)
       } else {
         scene.background = null
       }
     }
   }, [customEnvMap, environment, showBackground, scene])
 
-  // Handle changes to environment selection
   useEffect(() => {
     if (environment === 'Custom Upload') {
       if (!customEnvMap) {
-        // Prompt the user to upload a file
         openFileDialog()
       }
     } else {
-      // Reset custom environment when selecting a preset
       scene.environment = null
       scene.background = null
     }
   }, [environment, customEnvMap, scene])
 
-  // Get the file path and preset for built-in environments
   const environmentFile = ENVIRONMENT_OPTIONS[environment]
   const presetValue = ENVIRONMENT_PRESETS[preset]
 
   return (
     <>
-      {/* Hidden file input element */}
       <input
         ref={fileInputRef}
         type="file"
@@ -155,7 +137,6 @@ export const CustomEnvironmentManager = () => {
         onChange={handleFileUpload}
       />
 
-      {/* Only render the Environment component when not using custom upload */}
       {environment !== "Custom Upload" && (
         <Environment
           files={environmentFile}
@@ -167,7 +148,6 @@ export const CustomEnvironmentManager = () => {
         />
       )}
 
-      {/* Only render second Environment component when preset is not "None" */}
       {presetValue && (
         <Environment
           preset={presetValue}
