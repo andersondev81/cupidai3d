@@ -23,6 +23,7 @@ import CloudsD from "../assets/models/CloudsD"
 // import OldCloudsD from "../assets/models/OldCloudsD"
 
 import Modeload from "../components/helpers/Modeload"
+import EnvMapLoader from "../components/helpers/EnvMapLoader"
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -189,7 +190,6 @@ const SceneController = React.memo(({ section, cameraRef }) => {
   useCameraAnimation(section, cameraRef)
   const { scene } = useThree()
 
-  // Environment control using Leva
   const {
     environment,
     showBackground,
@@ -205,7 +205,6 @@ const SceneController = React.memo(({ section, cameraRef }) => {
         options: Object.keys(ENVIRONMENT_OPTIONS),
         label: "HDR File",
       },
-
       showBackground: {
         value: true,
         label: "Show Background",
@@ -219,7 +218,6 @@ const SceneController = React.memo(({ section, cameraRef }) => {
     { collapsed: false }
   )
 
-  // Get the file path for the selected environment
   const environmentFile = ENVIRONMENT_OPTIONS[environment]
   const presetValue = ENVIRONMENT_PRESETS[preset]
 
@@ -247,6 +245,8 @@ const SceneController = React.memo(({ section, cameraRef }) => {
           environmentIntensity={presetIntensity}
         />
       )}
+
+      <EnvMapLoader />
 
       {process.env.NODE_ENV !== "development" && <Perf position="top-left" />}
     </>
