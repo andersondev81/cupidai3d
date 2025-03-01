@@ -7,7 +7,7 @@ import * as THREE from "three"
 function CloudsD() {
   const groupRef = useRef()
 
-  // Controles completos incluindo distribuição X e Z
+  // Controles completos incluindo movimento X, Y e Z
   const {
     baseHeight,
     distributionX,
@@ -24,11 +24,18 @@ function CloudsD() {
     secondaryGrowth,
     animationSpeed,
     animationIntensity,
-  } = useControls("Nuvens", {
+    // Novos controles de posição
+    positionX,
+    positionZ,
+  } = useControls("Clouds", {
     // Distribuição espacial
     baseHeight: { value: -0.51, min: -5, max: 15, step: 0.01 },
     distributionX: { value: 7.0, min: 2, max: 30, step: 0.5 },
     distributionZ: { value: 7.0, min: 2, max: 30, step: 0.5 },
+
+    // Controles de movimento (NOVOS)
+    positionX: { value: 0, min: -20, max: 20, step: 0.5, label: "Left/Right" },
+    positionZ: { value: 0, min: -20, max: 20, step: 0.5, label: "Forward/Back" },
 
     // Aparência das nuvens
     cloudCount: { value: 30, min: 10, max: 100, step: 1 },
@@ -107,7 +114,8 @@ function CloudsD() {
   })
 
   return (
-    <group ref={groupRef}>
+    // Aplicando os controles de posição ao grupo inteiro para mover todas as nuvens juntas
+    <group ref={groupRef} position={[positionX, 0, positionZ]}>
       {cloudPositions.map(({ position, seed, isSecondLayer }) => (
         <Cloud
           key={`cloud-${seed}`}
@@ -129,5 +137,4 @@ function CloudsD() {
   )
 }
 
-// Removido o React.memo com () => true para permitir atualizações
 export default CloudsD
