@@ -12,6 +12,7 @@ import {
   NearestFilter,
   NormalBlending,
   VideoTexture,
+  RepeatWrapping,
 } from "three"
 import FountainParticles from "../../components/FountainParticles"
 import RotateAxis from "../../components/helpers/RotateAxis"
@@ -302,15 +303,16 @@ const useMultiAudio = () => {
 // Castle Material
 const useCastleMaterial = () => {
   const textures = useTexture({
-    map: "/texture/CastleNewBakeNoLight.png",
-    normalMap: "/texture/Castle_Normal.webp",
-    roughnessMap: "/texture/Castle_Roughness.webp",
+    map: "/texture/castleColor.webp",
+    metalnessMap: "/texture/castleMetallic.webp",
+    roughnessMap: "/texture/castleRoughness.webp",
+    emissiveMap: "/texture/castleEmissive.webp",
   })
 
   useMemo(() => {
     Object.values(textures).forEach(texture => {
       if (texture) {
-        texture.flipY = false
+        texture.flipY = true
         texture.minFilter = texture.magFilter = NearestFilter
       }
     })
@@ -321,11 +323,157 @@ const useCastleMaterial = () => {
       new MeshPhysicalMaterial({
         map: textures.map,
         roughnessMap: textures.roughnessMap,
+        metalnessMap: textures.metalnessMap,
         emissiveMap: textures.emissiveMap,
+        emissive: new Color(0xfff),
+        emissiveIntensity: 2,
+        transparent: false,
+        alphaTest: 0.05,
+        side: DoubleSide,
+        blending: NormalBlending,
+        metalness: 1,
+      }),
+    [textures]
+  )
+}
+// Heart Material
+const useHeartMaterial = () => {
+  const textures = useTexture({
+    Map: "/texture/heartBase_color.webp",
+    roughnessMap: "/texture/heartRoughness.webp",
+    metalnessMap: "/texture/heartMetalness.webp",
+    materialEmissive: "/texture/heartEmissive.webp",
+  })
+
+  useMemo(() => {
+    Object.values(textures).forEach(texture => {
+      if (texture) {
+        texture.flipY = true
+        texture.minFilter = texture.magFilter = NearestFilter
+      }
+    })
+  }, [textures])
+
+  return useMemo(
+    () =>
+      new MeshPhysicalMaterial({
+        map: textures.map,
+        roughnessMap: textures.roughnessMap,
+        metalnessMap: textures.metalnessMap,
+        emissiveMap: textures.materialEmissive,
+        transparent: false,
+        alphaTest: 0.05,
+        side: DoubleSide,
+        metalness: 1,
+        blending: NormalBlending,
+        emissive: new Color(0xf6d8ff),
+        emissiveIntensity: 3.2,
+      }),
+    [textures]
+  )
+}
+//wings Material
+const useWingsMaterial = () => {
+  const textures = useTexture({
+    map: "/texture/WingsColorAO.webp",
+  })
+
+  useMemo(() => {
+    Object.values(textures).forEach(texture => {
+      if (texture) {
+        texture.flipY = true
+        texture.minFilter = texture.magFilter = NearestFilter
+      }
+    })
+  }, [textures])
+
+  return useMemo(
+    () =>
+      new MeshStandardMaterial({
+        map: textures.map,
+        roughness: 0.7,
+        metalness: 0.0,
+        side: DoubleSide,
+      }),
+    [textures]
+  )
+}
+//Logo Material
+const useLogoMaterial = () => {
+  // No need to load textures anymore
+  return useMemo(
+    () =>
+      new MeshPhysicalMaterial({
+        color: new Color("#FA3C81"), // Using the hex color you specified
         // emissive: new Color(0xf6d8fc),
         // emissiveIntensity: 2,
         transparent: false,
         alphaTest: 0.05,
+        side: DoubleSide,
+        blending: NormalBlending,
+        roughness: 0.3,
+        metalness: 1,
+      }),
+    []
+  )
+}
+//Decor Material
+const useDecorMaterial = () => {
+  // No need to load textures anymore
+  return useMemo(
+    () =>
+      new MeshPhysicalMaterial({
+        color: new Color("#DABB46"), // Using the hex color you specified
+        // emissive: new Color(0xf6d8fc),
+        // emissiveIntensity: 2,
+        transparent: false,
+        alphaTest: 0.05,
+        side: DoubleSide,
+        blending: NormalBlending,
+        roughness: 0,
+        metalness: 1,
+      }),
+    []
+  )
+}
+// Flowers Material
+const useFlowersMaterial = () => {
+  const textures = useTexture({
+    map: "/texture/FlowersColor.webp",
+    normalMap: "/texture/FlowersNormal.webp",
+    alphaMap: "/texture/FlowersAlpha.webp",
+  })
+
+  useMemo(() => {
+    Object.values(textures).forEach(texture => {
+      if (texture) {
+        texture.flipY = false
+        texture.minFilter = texture.magFilter = NearestFilter
+
+        // Set texture size to 1080x1080
+        texture.repeat.set(1, 1)
+        texture.wrapS = texture.wrapT = RepeatWrapping
+
+        // Explicitly set dimensions
+        if (texture.image) {
+          texture.image.width = 1080
+          texture.image.height = 1080
+        }
+      }
+    })
+  }, [textures])
+
+  return useMemo(
+    () =>
+      new MeshPhysicalMaterial({
+        map: textures.map,
+        normalMap: textures.normalMap,
+        alphaMap: textures.alphaMap,
+        roughnessMap: textures.roughnessMap,
+        emissiveMap: textures.emissiveMap,
+        transparent: true, // Changed to true to enable alpha
+        opacity: 0.85, // Added opacity control
+        alphaTest: 0.1, // Adjusted alpha test threshold
         side: DoubleSide,
         blending: NormalBlending,
         roughness: 1.6,
@@ -334,11 +482,10 @@ const useCastleMaterial = () => {
     [textures]
   )
 }
-
 // Gods Material
 const useGodsMaterial = () => {
   const textures = useTexture({
-    map: "/texture/gods_colorsTest2.webp",
+    map: "/texture/gods_colorR.webp",
   })
 
   useMemo(() => {
@@ -365,17 +512,18 @@ const useGodsMaterial = () => {
     [textures]
   )
 }
+
 // Hoof Material
 const useHoofMaterial = () => {
   const textures = useTexture({
-    map: "/texture/HoofGlassBake.webp",
-    roughnessMap: "/texture/HoofGlassBake.webp",
+    map: "/texture/hoofGlassColor.webp",
+    emissiveMap: "/texture/hoofGlassEmissive.webp", // Renomeado de roughnessMap para emissiveMap
   })
 
   useMemo(() => {
     Object.values(textures).forEach(texture => {
       if (texture) {
-        texture.flipY = false
+        texture.flipY = true
         texture.minFilter = texture.magFilter = NearestFilter
       }
     })
@@ -385,21 +533,14 @@ const useHoofMaterial = () => {
     () =>
       new MeshPhysicalMaterial({
         map: textures.map,
-        // alphaMap: textures.alphaMap,
-        // roughnessMap: textures.roughnessMap,
+        emissiveMap: textures.emissiveMap, // Adicionado o emissiveMap
+        emissive: new Color(0xffffff), // Cor emissiva branca para preservar as cores do mapa
+        emissiveIntensity: 3.5, // Intensidade do efeito emissivo
         transparent: false,
-        // opacity: 1,
         side: DoubleSide,
         blending: NormalBlending,
         roughness: 0.2,
         metalness: 1,
-
-        // transmission: 0.95,
-        // ior: 1.5,
-        // thickness: 0.5,
-        // envMapIntensity: 1,
-        // clearcoat: 1,
-        // clearcoatRoughness: 0.1,
       }),
     [textures]
   )
@@ -417,7 +558,7 @@ const useAtmMaterial = () => {
   useMemo(() => {
     Object.values(textures).forEach(texture => {
       if (texture) {
-        texture.flipY = false
+        texture.flipY = true
         texture.minFilter = texture.magFilter = NearestFilter
       }
     })
@@ -444,13 +585,13 @@ const useAtmMaterial = () => {
 //Scroll Material
 const useScrollMaterial = () => {
   const textures = useTexture({
-    map: "/texture/Scroll_Color.webp",
+    map: "/texture/ScrollColor.webp",
   })
 
   useMemo(() => {
     Object.values(textures).forEach(texture => {
       if (texture) {
-        texture.flipY = false
+        texture.flipY = true
         texture.minFilter = texture.magFilter = NearestFilter
       }
     })
@@ -522,12 +663,17 @@ const useWaterMaterial = () => {
 const CastleModel = ({ onCastleClick }) => {
   const { nodes } = useGLTF("/models/Castle.glb")
   const material = useCastleMaterial()
+  const logoMaterial = useLogoMaterial()
+  const decorMaterial = useDecorMaterial()
+  const flowersMaterial = useFlowersMaterial()
   const godsMaterial = useGodsMaterial()
+  const heartMaterial = useHeartMaterial()
   const hoofMaterial = useHoofMaterial()
   const atmMaterial = useAtmMaterial()
   const portal = usePortalMaterial()
   const scrollMaterial = useScrollMaterial()
   const waterMaterial = useWaterMaterial()
+  const wingsMaterial = useWingsMaterial()
 
   return (
     <group dispose={null}>
@@ -538,12 +684,17 @@ const CastleModel = ({ onCastleClick }) => {
         castShadow={false}
         receiveShadow={false}
       />
-
+      <mesh geometry={nodes.wings.geometry} material={wingsMaterial} />
       <mesh geometry={nodes.gods.geometry} material={godsMaterial} />
+      <mesh geometry={nodes.Flowers.geometry} material={flowersMaterial} />
+      <mesh geometry={nodes.decor.geometry} material={decorMaterial} />
+      <mesh geometry={nodes.HeartFixed.geometry} material={heartMaterial} />
+      <mesh geometry={nodes.ring.geometry} material={decorMaterial} />
+      <mesh geometry={nodes.MirrorFrame.geometry} material={decorMaterial} />
+
       <mesh
-        geometry={nodes.hoofGlassA.geometry}
+        geometry={nodes.hoofGlass.geometry}
         material={hoofMaterial}
-        position={[0, 3.343, 0]}
         layers-enable={2}
         castShadow={false}
         receiveShadow={false}
@@ -551,9 +702,6 @@ const CastleModel = ({ onCastleClick }) => {
       <mesh
         geometry={nodes.atm.geometry}
         material={atmMaterial}
-        position={[1.665, 1.259, 0.854]}
-        rotation={[1.458, 0.219, 0.486]}
-        scale={0.01}
         layers-enable={2}
         castShadow={false}
         receiveShadow={false}
@@ -561,8 +709,8 @@ const CastleModel = ({ onCastleClick }) => {
       <group position={[-0.056, 1.247, -2.117]}>
         <RotateAxis axis="y" speed={0.7} rotationType="euler">
           <mesh
-            geometry={nodes.blow.geometry}
-            material={material}
+            geometry={nodes.bow.geometry}
+            material={decorMaterial}
             castShadow={false}
             receiveShadow={false}
           />
@@ -572,7 +720,7 @@ const CastleModel = ({ onCastleClick }) => {
         <RotateAxis axis="y" speed={1} rotationType="euler">
           <mesh
             geometry={nodes.LogoCupid.geometry}
-            material={material}
+            material={logoMaterial}
             position={[0.001, 4.18, -0.006]}
             layers-enable={2}
             castShadow={false}
@@ -583,16 +731,13 @@ const CastleModel = ({ onCastleClick }) => {
       <mesh
         geometry={nodes.scroll.geometry}
         material={scrollMaterial}
-        position={[0, 0.648, 0]}
-        rotation={[Math.PI / 2, 0, 0]}
         castShadow={false}
         receiveShadow={false}
       />
       <Select disabled>
         <mesh
-          geometry={nodes.heartVid.geometry}
+          geometry={nodes.HeartVid.geometry}
           material={portal}
-          position={[0, 1.698, 2.119]}
           layers-enable={1}
           castShadow={false}
           receiveShadow={false}
@@ -601,7 +746,6 @@ const CastleModel = ({ onCastleClick }) => {
       <mesh
         geometry={nodes.water.geometry}
         material={waterMaterial}
-        position={[0, 0.704, 2.406]}
         layers-enable={2}
         castShadow={false}
         receiveShadow={false}
