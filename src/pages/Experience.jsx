@@ -6,7 +6,7 @@ import React, { Suspense, useEffect, useRef, useState } from "react"
 import * as THREE from "three"
 import Castle from "../assets/models/Castle"
 import { CastleUi } from "../assets/models/CastleUi"
-import { HeartText } from "../assets/models/HeartText"
+
 import { Pole } from "../assets/models/Pole"
 import { Stairs } from "../assets/models/Stairs"
 import { CAMERA_CONFIG } from "../components/cameraConfig"
@@ -261,8 +261,6 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
     <Stairs />
     <CloudsD />
     <Orb />
-    <HeartText />
-
     <Pole
       position={[-0.8, 0, 5.8]}
       scale={[0.6, 0.6, 0.6]}
@@ -276,7 +274,6 @@ const SecondaryContent = React.memo(() => (
     <CloudsD />
     <Orb />
     <Stairs />
-    <HeartText />
   </>
 ))
 
