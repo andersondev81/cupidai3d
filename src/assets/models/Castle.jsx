@@ -1,7 +1,7 @@
-import { CameraControls, useGLTF, useTexture } from "@react-three/drei"
-import { Select } from "@react-three/postprocessing"
-import { button, monitor, useControls } from "leva"
-import React, { Suspense, useEffect, useMemo, useRef } from "react"
+import { CameraControls, useGLTF, useTexture } from "@react-three/drei";
+import { Select } from "@react-three/postprocessing";
+import { button, monitor, useControls } from "leva";
+import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   Color,
   DoubleSide,
@@ -12,14 +12,17 @@ import {
   NearestFilter,
   NormalBlending,
   VideoTexture,
-} from "three"
-import FountainParticles from "../../components/FountainParticles"
-import RotateAxis from "../../components/helpers/RotateAxis"
+} from "three";
+import FountainParticles from "../../components/FountainParticles";
+import RotateAxis from "../../components/helpers/RotateAxis";
+import AtmIframe from "./AtmIframe";
+import MirrorIframe from "./MirrorIframe";
+import ScrollIframe from "./ScrolIframe"; // Import the ScrollIframe component
 
 // Constants
-const SMALL_SCREEN_THRESHOLD = 768
-const TRANSITION_DELAY = 100
-const AUDIO_FILE_PATH = "/src/assets/sounds/heartportal.MP3"
+const SMALL_SCREEN_THRESHOLD = 768;
+const TRANSITION_DELAY = 100;
+const AUDIO_FILE_PATH = "/src/assets/sounds/heartportal.MP3";
 
 // Camera Positions Configuration
 const cameraConfig = {
@@ -40,8 +43,9 @@ const cameraConfig = {
         -0.21830679207380707, 1.042078953185994, 0.860456882413919,
       ],
       about: [
-        2.036849267056926, 1.1276933552454578, -1.0231282019898584,
-        0.37394830262366985, 1.0624176349739602, -0.187605864806909,
+        2.352704926626491, 1.0737200399567521, -1.2084536120030756,
+
+        -0.3687011016630618, 1.2606998925644144, 0.2593731613550955,
       ],
       aidatingcoach: [
         -2.434203790421109, 1.6557626961206224, -1.2415015061749266,
@@ -52,13 +56,15 @@ const cameraConfig = {
         -0.30992362617772434, 1.2392967457625186, -0.11582946349265688,
       ],
       token: [
-        2.0799027767746923, 1.1492603137264552, 1.0627122850364636,
-        -1.2102179925739383, 0.8585880494001786, -0.5986556331928229,
+        1.931997968022665, 1.1594082482254913, 0.9811401185397038,
+        0.23389279950071676, 1.2319694816577682, 0.14739862810065263,
       ],
       roadmap: [
         -2.231073073487725, 1.1995652698467631, 1.135322606706848,
         -0.17684615441762777, 0.9455151215049427, 0.03254375215457311,
       ],
+      // Nova posição para a visualização do iframe do ATM
+      atm: [1.972, 1.22, 0.95, 1.675, 1.185, 0.86],
     },
     small: {
       nav: [
@@ -78,19 +84,25 @@ const cameraConfig = {
         1.3674383110764547, 1.1705903196566405, -0.662785847191283,
       ],
       token: [
-        2.118405773953273, 1.2172470657362846, 1.0635730429142927,
-        0.04723852527162822, 0.585365963592996, 0.11077814711949062,
+        1.9,
+        1.18,
+        0.95, // Ajustado para tela pequena
+        1.675,
+        1.185,
+        0.86,
       ],
       roadmap: [
         -2.231073073487725, 1.1995652698467631, 1.135322606706848,
         -0.17684615441762777, 0.9455151215049427, 0.03254375215457311,
       ],
+      // Versão para tela pequena
+      atm: [1.972, 1.22, 0.95, 1.675, 1.185, 0.86],
     },
   },
-}
+};
 
 // Custom Hooks
-const TRANSITION_SOUND = "/src/assets/sounds/camerawoosh.MP3"
+const TRANSITION_SOUND = "/src/assets/sounds/camerawoosh.MP3";
 const AUDIO_PATHS = {
   nav: "/src/assets/sounds/nav.mp3",
   about: "/src/assets/sounds/orb.mp3",
@@ -98,196 +110,198 @@ const AUDIO_PATHS = {
   download: "/src/assets/sounds/daingcoachmirror.mp3",
   token: "/src/assets/sounds/atmambiance.mp3",
   roadmap: "/src/assets/sounds/roadmap.mp3",
-}
+};
 const NAV_EXTRA_SOUNDS = {
   templeAmbient: "/src/assets/sounds/templeambiance.mp3",
   fountain: "/src/assets/sounds/fountain.mp3",
-}
+};
 
 // Enhanced Audio Hook
 const useMultiAudio = () => {
-  const audioContextRef = useRef(null)
-  const audioElementsRef = useRef({})
-  const gainNodesRef = useRef({})
-  const currentSectionRef = useRef(null)
-  const transitionSoundRef = useRef(null)
-  const transitionGainRef = useRef(null)
-  const navExtraSoundsRef = useRef({})
-  const navExtraGainsRef = useRef({})
+  const audioContextRef = useRef(null);
+  const audioElementsRef = useRef({});
+  const gainNodesRef = useRef({});
+  const currentSectionRef = useRef(null);
+  const transitionSoundRef = useRef(null);
+  const transitionGainRef = useRef(null);
+  const navExtraSoundsRef = useRef({});
+  const navExtraGainsRef = useRef({});
 
   const initAudio = () => {
     try {
       audioContextRef.current = new (window.AudioContext ||
-        window.webkitAudioContext)()
+        window.webkitAudioContext)();
 
-      transitionSoundRef.current = new Audio(TRANSITION_SOUND)
+      transitionSoundRef.current = new Audio(TRANSITION_SOUND);
       const transitionSource = audioContextRef.current.createMediaElementSource(
         transitionSoundRef.current
-      )
-      transitionGainRef.current = audioContextRef.current.createGain()
-      transitionGainRef.current.gain.value = 0.5
-      transitionSource.connect(transitionGainRef.current)
-      transitionGainRef.current.connect(audioContextRef.current.destination)
+      );
+      transitionGainRef.current = audioContextRef.current.createGain();
+      transitionGainRef.current.gain.value = 0.5;
+      transitionSource.connect(transitionGainRef.current);
+      transitionGainRef.current.connect(audioContextRef.current.destination);
 
       Object.entries(NAV_EXTRA_SOUNDS).forEach(([key, path]) => {
-        const audioElement = new Audio(path)
-        audioElement.loop = true
-        navExtraSoundsRef.current[key] = audioElement
+        const audioElement = new Audio(path);
+        audioElement.loop = true;
+        navExtraSoundsRef.current[key] = audioElement;
 
         const source =
-          audioContextRef.current.createMediaElementSource(audioElement)
-        const gainNode = audioContextRef.current.createGain()
-        gainNode.gain.value = 0.3
-        source.connect(gainNode)
-        gainNode.connect(audioContextRef.current.destination)
-        navExtraGainsRef.current[key] = gainNode
-      })
+          audioContextRef.current.createMediaElementSource(audioElement);
+        const gainNode = audioContextRef.current.createGain();
+        gainNode.gain.value = 0.3;
+        source.connect(gainNode);
+        gainNode.connect(audioContextRef.current.destination);
+        navExtraGainsRef.current[key] = gainNode;
+      });
 
       // Initialize section sounds
       Object.entries(AUDIO_PATHS).forEach(([section, path]) => {
-        const audioElement = new Audio(path)
-        audioElement.loop = true
-        audioElementsRef.current[section] = audioElement
+        const audioElement = new Audio(path);
+        audioElement.loop = true;
+        audioElementsRef.current[section] = audioElement;
 
         const source =
-          audioContextRef.current.createMediaElementSource(audioElement)
-        const gainNode = audioContextRef.current.createGain()
-        gainNode.gain.value = 0.3
+          audioContextRef.current.createMediaElementSource(audioElement);
+        const gainNode = audioContextRef.current.createGain();
+        gainNode.gain.value = 0.3;
 
-        source.connect(gainNode)
-        gainNode.connect(audioContextRef.current.destination)
-        gainNodesRef.current[section] = gainNode
-      })
+        source.connect(gainNode);
+        gainNode.connect(audioContextRef.current.destination);
+        gainNodesRef.current[section] = gainNode;
+      });
 
-      console.log("Audio system initialized successfully")
+      console.log("Audio system initialized successfully");
     } catch (error) {
-      console.error("Error initializing audio system:", error)
+      console.error("Error initializing audio system:", error);
     }
-  }
+  };
 
   const playTransitionSound = () => {
     if (transitionSoundRef.current) {
-      transitionSoundRef.current.currentTime = 0
-      const playPromise = transitionSoundRef.current.play()
+      transitionSoundRef.current.currentTime = 0;
+      const playPromise = transitionSoundRef.current.play();
 
       if (playPromise !== undefined) {
-        playPromise.catch(error => {
-          console.warn("Error playing transition sound:", error)
-        })
+        playPromise.catch((error) => {
+          console.warn("Error playing transition sound:", error);
+        });
       }
     }
-  }
+  };
 
-  const playSound = section => {
+  const playSound = (section) => {
     try {
       if (audioContextRef.current?.state === "suspended") {
-        audioContextRef.current.resume()
+        audioContextRef.current.resume();
       }
 
-      playTransitionSound()
+      playTransitionSound();
 
       if (currentSectionRef.current && currentSectionRef.current !== section) {
-        const currentAudio = audioElementsRef.current[currentSectionRef.current]
+        const currentAudio =
+          audioElementsRef.current[currentSectionRef.current];
         if (currentAudio) {
-          currentAudio.pause()
-          currentAudio.currentTime = 0
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
         }
 
         if (currentSectionRef.current === "nav") {
-          Object.values(navExtraSoundsRef.current).forEach(audio => {
+          Object.values(navExtraSoundsRef.current).forEach((audio) => {
             if (audio) {
-              audio.pause()
-              audio.currentTime = 0
+              audio.pause();
+              audio.currentTime = 0;
             }
-          })
+          });
         }
       }
 
       setTimeout(() => {
-        const newAudio = audioElementsRef.current[section]
+        const newAudio = audioElementsRef.current[section];
         if (newAudio) {
-          newAudio.currentTime = 0
-          newAudio.play().catch(console.error)
+          newAudio.currentTime = 0;
+          newAudio.play().catch(console.error);
 
           if (section === "nav") {
-            Object.values(navExtraSoundsRef.current).forEach(audio => {
+            Object.values(navExtraSoundsRef.current).forEach((audio) => {
               if (audio) {
-                audio.currentTime = 0
-                audio.play().catch(console.error)
+                audio.currentTime = 0;
+                audio.play().catch(console.error);
               }
-            })
+            });
           }
 
-          currentSectionRef.current = section
+          currentSectionRef.current = section;
         }
-      }, 500) // Increased delay between transition and section sounds
+      }, 500); // Increased delay between transition and section sounds
     } catch (error) {
-      console.error("Error playing sounds:", error)
+      console.error("Error playing sounds:", error);
     }
-  }
+  };
 
   const stopSound = () => {
     try {
       if (currentSectionRef.current) {
-        const currentAudio = audioElementsRef.current[currentSectionRef.current]
+        const currentAudio =
+          audioElementsRef.current[currentSectionRef.current];
         if (currentAudio) {
-          currentAudio.pause()
-          currentAudio.currentTime = 0
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
         }
 
         // Stop nav extra sounds if in nav section
         if (currentSectionRef.current === "nav") {
-          Object.values(navExtraSoundsRef.current).forEach(audio => {
+          Object.values(navExtraSoundsRef.current).forEach((audio) => {
             if (audio) {
-              audio.pause()
-              audio.currentTime = 0
+              audio.pause();
+              audio.currentTime = 0;
             }
-          })
+          });
         }
 
-        currentSectionRef.current = null
+        currentSectionRef.current = null;
       }
     } catch (error) {
-      console.error("Error stopping sound:", error)
+      console.error("Error stopping sound:", error);
     }
-  }
+  };
 
-  const updateListenerPosition = position => {
+  const updateListenerPosition = (position) => {
     if (audioContextRef.current && position) {
-      const [x, y, z] = position
-      audioContextRef.current.listener.setPosition(x, y, z)
+      const [x, y, z] = position;
+      audioContextRef.current.listener.setPosition(x, y, z);
     }
-  }
+  };
 
   const cleanup = () => {
     try {
       if (transitionSoundRef.current) {
-        transitionSoundRef.current.pause()
-        transitionSoundRef.current = null
+        transitionSoundRef.current.pause();
+        transitionSoundRef.current = null;
       }
 
-      Object.values(audioElementsRef.current).forEach(audio => {
+      Object.values(audioElementsRef.current).forEach((audio) => {
         if (audio) {
-          audio.pause()
-          audio.currentTime = 0
+          audio.pause();
+          audio.currentTime = 0;
         }
-      })
+      });
 
-      Object.values(navExtraSoundsRef.current).forEach(audio => {
+      Object.values(navExtraSoundsRef.current).forEach((audio) => {
         if (audio) {
-          audio.pause()
-          audio.currentTime = 0
+          audio.pause();
+          audio.currentTime = 0;
         }
-      })
+      });
 
       if (audioContextRef.current) {
-        audioContextRef.current.close()
-        audioContextRef.current = null
+        audioContextRef.current.close();
+        audioContextRef.current = null;
       }
     } catch (error) {
-      console.error("Error during cleanup:", error)
+      console.error("Error during cleanup:", error);
     }
-  }
+  };
 
   return {
     initAudio,
@@ -295,8 +309,8 @@ const useMultiAudio = () => {
     stopSound,
     updateListenerPosition,
     cleanup,
-  }
-}
+  };
+};
 // Materials textures---------------------------------------------
 
 // Castle Material
@@ -305,16 +319,16 @@ const useCastleMaterial = () => {
     map: "/texture/CastleNewBakeNoLight.png",
     normalMap: "/texture/Castle_Normal.webp",
     roughnessMap: "/texture/Castle_Roughness.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = false
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.flipY = false;
+        texture.minFilter = texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(
     () =>
@@ -332,24 +346,24 @@ const useCastleMaterial = () => {
         metalness: 1,
       }),
     [textures]
-  )
-}
+  );
+};
 
 // Gods Material
 const useGodsMaterial = () => {
   const textures = useTexture({
     map: "/texture/gods_colorsTest2.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = false
-        texture.minFilter = texture.magFilter = NearestFilter
-        texture.colorSpace = "srgb" // Adicione esta linha
+        texture.flipY = false;
+        texture.minFilter = texture.magFilter = NearestFilter;
+        texture.colorSpace = "srgb"; // Adicione esta linha
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(
     () =>
@@ -363,23 +377,23 @@ const useGodsMaterial = () => {
         metalness: 1,
       }),
     [textures]
-  )
-}
+  );
+};
 // Hoof Material
 const useHoofMaterial = () => {
   const textures = useTexture({
     map: "/texture/HoofGlassBake.webp",
     roughnessMap: "/texture/HoofGlassBake.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = false
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.flipY = false;
+        texture.minFilter = texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(
     () =>
@@ -402,8 +416,8 @@ const useHoofMaterial = () => {
         // clearcoatRoughness: 0.1,
       }),
     [textures]
-  )
-}
+  );
+};
 
 //atm Material
 const useAtmMaterial = () => {
@@ -412,16 +426,16 @@ const useAtmMaterial = () => {
     roughnessMap: "/texture/atmRoughness.webp",
     metalnessMap: "/texture/atmMetalness.webp",
     materialEmissive: "/texture/atmEmissive.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = false
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.flipY = false;
+        texture.minFilter = texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(
     () =>
@@ -438,23 +452,23 @@ const useAtmMaterial = () => {
         emissiveIntensity: 3.2,
       }),
     [textures]
-  )
-}
+  );
+};
 
 //Scroll Material
 const useScrollMaterial = () => {
   const textures = useTexture({
     map: "/texture/Scroll_Color.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = false
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.flipY = false;
+        texture.minFilter = texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(
     () =>
@@ -465,46 +479,46 @@ const useScrollMaterial = () => {
         side: DoubleSide,
       }),
     [textures]
-  )
-}
+  );
+};
 
 //Portal Material
 const usePortalMaterial = () => {
   return useMemo(() => {
-    const video = document.createElement("video")
-    video.src = "/video/tunel.mp4"
-    video.loop = true
-    video.muted = true
-    video.playsInline = true
-    video.autoplay = true
-    video.play()
+    const video = document.createElement("video");
+    video.src = "/video/tunel.mp4";
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.autoplay = true;
+    video.play();
 
-    const videoTexture = new VideoTexture(video)
-    videoTexture.minFilter = LinearFilter
-    videoTexture.magFilter = LinearFilter
-    videoTexture.flipY = false
+    const videoTexture = new VideoTexture(video);
+    videoTexture.minFilter = LinearFilter;
+    videoTexture.magFilter = LinearFilter;
+    videoTexture.flipY = false;
 
     return new MeshBasicMaterial({
       map: videoTexture,
       side: DoubleSide,
-    })
-  }, [])
-}
+    });
+  }, []);
+};
 // Fontaine Water Material
 const useWaterMaterial = () => {
   return useMemo(() => {
-    const video = document.createElement("video")
-    video.src = "/video/waterColor.mp4"
-    video.loop = true
-    video.muted = true
-    video.playsInline = true
-    video.autoplay = true
-    video.play()
+    const video = document.createElement("video");
+    video.src = "/video/waterColor.mp4";
+    video.loop = true;
+    video.muted = true;
+    video.playsInLine = true;
+    video.autoplay = true;
+    video.play();
 
-    const videoTexture = new VideoTexture(video)
-    videoTexture.minFilter = LinearFilter
-    videoTexture.magFilter = LinearFilter
-    videoTexture.flipY = false
+    const videoTexture = new VideoTexture(video);
+    videoTexture.minFilter = LinearFilter;
+    videoTexture.magFilter = LinearFilter;
+    videoTexture.flipY = false;
 
     return new MeshPhysicalMaterial({
       map: videoTexture,
@@ -514,20 +528,37 @@ const useWaterMaterial = () => {
       side: DoubleSide,
       emissive: new Color(0xffa6f3),
       emissiveIntensity: 2,
-    })
-  }, [])
-}
+    });
+  }, []);
+};
 
 // Components
-const CastleModel = ({ onCastleClick }) => {
-  const { nodes } = useGLTF("/models/Castle.glb")
-  const material = useCastleMaterial()
-  const godsMaterial = useGodsMaterial()
-  const hoofMaterial = useHoofMaterial()
-  const atmMaterial = useAtmMaterial()
-  const portal = usePortalMaterial()
-  const scrollMaterial = useScrollMaterial()
-  const waterMaterial = useWaterMaterial()
+const CastleModel = ({
+  onCastleClick,
+  atmIframeActive,
+  mirrorIframeActive,
+  scrollIframeActive, // This prop should be passed from Castle component
+}) => {
+  const { nodes } = useGLTF("/models/Castle.glb");
+  const material = useCastleMaterial();
+  const godsMaterial = useGodsMaterial();
+  const hoofMaterial = useHoofMaterial();
+  const atmMaterial = useAtmMaterial();
+  const portal = usePortalMaterial();
+  const scrollMaterial = useScrollMaterial();
+  const waterMaterial = useWaterMaterial();
+
+  // Handlers para interatividade
+  const pointerHandlers = {
+    onPointerEnter: (e) => {
+      e.stopPropagation();
+      document.body.style.cursor = "pointer";
+    },
+    onPointerLeave: (e) => {
+      e.stopPropagation();
+      document.body.style.cursor = "default";
+    },
+  };
 
   return (
     <group dispose={null}>
@@ -557,6 +588,11 @@ const CastleModel = ({ onCastleClick }) => {
         layers-enable={2}
         castShadow={false}
         receiveShadow={false}
+        onClick={(e) => {
+          e.stopPropagation();
+          onCastleClick("token");
+        }}
+        {...pointerHandlers}
       />
       <group position={[-0.056, 1.247, -2.117]}>
         <RotateAxis axis="y" speed={0.7} rotationType="euler">
@@ -580,6 +616,8 @@ const CastleModel = ({ onCastleClick }) => {
           />
         </RotateAxis>
       </group>
+
+      {/* Important: Always render the scroll mesh regardless of section */}
       <mesh
         geometry={nodes.scroll.geometry}
         material={scrollMaterial}
@@ -587,7 +625,13 @@ const CastleModel = ({ onCastleClick }) => {
         rotation={[Math.PI / 2, 0, 0]}
         castShadow={false}
         receiveShadow={false}
+        onClick={(e) => {
+          e.stopPropagation();
+          onCastleClick("roadmap");
+        }}
+        {...pointerHandlers}
       />
+
       <Select disabled>
         <mesh
           geometry={nodes.heartVid.geometry}
@@ -616,114 +660,174 @@ const CastleModel = ({ onCastleClick }) => {
         castShadow={false}
         receiveShadow={false}
       />
+
+      <AtmIframe
+        position={[1.675, 1.185, 0.86]}
+        rotation={[1.47, 0.194, -1.088]}
+        onReturnToMain={() => {
+          onCastleClick("nav");
+        }}
+        isActive={atmIframeActive}
+      />
+
+      <MirrorIframe
+        onReturnToMain={() => {
+          onCastleClick("nav");
+        }}
+        isActive={mirrorIframeActive}
+      />
+
+      {/* Add the ScrollIframe component, but make sure it's always rendered */}
+      <ScrollIframe
+        onReturnToMain={() => {
+          onCastleClick("nav");
+        }}
+        isActive={scrollIframeActive}
+      />
     </group>
-  )
-}
+  );
+};
 
 // Main Component
 const Castle = ({ activeSection }) => {
-  const controls = useRef()
+  const controls = useRef();
+  const [atmiframeActive, setAtmiframeActive] = useState(false);
+  const [mirrorIframeActive, setMirrorIframeActive] = useState(false);
+  const [scrollIframeActive, setScrollIframeActive] = useState(false); // Add this state
+
+  useEffect(() => {
+    if (activeSection === "aidatingcoach") {
+      setMirrorIframeActive(true);
+    } else {
+      setMirrorIframeActive(false);
+    }
+  }, [activeSection]);
+
   const { initAudio, playSound, stopSound, updateListenerPosition, cleanup } =
-    useMultiAudio()
-  const getCameraPosition = section => {
-    const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD
-    const screenType = isSmallScreen ? "small" : "large"
+    useMultiAudio();
+
+  const getCameraPosition = (section) => {
+    const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD;
+    const screenType = isSmallScreen ? "small" : "large";
 
     if (section === "default") {
-      return cameraConfig.default[screenType]
+      return cameraConfig.default[screenType];
     }
 
-    return cameraConfig.sections[screenType][section]
-  }
+    return cameraConfig.sections[screenType][section];
+  };
 
-  const playTransition = sectionName => {
-    if (!controls.current) return
+  // Fix the useEffect that handles section changes
+  useEffect(() => {
+    if (activeSection === "token" || activeSection === "atm") {
+      setAtmiframeActive(true);
+    } else {
+      setAtmiframeActive(false);
+    }
 
-    controls.current.enabled = true // Sempre mantém enabled como true
+    if (activeSection === "aidatingcoach") {
+      setMirrorIframeActive(true);
+    } else {
+      setMirrorIframeActive(false);
+    }
+
+    // Add this condition for ScrollIframe
+    if (activeSection === "roadmap") {
+      setScrollIframeActive(true);
+    } else {
+      setScrollIframeActive(false);
+    }
+  }, [activeSection]);
+
+  const playTransition = (sectionName) => {
+    if (!controls.current) return;
+
+    controls.current.enabled = true; // Sempre mantém enabled como true
 
     const targetPosition = getCameraPosition(
       sectionName === "default" ? "default" : sectionName
-    )
+    );
 
     if (targetPosition) {
       controls.current.setLookAt(...targetPosition, true).then(() => {
-        controls.current.enabled = sectionName === "nav"
-      })
+        // Habilita os controles apenas para a navegação principal
+        controls.current.enabled = sectionName === "nav";
+      });
 
-      updateListenerPosition(targetPosition.slice(0, 3))
+      updateListenerPosition(targetPosition.slice(0, 3));
 
       if (sectionName !== "default") {
-        playSound(sectionName)
+        playSound(sectionName);
       } else {
-        stopSound()
+        stopSound();
       }
     }
-  }
+  };
 
   useEffect(() => {
-    if (!controls.current) return
+    if (!controls.current) return;
 
-    window.controls = controls
-    initAudio()
+    window.controls = controls;
+    initAudio();
 
     // REMOVIDO TODAS AS RESTRIÇÕES
-    const defaultPosition = getCameraPosition("default")
-    controls.current.setLookAt(...defaultPosition, false)
+    const defaultPosition = getCameraPosition("default");
+    controls.current.setLookAt(...defaultPosition, false);
 
     setTimeout(() => {
-      playTransition("nav")
-    }, TRANSITION_DELAY)
+      playTransition("nav");
+    }, TRANSITION_DELAY);
 
-    return cleanup
-  }, [])
+    return cleanup;
+  }, []);
 
   // Initialize camera and audio
-
   useEffect(() => {
-    if (!controls.current) return
+    if (!controls.current) return;
 
-    window.controls = controls
+    window.controls = controls;
     // initAudio()
 
-    controls.current.minPolarAngle = Math.PI * 0.15
-    controls.current.maxPolarAngle = Math.PI * 0.55
-    controls.current.minDistance = 5
-    controls.current.maxDistance = 20
-    controls.current.boundaryFriction = 1
-    controls.current.boundaryEnclosesCamera = true
-    controls.current.verticalDragToForward = false
-    controls.current.dollyToCursor = false
-    controls.current.minY = 1
-    controls.current.maxY = 15
+    controls.current.minPolarAngle = Math.PI * 0.15;
+    controls.current.maxPolarAngle = Math.PI * 0.55;
+    controls.current.minDistance = 5;
+    controls.current.maxDistance = 20;
+    controls.current.boundaryFriction = 1;
+    controls.current.boundaryEnclosesCamera = true;
+    controls.current.verticalDragToForward = false;
+    controls.current.dollyToCursor = false;
+    controls.current.minY = 1;
+    controls.current.maxY = 15;
 
-    const defaultPosition = getCameraPosition("default")
-    controls.current.setLookAt(...defaultPosition, false)
+    const defaultPosition = getCameraPosition("default");
+    controls.current.setLookAt(...defaultPosition, false);
 
     setTimeout(() => {
-      playTransition("nav")
-    }, TRANSITION_DELAY)
+      playTransition("nav");
+    }, TRANSITION_DELAY);
 
-    return cleanup
-  }, [])
+    return cleanup;
+  }, []);
+
   // Handle active section changes
   useEffect(() => {
     if (activeSection) {
-      playTransition(activeSection)
+      playTransition(activeSection);
     }
-  }, [activeSection])
+  }, [activeSection]);
 
   // Handle window resize
   useEffect(() => {
     const handleResize = () => {
       if (controls.current && activeSection) {
-        const newPosition = getCameraPosition(activeSection)
-        controls.current.setLookAt(...newPosition, true)
+        const newPosition = getCameraPosition(activeSection);
+        controls.current.setLookAt(...newPosition, true);
       }
-    }
+    };
 
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [activeSection])
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [activeSection]);
 
   // Debug controls
   useControls("settings", {
@@ -733,20 +837,20 @@ const Castle = ({ activeSection }) => {
       min: 0.1,
       max: 2,
       step: 0.1,
-      onChange: v => {
+      onChange: (v) => {
         if (controls.current) {
-          controls.current.smoothTime = v
+          controls.current.smoothTime = v;
         }
       },
     },
     getLookAt: button(() => {
       if (controls.current) {
-        const position = controls.current.getPosition()
-        const target = controls.current.getTarget()
-        console.log([...position, ...target])
+        const position = controls.current.getPosition();
+        const target = controls.current.getTarget();
+        console.log([...position, ...target]);
       }
     }),
-  })
+  });
 
   return (
     <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
@@ -766,11 +870,16 @@ const Castle = ({ activeSection }) => {
         maxY={15}
       />
       <Suspense>
-        <CastleModel onCastleClick={playTransition} />
+        <CastleModel
+          onCastleClick={playTransition}
+          atmIframeActive={atmiframeActive}
+          mirrorIframeActive={mirrorIframeActive}
+          scrollIframeActive={scrollIframeActive} // Pass the state to the model
+        />
       </Suspense>
     </group>
-  )
-}
-useGLTF.preload("/models/Castle.glb")
+  );
+};
+useGLTF.preload("/models/Castle.glb");
 
-export default Castle
+export default Castle;

@@ -20,6 +20,7 @@
     "framer-motion": "^10.16.4",
     "gsap": "^3.12.7",
     "howler": "^2.2.4",
+    "html2canvas": "^1.4.1",
     "leva": "^0.9.35",
     "lucide-react": "^0.475.0",
     "react": "^18.2.0",

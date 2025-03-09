@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AboutOverlay } from "/src/assets/models/AboutOverlay.jsx"; // Caminho correto de importação
+import { AboutOverlay } from "/src/assets/models/AboutOverlay.jsx";
 
 export const sections = [
   "nav",
@@ -33,16 +33,20 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
   const [showAboutOverlay, setShowAboutOverlay] = useState(false);
   const currentSectionKey = sections[section];
 
-  // Show overlay automatically when about section is active
-  useEffect(() => {
-    if (currentSectionKey === "about") {
-      // Adicionando um pequeno timeout para garantir que a transição da câmera aconteça primeiro
-      const timer = setTimeout(() => {
-        setShowAboutOverlay(true);
-      }, 100); // Um pequeno delay para garantir que seja exibido após a transição
-      return () => clearTimeout(timer);
-    }
-  }, [currentSectionKey]);
+  // // Show overlay only after the camera animation has completed
+  // useEffect(() => {
+  //   if (currentSectionKey === "about") {
+  //     // Use a longer delay to ensure camera animation is complete before showing overlay
+  //     // Camera transitions typically take around 1-1.5 seconds
+  //     const timer = setTimeout(() => {
+  //       setShowAboutOverlay(true);
+  //     }, 1500); // 1.5 seconds delay to ensure animation is complete
+  //     return () => clearTimeout(timer);
+  //   } else {
+  //     // Hide overlay immediately when leaving the about section
+  //     setShowAboutOverlay(false);
+  //   }
+  // }, [currentSectionKey]);
 
   const handleHomeNavigation = () => {
     if (cameraRef) {
@@ -89,13 +93,11 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
           </h1>
           <div className="flex gap-4">
             <NavigationButton
-              onClick={() => window.open("#download-link", "_blank")}
               className="bg-green-500 hover:bg-green-600 text-white pointer-events-auto"
             >
               iOS Version
             </NavigationButton>
             <NavigationButton
-              onClick={() => window.open("#download-link", "_blank")}
               className="bg-green-500 hover:bg-green-600 text-white pointer-events-auto"
             >
               Android Version
@@ -112,16 +114,15 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
 
       {/* Seção Token */}
       <Section isActive={currentSectionKey === "token"}>
-        <div className="flex flex-col items-center gap-6 pb-60">
-          <h1 className="text-4xl font-bold text-stone-100">
-            Token Information
-          </h1>
-          <NavigationButton
-            onClick={handleHomeNavigation}
-            className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
-          >
-            Back to Main
-          </NavigationButton>
+      <div className="flex flex-col items-center gap-6">
+          <div className="flex gap-4">
+            <NavigationButton
+              onClick={handleHomeNavigation}
+              className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
+            >
+              Back
+            </NavigationButton>
+          </div>
         </div>
       </Section>
 
@@ -142,7 +143,7 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
         </div>
       </Section>
 
-      {/* AboutOverlay Component */}
+      {/* AboutOverlay Component - Only shown after camera animation completes */}
       <AboutOverlay
         isVisible={showAboutOverlay}
         onClose={handleCloseOverlay}
