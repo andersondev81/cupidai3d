@@ -197,7 +197,7 @@ const Orb = () => {
 
   return (
     <>
-      <group ref={sceneRef} position={[0, 0.15, 0]} rotation={[0, 0, 0]}>
+      <group ref={sceneRef} position={[0.066, 0, -0.04]} rotation={[0, 0, 0]}>
         <Float
           floatIntensity={0.3}
           speed={3}

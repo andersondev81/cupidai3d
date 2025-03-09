@@ -18,14 +18,13 @@ export function Model(props) {
       <mesh geometry={nodes.gods.geometry} material={nodes.gods.material} />
       <mesh geometry={nodes.LogoCupid.geometry} material={nodes.LogoCupid.material} position={[0.001, 4.18, -0.006]} />
       <mesh geometry={nodes.bow.geometry} material={nodes.bow.material} position={[-0.011, 1.262, -2.117]} />
-      <mesh geometry={nodes.ring.geometry} material={nodes.ring.material} />
+      <mesh geometry={nodes.floor.geometry} material={nodes.floor.material} />
       <mesh geometry={nodes.MirrorFrame.geometry} material={nodes.MirrorFrame.material} />
       <mesh geometry={nodes.wings.geometry} material={nodes.wings.material} />
       <mesh geometry={nodes.Flowers.geometry} material={nodes.Flowers.material} />
-      <mesh geometry={nodes.HeartFixed.geometry} material={nodes.HeartFixed.material} />
       <mesh geometry={nodes.decor.geometry} material={nodes.decor.material} />
-      <mesh geometry={nodes.castle.geometry} material={nodes.castle.material} />
       <mesh geometry={nodes.hoofGlass.geometry} material={nodes.hoofGlass.material} />
+      <mesh geometry={nodes.Castle.geometry} material={nodes.Castle.material} />
     </group>
   )
 }
