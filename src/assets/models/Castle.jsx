@@ -325,8 +325,8 @@ const useCastleMaterial = () => {
         roughnessMap: textures.roughnessMap,
         metalnessMap: textures.metalnessMap,
         emissiveMap: textures.emissiveMap,
-        emissive: new Color(0xfff),
-        emissiveIntensity: 2,
+        emissive: new Color(0xf6d8ff),
+        emissiveIntensity: 3.2,
         transparent: false,
         alphaTest: 0.05,
         side: DoubleSide,
@@ -336,13 +336,14 @@ const useCastleMaterial = () => {
     [textures]
   )
 }
-// Heart Material
-const useHeartMaterial = () => {
+
+// Floor Material
+const useFloorMaterial = () => {
   const textures = useTexture({
-    Map: "/texture/heartBase_color.webp",
-    roughnessMap: "/texture/heartRoughness.webp",
-    metalnessMap: "/texture/heartMetalness.webp",
-    materialEmissive: "/texture/heartEmissive.webp",
+    Map: "/texture/FloorColorB.webp",
+    roughnessMap: "/texture/floorRoughness.webp",
+    metalnessMap: "/texture/floorMetallic.webp",
+    materialEmissive: "/texture/floorEmissive.webp",
   })
 
   useMemo(() => {
@@ -485,13 +486,13 @@ const useFlowersMaterial = () => {
 // Gods Material
 const useGodsMaterial = () => {
   const textures = useTexture({
-    map: "/texture/gods_colorR.webp",
+    map: "/texture/gods_colorsTest2.webp",
   })
 
   useMemo(() => {
     Object.values(textures).forEach(texture => {
       if (texture) {
-        texture.flipY = false
+        texture.flipY = true
         texture.minFilter = texture.magFilter = NearestFilter
         texture.colorSpace = "srgb" // Adicione esta linha
       }
@@ -516,7 +517,7 @@ const useGodsMaterial = () => {
 // Hoof Material
 const useHoofMaterial = () => {
   const textures = useTexture({
-    map: "/texture/hoofGlassColor.webp",
+    map: "/texture/hoofGlassColorB.webp",
     emissiveMap: "/texture/hoofGlassEmissive.webp", // Renomeado de roughnessMap para emissiveMap
   })
 
@@ -535,7 +536,7 @@ const useHoofMaterial = () => {
         map: textures.map,
         emissiveMap: textures.emissiveMap, // Adicionado o emissiveMap
         emissive: new Color(0xffffff), // Cor emissiva branca para preservar as cores do mapa
-        emissiveIntensity: 3.5, // Intensidade do efeito emissivo
+        emissiveIntensity: 2.5, // Intensidade do efeito emissivo
         transparent: false,
         side: DoubleSide,
         blending: NormalBlending,
@@ -667,7 +668,7 @@ const CastleModel = ({ onCastleClick }) => {
   const decorMaterial = useDecorMaterial()
   const flowersMaterial = useFlowersMaterial()
   const godsMaterial = useGodsMaterial()
-  const heartMaterial = useHeartMaterial()
+  const floorMaterial = useFloorMaterial()
   const hoofMaterial = useHoofMaterial()
   const atmMaterial = useAtmMaterial()
   const portal = usePortalMaterial()
@@ -678,7 +679,7 @@ const CastleModel = ({ onCastleClick }) => {
   return (
     <group dispose={null}>
       <mesh
-        geometry={nodes.castle.geometry}
+        geometry={nodes.Castle.geometry}
         material={material}
         layers-enable={2}
         castShadow={false}
@@ -688,10 +689,8 @@ const CastleModel = ({ onCastleClick }) => {
       <mesh geometry={nodes.gods.geometry} material={godsMaterial} />
       <mesh geometry={nodes.Flowers.geometry} material={flowersMaterial} />
       <mesh geometry={nodes.decor.geometry} material={decorMaterial} />
-      <mesh geometry={nodes.HeartFixed.geometry} material={heartMaterial} />
-      <mesh geometry={nodes.ring.geometry} material={decorMaterial} />
+      <mesh geometry={nodes.floor.geometry} material={floorMaterial} />
       <mesh geometry={nodes.MirrorFrame.geometry} material={decorMaterial} />
-
       <mesh
         geometry={nodes.hoofGlass.geometry}
         material={hoofMaterial}
