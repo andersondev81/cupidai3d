@@ -1,7 +1,7 @@
-import { CameraControls, useGLTF, useTexture } from "@react-three/drei"
-import { Select } from "@react-three/postprocessing"
-import { button, monitor, useControls } from "leva"
-import React, { Suspense, useEffect, useMemo, useRef, useState } from "react"
+import { CameraControls, useGLTF, useTexture } from "@react-three/drei";
+import { Select } from "@react-three/postprocessing";
+import { button, monitor, useControls } from "leva";
+import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   Color,
   DoubleSide,
@@ -13,11 +13,13 @@ import {
   NormalBlending,
   VideoTexture,
   RepeatWrapping,
-} from "three"
-import FountainParticles from "../../components/FountainParticles"
-import RotateAxis from "../../components/helpers/RotateAxis"
+} from "three";
+import FountainParticles from "../../components/FountainParticles";
+import RotateAxis from "../../components/helpers/RotateAxis";
+import AtmIframe from "./AtmIframe";
+import MirrorIframe from "./MirrorIframe";
+import ScrollIframe from "./ScrolIframe"; // Import the ScrollIframe component
 
-// Constants
 const SMALL_SCREEN_THRESHOLD = 768
 const TRANSITION_DELAY = 100
 
@@ -42,7 +44,6 @@ const NAV_EXTRA_SOUNDS = {
   templeAmbient: getAssetPath("/assets/sounds/templeambiance.mp3"),
   fountain: getAssetPath("/assets/sounds/fountain.mp3"),
 }
-
 // Camera Positions Configuration
 const cameraConfig = {
   default: {
@@ -62,8 +63,8 @@ const cameraConfig = {
         -0.21830679207380707, 1.042078953185994, 0.860456882413919,
       ],
       about: [
-        2.036849267056926, 1.1276933552454578, -1.0231282019898584,
-        0.37394830262366985, 1.0624176349739602, -0.187605864806909,
+        2.3794036621880066, 1.2374886332491917, -1.2579531405441664,
+        -0.3255291216311705, 1.3232162748274139, 0.2492021531029873,
       ],
       aidatingcoach: [
         -2.434203790421109, 1.6557626961206224, -1.2415015061749266,
@@ -74,13 +75,15 @@ const cameraConfig = {
         -0.30992362617772434, 1.2392967457625186, -0.11582946349265688,
       ],
       token: [
-        2.0799027767746923, 1.1492603137264552, 1.0627122850364636,
-        -1.2102179925739383, 0.8585880494001786, -0.5986556331928229,
+        1.931997968022665, 1.1594082482254913, 0.9811401185397038,
+        0.23389279950071676, 1.2319694816577682, 0.14739862810065263,
       ],
       roadmap: [
         -2.231073073487725, 1.1995652698467631, 1.135322606706848,
         -0.17684615441762777, 0.9455151215049427, 0.03254375215457311,
       ],
+      // Nova posição para a visualização do iframe do ATM
+      atm: [1.972, 1.22, 0.95, 1.675, 1.185, 0.86],
     },
     small: {
       nav: [
@@ -88,8 +91,8 @@ const cameraConfig = {
         -1.3224149774642704, 1.6753152120757284, 1.0989767468615808,
       ],
       about: [
-        1.8562259954731093, 1.1626020325030495, -0.926552435064171,
-        1.3674383110764547, 1.1705903196566405, -0.662785847191283,
+        2.3794036621880066, 1.2374886332491917, -1.2579531405441664,
+        -0.3255291216311705, 1.3232162748274139, 0.2492021531029873,
       ],
       aidatingcoach: [
         -2.3148021101664606, 1.1024327055391172, -1.1063841608771088,
@@ -100,21 +103,23 @@ const cameraConfig = {
         1.3674383110764547, 1.1705903196566405, -0.662785847191283,
       ],
       token: [
-        2.118405773953273, 1.2172470657362846, 1.0635730429142927,
-        0.04723852527162822, 0.585365963592996, 0.11077814711949062,
+        1.9,
+        1.18,
+        0.95, // Ajustado para tela pequena
+        1.675,
+        1.185,
+        0.86,
       ],
       roadmap: [
         -2.231073073487725, 1.1995652698467631, 1.135322606706848,
         -0.17684615441762777, 0.9455151215049427, 0.03254375215457311,
       ],
+      // Versão para tela pequena
+      atm: [1.972, 1.22, 0.95, 1.675, 1.185, 0.86],
     },
   },
-}
+};
 
-// Detect iOS devices
-const isIOS = () => {
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
-}
 
 // Enhanced Audio Hook with iOS compatibility
 const useMultiAudio = () => {
@@ -358,43 +363,6 @@ const useMultiAudio = () => {
   }
 }
 
-// User interaction component to enable audio/video
-const InteractionPrompt = ({ onInteraction }) => {
-  return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        background: "rgba(0,0,0,0.7)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 1000,
-      }}
-    >
-      <button
-        onClick={onInteraction}
-        style={{
-          padding: "15px 30px",
-          fontSize: "18px",
-          background: "#FA3C81",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-        }}
-      >
-        Start Experience
-      </button>
-    </div>
-  )
-}
-
-// Materials textures with lazy loading -----------------------------
-
 // Video texture hook with iOS compatibility
 const useVideoTexture = videoPath => {
   const [texture, setTexture] = useState(null)
@@ -459,19 +427,19 @@ const useCastleMaterial = () => {
       new MeshPhysicalMaterial({
         map: textures.map,
         roughnessMap: textures.roughnessMap,
-        metalnessMap: textures.metalnessMap,
         emissiveMap: textures.emissiveMap,
-        emissive: new Color(0xf6d8ff),
-        emissiveIntensity: 3.2,
+        // emissive: new Color(0xf6d8fc),
+        // emissiveIntensity: 2,
         transparent: false,
         alphaTest: 0.05,
         side: DoubleSide,
         blending: NormalBlending,
+        roughness: 1.6,
         metalness: 1,
       }),
     [textures]
-  )
-}
+  );
+};
 
 // Floor Material
 const useFloorMaterial = () => {
@@ -624,6 +592,7 @@ const useGodsMaterial = () => {
     })
   }, [textures])
 
+
   return useMemo(
     () =>
       new MeshBasicMaterial({
@@ -636,9 +605,8 @@ const useGodsMaterial = () => {
         metalness: 1,
       }),
     [textures]
-  )
-}
-
+  );
+};
 // Hoof Material
 const useHoofMaterial = () => {
   const textures = useTexture({
@@ -671,7 +639,6 @@ const useHoofMaterial = () => {
     [textures]
   )
 }
-
 //atm Material
 const useAtmMaterial = () => {
   const textures = useTexture({
@@ -708,6 +675,30 @@ const useAtmMaterial = () => {
   )
 }
 
+//Portal Material
+const usePortalMaterial = () => {
+  return useMemo(() => {
+    const video = document.createElement("video");
+    video.src = "/video/tunel.mp4";
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.autoplay = true;
+    video.play();
+
+    const videoTexture = new VideoTexture(video);
+    videoTexture.minFilter = LinearFilter;
+    videoTexture.magFilter = LinearFilter;
+    videoTexture.flipY = false;
+
+    return new MeshBasicMaterial({
+      map: videoTexture,
+      side: DoubleSide,
+    });
+  }, []);
+};
+
+
 //Scroll Material
 const useScrollMaterial = () => {
   const textures = useTexture({
@@ -735,12 +726,44 @@ const useScrollMaterial = () => {
   )
 }
 
+// Fontaine Water Material
+const useWaterMaterial = () => {
+  return useMemo(() => {
+    const video = document.createElement("video");
+    video.src = "/video/waterColor.mp4";
+    video.loop = true;
+    video.muted = true;
+    video.playsInLine = true;
+    video.autoplay = true;
+    video.play();
+
+    const videoTexture = new VideoTexture(video);
+    videoTexture.minFilter = LinearFilter;
+    videoTexture.magFilter = LinearFilter;
+    videoTexture.flipY = false;
+
+    return new MeshPhysicalMaterial({
+      map: videoTexture,
+      transparent: false,
+      roughness: 0.2,
+      metalness: 0,
+      side: DoubleSide,
+      emissive: new Color(0xffa6f3),
+      emissiveIntensity: 2,
+    });
+  }, []);
+};
+
 // Components
+
 const CastleModel = ({
   onCastleClick,
   hasInteracted,
   onPortalPlay,
   onWaterPlay,
+  atmIframeActive,
+  mirrorIframeActive,
+  scrollIframeActive, // This prop should be passed from Castle component
 }) => {
   const { nodes } = useGLTF("/models/Castle.glb")
   const material = useCastleMaterial()
@@ -752,6 +775,7 @@ const CastleModel = ({
   const hoofMaterial = useHoofMaterial()
   const atmMaterial = useAtmMaterial()
   const scrollMaterial = useScrollMaterial()
+  const portal = usePortalMaterial()
 
   // Use the video texture hook for portal
   const { texture: portalTexture, playVideo: playPortal } =
@@ -860,7 +884,7 @@ const CastleModel = ({
       <Select disabled>
         <mesh
           geometry={nodes.HeartVid.geometry}
-          material={portalMaterial}
+          material={portal}
           layers-enable={1}
           castShadow={false}
           receiveShadow={false}
@@ -883,132 +907,175 @@ const CastleModel = ({
         castShadow={false}
         receiveShadow={false}
       />
+         <AtmIframe
+        position={[1.675, 1.185, 0.86]}
+        rotation={[1.47, 0.194, -1.088]}
+        onReturnToMain={() => {
+          onCastleClick("nav");
+        }}
+        isActive={atmIframeActive}
+      />
+
+      <MirrorIframe
+        onReturnToMain={() => {
+          onCastleClick("nav");
+        }}
+        isActive={mirrorIframeActive}
+      />
+
+      {/* Add the ScrollIframe component, but make sure it's always rendered */}
+      <ScrollIframe
+        onReturnToMain={() => {
+          onCastleClick("nav");
+        }}
+        isActive={scrollIframeActive}
+      />
     </group>
+
+
   )
 }
 
 // Main Component
 const Castle = ({ activeSection }) => {
-  const controls = useRef()
-  const {
-    initAudio,
-    playSound,
-    stopSound,
-    updateListenerPosition,
-    cleanup,
-    audioInitialized,
-    resumeAudioContext,
-  } = useMultiAudio()
+  const controls = useRef();
+  const [atmiframeActive, setAtmiframeActive] = useState(false);
+  const [mirrorIframeActive, setMirrorIframeActive] = useState(false);
+  const [scrollIframeActive, setScrollIframeActive] = useState(false); // Add this state
 
-  const [hasInteracted, setHasInteracted] = useState(false)
-  const [showInteractionPrompt, setShowInteractionPrompt] = useState(isIOS())
+  useEffect(() => {
+    if (activeSection === "aidatingcoach") {
+      setMirrorIframeActive(true);
+    } else {
+      setMirrorIframeActive(false);
+    }
+  }, [activeSection]);
 
-  const handleUserInteraction = () => {
-    setHasInteracted(true)
-    setShowInteractionPrompt(false)
-    initAudio()
-    resumeAudioContext()
+  const { initAudio, playSound, stopSound, updateListenerPosition, cleanup } =
+    useMultiAudio();
 
-    // Delay playing sound slightly to ensure audio context is resumed
-    setTimeout(() => {
-      if (activeSection) {
-        playTransition(activeSection)
-      } else {
-        playTransition("nav")
-      }
-    }, 100)
-  }
-
-  const getCameraPosition = section => {
-    const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD
-    const screenType = isSmallScreen ? "small" : "large"
+  const getCameraPosition = (section) => {
+    const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD;
+    const screenType = isSmallScreen ? "small" : "large";
 
     if (section === "default") {
-      return cameraConfig.default[screenType]
+      return cameraConfig.default[screenType];
     }
 
-    return cameraConfig.sections[screenType][section]
-  }
+    return cameraConfig.sections[screenType][section];
+  };
 
-  const playTransition = sectionName => {
-    if (!controls.current) return
+  // Fix the useEffect that handles section changes
+  useEffect(() => {
+    if (activeSection === "token" || activeSection === "atm") {
+      setAtmiframeActive(true);
+    } else {
+      setAtmiframeActive(false);
+    }
 
-    controls.current.enabled = true
+    if (activeSection === "aidatingcoach") {
+      setMirrorIframeActive(true);
+    } else {
+      setMirrorIframeActive(false);
+    }
+
+    // Add this condition for ScrollIframe
+    if (activeSection === "roadmap") {
+      setScrollIframeActive(true);
+    } else {
+      setScrollIframeActive(false);
+    }
+  }, [activeSection]);
+
+  const playTransition = (sectionName) => {
+    if (!controls.current) return;
+
+    controls.current.enabled = true; // Sempre mantém enabled como true
 
     const targetPosition = getCameraPosition(
       sectionName === "default" ? "default" : sectionName
-    )
+    );
 
     if (targetPosition) {
       controls.current.setLookAt(...targetPosition, true).then(() => {
-        controls.current.enabled = sectionName === "nav"
-      })
+        // Habilita os controles apenas para a navegação principal
+        controls.current.enabled = sectionName === "nav";
+      });
 
-      updateListenerPosition(targetPosition.slice(0, 3))
+      updateListenerPosition(targetPosition.slice(0, 3));
 
       if (sectionName !== "default") {
-        playSound(sectionName)
+        playSound(sectionName);
       } else {
-        stopSound()
+        stopSound();
       }
     }
-  }
+  };
 
   useEffect(() => {
-    if (!controls.current) return
+    if (!controls.current) return;
 
-    window.controls = controls
+    window.controls = controls;
+    initAudio();
 
-    // Don't initialize audio automatically - wait for user interaction
-    if (!isIOS()) {
-      initAudio()
-    }
+    // REMOVIDO TODAS AS RESTRIÇÕES
+    const defaultPosition = getCameraPosition("default");
+    controls.current.setLookAt(...defaultPosition, false);
 
-    // Set camera controls configuration
-    controls.current.minPolarAngle = Math.PI * 0.15
-    controls.current.maxPolarAngle = Math.PI * 0.55
-    controls.current.minDistance = 5
-    controls.current.maxDistance = 20
-    controls.current.boundaryFriction = 1
-    controls.current.boundaryEnclosesCamera = true
-    controls.current.verticalDragToForward = false
-    controls.current.dollyToCursor = false
-    controls.current.minY = 1
-    controls.current.maxY = 15
+    setTimeout(() => {
+      playTransition("nav");
+    }, TRANSITION_DELAY);
 
-    // Set initial position
-    const defaultPosition = getCameraPosition("default")
-    controls.current.setLookAt(...defaultPosition, false)
+    return cleanup;
+  }, []);
 
-    // Only auto-transition if not on iOS or after user interaction
-    if (!isIOS() || hasInteracted) {
-      setTimeout(() => {
-        playTransition("nav")
-      }, TRANSITION_DELAY)
-    }
+  // Initialize camera and audio
+  useEffect(() => {
+    if (!controls.current) return;
 
-    return cleanup
-  }, [hasInteracted])
+    window.controls = controls;
+    // initAudio()
+
+    controls.current.minPolarAngle = Math.PI * 0.15;
+    controls.current.maxPolarAngle = Math.PI * 0.55;
+    controls.current.minDistance = 5;
+    controls.current.maxDistance = 20;
+    controls.current.boundaryFriction = 1;
+    controls.current.boundaryEnclosesCamera = true;
+    controls.current.verticalDragToForward = false;
+    controls.current.dollyToCursor = false;
+    controls.current.minY = 1;
+    controls.current.maxY = 15;
+
+    const defaultPosition = getCameraPosition("default");
+    controls.current.setLookAt(...defaultPosition, false);
+
+    setTimeout(() => {
+      playTransition("nav");
+    }, TRANSITION_DELAY);
+
+    return cleanup;
+  }, []);
 
   // Handle active section changes
   useEffect(() => {
-    if (activeSection && (hasInteracted || !isIOS())) {
-      playTransition(activeSection)
+    if (activeSection) {
+      playTransition(activeSection);
     }
-  }, [activeSection, hasInteracted])
+  }, [activeSection]);
 
   // Handle window resize
   useEffect(() => {
     const handleResize = () => {
       if (controls.current && activeSection) {
-        const newPosition = getCameraPosition(activeSection)
-        controls.current.setLookAt(...newPosition, true)
+        const newPosition = getCameraPosition(activeSection);
+        controls.current.setLookAt(...newPosition, true);
       }
-    }
+    };
 
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [activeSection])
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [activeSection]);
 
   // Debug controls
   useControls("settings", {
@@ -1018,56 +1085,49 @@ const Castle = ({ activeSection }) => {
       min: 0.1,
       max: 2,
       step: 0.1,
-      onChange: v => {
+      onChange: (v) => {
         if (controls.current) {
-          controls.current.smoothTime = v
+          controls.current.smoothTime = v;
         }
       },
     },
     getLookAt: button(() => {
       if (controls.current) {
-        const position = controls.current.getPosition()
-        const target = controls.current.getTarget()
-        console.log([...position, ...target])
+        const position = controls.current.getPosition();
+        const target = controls.current.getTarget();
+        console.log([...position, ...target]);
       }
     }),
-  })
+  });
 
   return (
-    <>
-      {showInteractionPrompt && (
-        <InteractionPrompt onInteraction={handleUserInteraction} />
-      )}
-
-      <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
-        <CameraControls
-          ref={controls}
-          makeDefault
-          smoothTime={0.6}
-          minPolarAngle={Math.PI * 0.15}
-          maxPolarAngle={Math.PI * 0.55}
-          minDistance={0.1}
-          maxDistance={20}
-          boundaryFriction={1}
-          boundaryEnclosesCamera={true}
-          verticalDragToForward={false}
-          dollyToCursor={false}
-          minY={1}
-          maxY={15}
+    <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
+      <CameraControls
+        ref={controls}
+        makeDefault
+        smoothTime={0.6}
+        minPolarAngle={Math.PI * 0.15}
+        maxPolarAngle={Math.PI * 0.55}
+        minDistance={0.1}
+        maxDistance={20}
+        boundaryFriction={1}
+        boundaryEnclosesCamera={true}
+        verticalDragToForward={false}
+        dollyToCursor={false}
+        minY={1}
+        maxY={15}
+      />
+      <Suspense>
+        <CastleModel
+          onCastleClick={playTransition}
+          atmIframeActive={atmiframeActive}
+          mirrorIframeActive={mirrorIframeActive}
+          scrollIframeActive={scrollIframeActive} // Pass the state to the model
         />
-        <Suspense fallback={null}>
-          <CastleModel
-            onCastleClick={playTransition}
-            hasInteracted={hasInteracted || !isIOS()}
-            onPortalPlay={() => console.log("Portal video started")}
-            onWaterPlay={() => console.log("Water video started")}
-          />
-        </Suspense>
-      </group>
-    </>
-  )
-}
+      </Suspense>
+    </group>
+  );
+};
+useGLTF.preload("/models/Castle.glb");
 
-useGLTF.preload("/models/Castle.glb")
-
-export default Castle
+export default Castle;
