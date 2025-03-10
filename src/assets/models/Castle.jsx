@@ -1036,8 +1036,8 @@ const Castle = ({ activeSection }) => {
     window.controls = controls;
     // initAudio()
 
-    controls.current.minPolarAngle = Math.PI * 0.15;
-    controls.current.maxPolarAngle = Math.PI * 0.55;
+    controls.current.minPolarAngle = Math.PI * 0.40;
+    controls.current.maxPolarAngle = Math.PI * 0.50;
     controls.current.minDistance = 5;
     controls.current.maxDistance = 20;
     controls.current.boundaryFriction = 1;
