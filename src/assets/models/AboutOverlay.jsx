@@ -130,3 +130,4 @@ export const AboutOverlay = ({ isVisible, onClose }) => {
   )
 }
 
+export default AboutOverlay
