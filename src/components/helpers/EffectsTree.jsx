@@ -1,30 +1,47 @@
+// components/EffectsTree.jsx
 import React, { useMemo } from "react"
 import { EffectComposer, Bloom } from "@react-three/postprocessing"
-import { useControls } from "leva"
 
-export const EffectsTree = () => {
-  const bloomConfig = useControls("bloom", {
-    enabled: false,
-    luminanceThreshold: { value: 1.1, min: 0, max: 2 },
-    intensity: { value: 7.5, min: 0, max: 28 },
-    mipmapBlur: true,
-    kernelSize: { value: 4, options: [0, 1, 2, 3, 4, 5] },
-    luminanceSmoothing: { value: 0.94, min: 0, max: 2 },
-    radius: { value: 0.42, min: 0, max: 1 },
-  })
+export const EffectsTree = ({ mobile = false }) => {
+  // Configurações reduzidas para dispositivos móveis
+  const bloomConfig = mobile
+    ? {
+        enabled: true,
+        luminanceThreshold: 1.2,
+        intensity: 3.0, // Intensidade reduzida
+        mipmapBlur: false, // Desabilita mipmap blur para melhor performance
+        kernelSize: 2, // Kernel menor
+        luminanceSmoothing: 0.7,
+        radius: 0.3,
+      }
+    : {
+        enabled: true,
+        luminanceThreshold: 1.1,
+        intensity: 7.5,
+        mipmapBlur: true,
+        kernelSize: 4,
+        luminanceSmoothing: 0.94,
+        radius: 0.42,
+      }
 
   const effectsTree = useMemo(() => {
+    // Em dispositivos móveis, podemos simplificar ou remover efeitos
+    if (mobile) {
+      // Versão simplificada para iOS - apenas bloom básico
+      return (
+        <EffectComposer multisampling={0} disableNormalPass>
+          {bloomConfig.enabled && <Bloom {...bloomConfig} />}
+        </EffectComposer>
+      )
+    }
+
+    // Versão completa para desktop
     return (
       <EffectComposer disableNormalPass>
-        {bloomConfig.enabled && (
-          <Bloom
-            {...bloomConfig}
-            layers={[2]} // Especifica que apenas objetos na layer 2 receberão bloom
-          />
-        )}
+        {bloomConfig.enabled && <Bloom {...bloomConfig} layers={[2]} />}
       </EffectComposer>
     )
-  }, [bloomConfig])
+  }, [bloomConfig, mobile])
 
   return <>{effectsTree}</>
 }
