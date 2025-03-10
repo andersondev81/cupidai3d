@@ -21,26 +21,57 @@ import RotateAxis from "../../components/helpers/RotateAxis"
 const SMALL_SCREEN_THRESHOLD = 768
 const TRANSITION_DELAY = 100
 
-// Adjust resource paths for deployment
-const getAssetPath = path => {
-  // Remove /src/ from paths and ensure they work in deployment
-  return path.replace("/src/", "/")
+// Detectar iOS - mais confiável
+const isIOS = () => {
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  )
 }
 
-// Audio paths with corrected paths
-const TRANSITION_SOUND = getAssetPath("/assets/sounds/camerawoosh.MP3")
-const AUDIO_PATHS = {
-  nav: getAssetPath("/assets/sounds/nav.mp3"),
-  about: getAssetPath("/assets/sounds/orb.mp3"),
-  aidatingcoach: getAssetPath("/assets/sounds/daingcoachmirror.MP3"),
-  download: getAssetPath("/assets/sounds/daingcoachmirror.mp3"),
-  token: getAssetPath("/assets/sounds/atmambiance.mp3"),
-  roadmap: getAssetPath("/assets/sounds/roadmap.mp3"),
-}
-
-const NAV_EXTRA_SOUNDS = {
-  templeAmbient: getAssetPath("/assets/sounds/templeambiance.mp3"),
-  fountain: getAssetPath("/assets/sounds/fountain.mp3"),
+// Componente de tela inicial para iOS
+const IOSStartScreen = ({ onStart }) => {
+  return (
+    <div
+      className="ios-start-screen"
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        backgroundColor: "black",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 9999,
+        color: "white",
+        fontFamily: "Arial, sans-serif",
+      }}
+    >
+      <h2 style={{ marginBottom: "20px" }}>Bem-vindo!</h2>
+      <p
+        style={{ marginBottom: "30px", textAlign: "center", padding: "0 20px" }}
+      >
+        Toque no botão abaixo para iniciar a experiência.
+      </p>
+      <button
+        onClick={onStart}
+        style={{
+          backgroundColor: "#FA3C81",
+          color: "white",
+          border: "none",
+          padding: "15px 30px",
+          borderRadius: "5px",
+          fontSize: "16px",
+          cursor: "pointer",
+        }}
+      >
+        Iniciar Experiência
+      </button>
+    </div>
+  )
 }
 
 // Camera Positions Configuration
@@ -111,330 +142,70 @@ const cameraConfig = {
   },
 }
 
-// Detect iOS devices
-const isIOS = () => {
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
-}
-
-// Enhanced Audio Hook with iOS compatibility
-const useMultiAudio = () => {
-  const audioContextRef = useRef(null)
-  const audioElementsRef = useRef({})
-  const gainNodesRef = useRef({})
-  const currentSectionRef = useRef(null)
-  const transitionSoundRef = useRef(null)
-  const transitionGainRef = useRef(null)
-  const navExtraSoundsRef = useRef({})
-  const navExtraGainsRef = useRef({})
-  const [audioInitialized, setAudioInitialized] = useState(false)
-
-  const initAudio = () => {
-    try {
-      // Only create AudioContext after user interaction
-      if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext ||
-          window.webkitAudioContext)()
-      }
-
-      if (transitionSoundRef.current) return // Prevent double initialization
-
-      // Setup transition sound
-      transitionSoundRef.current = new Audio(TRANSITION_SOUND)
-      transitionSoundRef.current.load() // Load but don't play
-
-      if (audioContextRef.current) {
-        const transitionSource =
-          audioContextRef.current.createMediaElementSource(
-            transitionSoundRef.current
-          )
-        transitionGainRef.current = audioContextRef.current.createGain()
-        transitionGainRef.current.gain.value = 0.5
-        transitionSource.connect(transitionGainRef.current)
-        transitionGainRef.current.connect(audioContextRef.current.destination)
-      }
-
-      // Setup Nav extra sounds
-      Object.entries(NAV_EXTRA_SOUNDS).forEach(([key, path]) => {
-        const audioElement = new Audio(path)
-        audioElement.loop = true
-        audioElement.load() // Load but don't play
-        navExtraSoundsRef.current[key] = audioElement
-
-        if (audioContextRef.current) {
-          const source =
-            audioContextRef.current.createMediaElementSource(audioElement)
-          const gainNode = audioContextRef.current.createGain()
-          gainNode.gain.value = 0.3
-          source.connect(gainNode)
-          gainNode.connect(audioContextRef.current.destination)
-          navExtraGainsRef.current[key] = gainNode
-        }
-      })
-
-      // Initialize section sounds
-      Object.entries(AUDIO_PATHS).forEach(([section, path]) => {
-        const audioElement = new Audio(path)
-        audioElement.loop = true
-        audioElement.load() // Load but don't play
-        audioElementsRef.current[section] = audioElement
-
-        if (audioContextRef.current) {
-          const source =
-            audioContextRef.current.createMediaElementSource(audioElement)
-          const gainNode = audioContextRef.current.createGain()
-          gainNode.gain.value = 0.3
-
-          source.connect(gainNode)
-          gainNode.connect(audioContextRef.current.destination)
-          gainNodesRef.current[section] = gainNode
-        }
-      })
-
-      setAudioInitialized(true)
-      console.log("Audio system initialized successfully")
-    } catch (error) {
-      console.error("Error initializing audio system:", error)
-    }
-  }
-
-  const resumeAudioContext = () => {
-    if (audioContextRef.current?.state === "suspended") {
-      audioContextRef.current.resume().catch(err => {
-        console.warn("Could not resume AudioContext:", err)
-      })
-    }
-  }
-
-  const playTransitionSound = () => {
-    if (!audioInitialized) return
-
-    resumeAudioContext()
-
-    if (transitionSoundRef.current) {
-      transitionSoundRef.current.currentTime = 0
-      const playPromise = transitionSoundRef.current.play()
-
-      if (playPromise !== undefined) {
-        playPromise.catch(error => {
-          console.warn("Error playing transition sound:", error)
-        })
-      }
-    }
-  }
-
-  const playSound = section => {
-    if (!audioInitialized) return
-
-    try {
-      resumeAudioContext()
-
-      playTransitionSound()
-
-      if (currentSectionRef.current && currentSectionRef.current !== section) {
-        const currentAudio = audioElementsRef.current[currentSectionRef.current]
-        if (currentAudio) {
-          currentAudio.pause()
-          currentAudio.currentTime = 0
-        }
-
-        if (currentSectionRef.current === "nav") {
-          Object.values(navExtraSoundsRef.current).forEach(audio => {
-            if (audio) {
-              audio.pause()
-              audio.currentTime = 0
-            }
-          })
-        }
-      }
-
-      setTimeout(() => {
-        const newAudio = audioElementsRef.current[section]
-        if (newAudio) {
-          const playPromise = newAudio.play()
-
-          if (playPromise !== undefined) {
-            playPromise.catch(err => {
-              console.warn(`Could not play audio for section ${section}:`, err)
-            })
-          }
-
-          if (section === "nav") {
-            Object.values(navExtraSoundsRef.current).forEach(audio => {
-              if (audio) {
-                const navPlayPromise = audio.play()
-                if (navPlayPromise !== undefined) {
-                  navPlayPromise.catch(console.error)
-                }
-              }
-            })
-          }
-
-          currentSectionRef.current = section
-        }
-      }, 500)
-    } catch (error) {
-      console.error("Error playing sounds:", error)
-    }
-  }
-
-  const stopSound = () => {
-    if (!audioInitialized) return
-
-    try {
-      if (currentSectionRef.current) {
-        const currentAudio = audioElementsRef.current[currentSectionRef.current]
-        if (currentAudio) {
-          currentAudio.pause()
-          currentAudio.currentTime = 0
-        }
-
-        // Stop nav extra sounds if in nav section
-        if (currentSectionRef.current === "nav") {
-          Object.values(navExtraSoundsRef.current).forEach(audio => {
-            if (audio) {
-              audio.pause()
-              audio.currentTime = 0
-            }
-          })
-        }
-
-        currentSectionRef.current = null
-      }
-    } catch (error) {
-      console.error("Error stopping sound:", error)
-    }
-  }
-
-  const updateListenerPosition = position => {
-    if (audioContextRef.current && position && audioInitialized) {
-      const [x, y, z] = position
-      try {
-        if (audioContextRef.current.listener.setPosition) {
-          audioContextRef.current.listener.setPosition(x, y, z)
-        }
-      } catch (error) {
-        console.warn("Could not set audio listener position:", error)
-      }
-    }
-  }
-
-  const cleanup = () => {
-    try {
-      if (transitionSoundRef.current) {
-        transitionSoundRef.current.pause()
-      }
-
-      Object.values(audioElementsRef.current).forEach(audio => {
-        if (audio) {
-          audio.pause()
-        }
-      })
-
-      Object.values(navExtraSoundsRef.current).forEach(audio => {
-        if (audio) {
-          audio.pause()
-        }
-      })
-
-      if (
-        audioContextRef.current &&
-        audioContextRef.current.state !== "closed"
-      ) {
-        audioContextRef.current.close().catch(console.error)
-      }
-    } catch (error) {
-      console.error("Error during cleanup:", error)
-    }
-  }
-
-  return {
-    initAudio,
-    playSound,
-    stopSound,
-    updateListenerPosition,
-    cleanup,
-    audioInitialized,
-    resumeAudioContext,
-  }
-}
-
-// User interaction component to enable audio/video
-const InteractionPrompt = ({ onInteraction }) => {
-  return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        background: "rgba(0,0,0,0.7)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 1000,
-      }}
-    >
-      <button
-        onClick={onInteraction}
-        style={{
-          padding: "15px 30px",
-          fontSize: "18px",
-          background: "#FA3C81",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-        }}
-      >
-        Start Experience
-      </button>
-    </div>
-  )
-}
-
-// Materials textures with lazy loading -----------------------------
-
-// Video texture hook with iOS compatibility
-const useVideoTexture = videoPath => {
-  const [texture, setTexture] = useState(null)
+// Simplified video hook for iOS
+const useVideoElement = src => {
   const videoRef = useRef(null)
+  const [texture, setTexture] = useState(null)
 
-  useEffect(() => {
-    const video = document.createElement("video")
-    video.src = videoPath
-    video.loop = true
-    video.muted = true
-    video.playsInline = true
-    // Don't autoplay until user interaction
-    video.load()
+  // Create video element only after user interaction
+  const createVideo = () => {
+    try {
+      if (videoRef.current) return
 
-    videoRef.current = video
+      console.log("Creating video element for:", src)
+      const video = document.createElement("video")
+      video.playsInline = true
+      video.muted = true
+      video.loop = true
+      video.crossOrigin = "anonymous"
+      video.setAttribute("playsinline", "")
+      video.setAttribute("webkit-playsinline", "")
+      video.setAttribute("muted", "")
+      video.src = src
+      video.load()
 
-    const videoTexture = new VideoTexture(video)
-    videoTexture.minFilter = LinearFilter
-    videoTexture.magFilter = LinearFilter
-    videoTexture.flipY = false
+      videoRef.current = video
 
-    setTexture(videoTexture)
+      // Create texture once video is loaded
+      video.addEventListener(
+        "canplaythrough",
+        () => {
+          console.log("Video can play:", src)
 
-    // Cleanup
-    return () => {
-      video.pause()
-      video.src = ""
-    }
-  }, [videoPath])
+          // Create texture
+          const newTexture = new VideoTexture(video)
+          newTexture.minFilter = LinearFilter
+          newTexture.magFilter = LinearFilter
+          newTexture.flipY = false
+          setTexture(newTexture)
 
-  const playVideo = () => {
-    if (videoRef.current) {
-      videoRef.current.play().catch(err => {
-        console.warn("Could not play video:", err)
-      })
+          // Try to play
+          video.play().catch(error => {
+            console.warn("Video play failed:", error)
+          })
+        },
+        { once: true }
+      )
+    } catch (error) {
+      console.error("Error creating video:", error)
     }
   }
 
-  return { texture, playVideo }
+  // Clean up
+  useEffect(() => {
+    return () => {
+      if (videoRef.current) {
+        videoRef.current.pause()
+        videoRef.current.src = ""
+        videoRef.current = null
+      }
+    }
+  }, [])
+
+  return { texture, createVideo }
 }
+
+// Materials textures -----------------------------
 
 // Castle Material
 const useCastleMaterial = () => {
@@ -736,12 +507,7 @@ const useScrollMaterial = () => {
 }
 
 // Components
-const CastleModel = ({
-  onCastleClick,
-  hasInteracted,
-  onPortalPlay,
-  onWaterPlay,
-}) => {
+const CastleModel = ({ hasInteracted }) => {
   const { nodes } = useGLTF("/models/Castle.glb")
   const material = useCastleMaterial()
   const logoMaterial = useLogoMaterial()
@@ -753,50 +519,49 @@ const CastleModel = ({
   const atmMaterial = useAtmMaterial()
   const scrollMaterial = useScrollMaterial()
 
-  // Use the video texture hook for portal
-  const { texture: portalTexture, playVideo: playPortal } =
-    useVideoTexture("/video/tunel.mp4")
-  const portalMaterial = useMemo(() => {
-    return portalTexture
-      ? new MeshBasicMaterial({
-          map: portalTexture,
-          side: DoubleSide,
-        })
-      : new MeshBasicMaterial({ color: 0x000000, side: DoubleSide })
-  }, [portalTexture])
+  // Use the video hooks
+  const portalVideo = useVideoElement("/video/tunel.mp4")
+  const waterVideo = useVideoElement("/video/waterColor.mp4")
 
-  // Use the video texture hook for water
-  const { texture: waterTexture, playVideo: playWater } = useVideoTexture(
-    "/video/waterColor.mp4"
+  // Portal material - fallback to black if video not loaded
+  const portalMaterial = useMemo(
+    () =>
+      portalVideo.texture
+        ? new MeshBasicMaterial({ map: portalVideo.texture, side: DoubleSide })
+        : new MeshBasicMaterial({ color: 0x000000, side: DoubleSide }),
+    [portalVideo.texture]
   )
-  const waterMaterial = useMemo(() => {
-    return waterTexture
-      ? new MeshPhysicalMaterial({
-          map: waterTexture,
-          transparent: false,
-          roughness: 0.2,
-          metalness: 0,
-          side: DoubleSide,
-          emissive: new Color(0xffa6f3),
-          emissiveIntensity: 2,
-        })
-      : new MeshPhysicalMaterial({
-          color: 0xffa6f3,
-          emissive: new Color(0xffa6f3),
-          emissiveIntensity: 2,
-          side: DoubleSide,
-        })
-  }, [waterTexture])
 
-  // Play videos when user has interacted
+  // Water material - fallback to blue if video not loaded
+  const waterMaterial = useMemo(
+    () =>
+      waterVideo.texture
+        ? new MeshPhysicalMaterial({
+            map: waterVideo.texture,
+            transparent: false,
+            roughness: 0.2,
+            metalness: 0,
+            side: DoubleSide,
+            emissive: new Color(0xffa6f3),
+            emissiveIntensity: 2,
+          })
+        : new MeshPhysicalMaterial({
+            color: 0x00a6f3,
+            emissive: new Color(0xffa6f3),
+            emissiveIntensity: 2,
+            side: DoubleSide,
+          }),
+    [waterVideo.texture]
+  )
+
+  // Initialize videos after interaction
   useEffect(() => {
     if (hasInteracted) {
-      playPortal()
-      playWater()
-      if (onPortalPlay) onPortalPlay()
-      if (onWaterPlay) onWaterPlay()
+      console.log("User has interacted, creating videos")
+      portalVideo.createVideo()
+      waterVideo.createVideo()
     }
-  }, [hasInteracted, playPortal, playWater, onPortalPlay, onWaterPlay])
+  }, [hasInteracted])
 
   const wingsMaterial = useWingsMaterial()
 
@@ -874,7 +639,7 @@ const CastleModel = ({
         receiveShadow={false}
       />
       <FountainParticles
-        count={80}
+        count={50} // Reduzido para melhor performance no iOS
         color="lightpink"
         size={0.03}
         speed={0.65}
@@ -890,33 +655,23 @@ const CastleModel = ({
 // Main Component
 const Castle = ({ activeSection }) => {
   const controls = useRef()
-  const {
-    initAudio,
-    playSound,
-    stopSound,
-    updateListenerPosition,
-    cleanup,
-    audioInitialized,
-    resumeAudioContext,
-  } = useMultiAudio()
-
   const [hasInteracted, setHasInteracted] = useState(false)
-  const [showInteractionPrompt, setShowInteractionPrompt] = useState(isIOS())
+  const [showIOSPrompt, setShowIOSPrompt] = useState(isIOS())
 
-  const handleUserInteraction = () => {
+  // Handle user interaction from iOS prompt
+  const handleStart = () => {
+    console.log("User interaction received")
     setHasInteracted(true)
-    setShowInteractionPrompt(false)
-    initAudio()
-    resumeAudioContext()
+    setShowIOSPrompt(false)
 
-    // Delay playing sound slightly to ensure audio context is resumed
+    // Move to active section or default position
     setTimeout(() => {
       if (activeSection) {
         playTransition(activeSection)
       } else {
         playTransition("nav")
       }
-    }, 100)
+    }, TRANSITION_DELAY)
   }
 
   const getCameraPosition = section => {
@@ -940,29 +695,22 @@ const Castle = ({ activeSection }) => {
     )
 
     if (targetPosition) {
-      controls.current.setLookAt(...targetPosition, true).then(() => {
-        controls.current.enabled = sectionName === "nav"
-      })
-
-      updateListenerPosition(targetPosition.slice(0, 3))
-
-      if (sectionName !== "default") {
-        playSound(sectionName)
-      } else {
-        stopSound()
-      }
+      controls.current
+        .setLookAt(...targetPosition, true)
+        .then(() => {
+          controls.current.enabled = sectionName === "nav"
+        })
+        .catch(error => {
+          console.error("Error setting camera look at:", error)
+        })
     }
   }
 
+  // Initialize camera
   useEffect(() => {
     if (!controls.current) return
 
     window.controls = controls
-
-    // Don't initialize audio automatically - wait for user interaction
-    if (!isIOS()) {
-      initAudio()
-    }
 
     // Set camera controls configuration
     controls.current.minPolarAngle = Math.PI * 0.15
@@ -986,8 +734,6 @@ const Castle = ({ activeSection }) => {
         playTransition("nav")
       }, TRANSITION_DELAY)
     }
-
-    return cleanup
   }, [hasInteracted])
 
   // Handle active section changes
@@ -1035,9 +781,7 @@ const Castle = ({ activeSection }) => {
 
   return (
     <>
-      {showInteractionPrompt && (
-        <InteractionPrompt onInteraction={handleUserInteraction} />
-      )}
+      {showIOSPrompt && <IOSStartScreen onStart={handleStart} />}
 
       <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
         <CameraControls
@@ -1056,12 +800,7 @@ const Castle = ({ activeSection }) => {
           maxY={15}
         />
         <Suspense fallback={null}>
-          <CastleModel
-            onCastleClick={playTransition}
-            hasInteracted={hasInteracted || !isIOS()}
-            onPortalPlay={() => console.log("Portal video started")}
-            onWaterPlay={() => console.log("Water video started")}
-          />
+          <CastleModel hasInteracted={hasInteracted || !isIOS()} />
         </Suspense>
       </group>
     </>
