@@ -1,7 +1,7 @@
 import { CameraControls, useGLTF, useTexture } from "@react-three/drei"
 import { Select } from "@react-three/postprocessing"
 import { button, monitor, useControls } from "leva"
-import React, { Suspense, useEffect, useMemo, useRef } from "react"
+import React, { Suspense, useEffect, useMemo, useRef, useState } from "react"
 import {
   Color,
   DoubleSide,
@@ -20,7 +20,28 @@ import RotateAxis from "../../components/helpers/RotateAxis"
 // Constants
 const SMALL_SCREEN_THRESHOLD = 768
 const TRANSITION_DELAY = 100
-const AUDIO_FILE_PATH = "/src/assets/sounds/heartportal.MP3"
+
+// Adjust resource paths for deployment
+const getAssetPath = path => {
+  // Remove /src/ from paths and ensure they work in deployment
+  return path.replace("/src/", "/")
+}
+
+// Audio paths with corrected paths
+const TRANSITION_SOUND = getAssetPath("/assets/sounds/camerawoosh.MP3")
+const AUDIO_PATHS = {
+  nav: getAssetPath("/assets/sounds/nav.mp3"),
+  about: getAssetPath("/assets/sounds/orb.mp3"),
+  aidatingcoach: getAssetPath("/assets/sounds/daingcoachmirror.MP3"),
+  download: getAssetPath("/assets/sounds/daingcoachmirror.mp3"),
+  token: getAssetPath("/assets/sounds/atmambiance.mp3"),
+  roadmap: getAssetPath("/assets/sounds/roadmap.mp3"),
+}
+
+const NAV_EXTRA_SOUNDS = {
+  templeAmbient: getAssetPath("/assets/sounds/templeambiance.mp3"),
+  fountain: getAssetPath("/assets/sounds/fountain.mp3"),
+}
 
 // Camera Positions Configuration
 const cameraConfig = {
@@ -90,22 +111,12 @@ const cameraConfig = {
   },
 }
 
-// Custom Hooks
-const TRANSITION_SOUND = "/src/assets/sounds/camerawoosh.MP3"
-const AUDIO_PATHS = {
-  nav: "/src/assets/sounds/nav.mp3",
-  about: "/src/assets/sounds/orb.mp3",
-  aidatingcoach: "/src/assets/sounds/daingcoachmirror.MP3",
-  download: "/src/assets/sounds/daingcoachmirror.mp3",
-  token: "/src/assets/sounds/atmambiance.mp3",
-  roadmap: "/src/assets/sounds/roadmap.mp3",
-}
-const NAV_EXTRA_SOUNDS = {
-  templeAmbient: "/src/assets/sounds/templeambiance.mp3",
-  fountain: "/src/assets/sounds/fountain.mp3",
+// Detect iOS devices
+const isIOS = () => {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
 }
 
-// Enhanced Audio Hook
+// Enhanced Audio Hook with iOS compatibility
 const useMultiAudio = () => {
   const audioContextRef = useRef(null)
   const audioElementsRef = useRef({})
@@ -115,58 +126,90 @@ const useMultiAudio = () => {
   const transitionGainRef = useRef(null)
   const navExtraSoundsRef = useRef({})
   const navExtraGainsRef = useRef({})
+  const [audioInitialized, setAudioInitialized] = useState(false)
 
   const initAudio = () => {
     try {
-      audioContextRef.current = new (window.AudioContext ||
-        window.webkitAudioContext)()
+      // Only create AudioContext after user interaction
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext ||
+          window.webkitAudioContext)()
+      }
 
+      if (transitionSoundRef.current) return // Prevent double initialization
+
+      // Setup transition sound
       transitionSoundRef.current = new Audio(TRANSITION_SOUND)
-      const transitionSource = audioContextRef.current.createMediaElementSource(
-        transitionSoundRef.current
-      )
-      transitionGainRef.current = audioContextRef.current.createGain()
-      transitionGainRef.current.gain.value = 0.5
-      transitionSource.connect(transitionGainRef.current)
-      transitionGainRef.current.connect(audioContextRef.current.destination)
+      transitionSoundRef.current.load() // Load but don't play
 
+      if (audioContextRef.current) {
+        const transitionSource =
+          audioContextRef.current.createMediaElementSource(
+            transitionSoundRef.current
+          )
+        transitionGainRef.current = audioContextRef.current.createGain()
+        transitionGainRef.current.gain.value = 0.5
+        transitionSource.connect(transitionGainRef.current)
+        transitionGainRef.current.connect(audioContextRef.current.destination)
+      }
+
+      // Setup Nav extra sounds
       Object.entries(NAV_EXTRA_SOUNDS).forEach(([key, path]) => {
         const audioElement = new Audio(path)
         audioElement.loop = true
+        audioElement.load() // Load but don't play
         navExtraSoundsRef.current[key] = audioElement
 
-        const source =
-          audioContextRef.current.createMediaElementSource(audioElement)
-        const gainNode = audioContextRef.current.createGain()
-        gainNode.gain.value = 0.3
-        source.connect(gainNode)
-        gainNode.connect(audioContextRef.current.destination)
-        navExtraGainsRef.current[key] = gainNode
+        if (audioContextRef.current) {
+          const source =
+            audioContextRef.current.createMediaElementSource(audioElement)
+          const gainNode = audioContextRef.current.createGain()
+          gainNode.gain.value = 0.3
+          source.connect(gainNode)
+          gainNode.connect(audioContextRef.current.destination)
+          navExtraGainsRef.current[key] = gainNode
+        }
       })
 
       // Initialize section sounds
       Object.entries(AUDIO_PATHS).forEach(([section, path]) => {
         const audioElement = new Audio(path)
         audioElement.loop = true
+        audioElement.load() // Load but don't play
         audioElementsRef.current[section] = audioElement
 
-        const source =
-          audioContextRef.current.createMediaElementSource(audioElement)
-        const gainNode = audioContextRef.current.createGain()
-        gainNode.gain.value = 0.3
+        if (audioContextRef.current) {
+          const source =
+            audioContextRef.current.createMediaElementSource(audioElement)
+          const gainNode = audioContextRef.current.createGain()
+          gainNode.gain.value = 0.3
 
-        source.connect(gainNode)
-        gainNode.connect(audioContextRef.current.destination)
-        gainNodesRef.current[section] = gainNode
+          source.connect(gainNode)
+          gainNode.connect(audioContextRef.current.destination)
+          gainNodesRef.current[section] = gainNode
+        }
       })
 
+      setAudioInitialized(true)
       console.log("Audio system initialized successfully")
     } catch (error) {
       console.error("Error initializing audio system:", error)
     }
   }
 
+  const resumeAudioContext = () => {
+    if (audioContextRef.current?.state === "suspended") {
+      audioContextRef.current.resume().catch(err => {
+        console.warn("Could not resume AudioContext:", err)
+      })
+    }
+  }
+
   const playTransitionSound = () => {
+    if (!audioInitialized) return
+
+    resumeAudioContext()
+
     if (transitionSoundRef.current) {
       transitionSoundRef.current.currentTime = 0
       const playPromise = transitionSoundRef.current.play()
@@ -180,10 +223,10 @@ const useMultiAudio = () => {
   }
 
   const playSound = section => {
+    if (!audioInitialized) return
+
     try {
-      if (audioContextRef.current?.state === "suspended") {
-        audioContextRef.current.resume()
-      }
+      resumeAudioContext()
 
       playTransitionSound()
 
@@ -207,27 +250,36 @@ const useMultiAudio = () => {
       setTimeout(() => {
         const newAudio = audioElementsRef.current[section]
         if (newAudio) {
-          newAudio.currentTime = 0
-          newAudio.play().catch(console.error)
+          const playPromise = newAudio.play()
+
+          if (playPromise !== undefined) {
+            playPromise.catch(err => {
+              console.warn(`Could not play audio for section ${section}:`, err)
+            })
+          }
 
           if (section === "nav") {
             Object.values(navExtraSoundsRef.current).forEach(audio => {
               if (audio) {
-                audio.currentTime = 0
-                audio.play().catch(console.error)
+                const navPlayPromise = audio.play()
+                if (navPlayPromise !== undefined) {
+                  navPlayPromise.catch(console.error)
+                }
               }
             })
           }
 
           currentSectionRef.current = section
         }
-      }, 500) // Increased delay between transition and section sounds
+      }, 500)
     } catch (error) {
       console.error("Error playing sounds:", error)
     }
   }
 
   const stopSound = () => {
+    if (!audioInitialized) return
+
     try {
       if (currentSectionRef.current) {
         const currentAudio = audioElementsRef.current[currentSectionRef.current]
@@ -254,9 +306,15 @@ const useMultiAudio = () => {
   }
 
   const updateListenerPosition = position => {
-    if (audioContextRef.current && position) {
+    if (audioContextRef.current && position && audioInitialized) {
       const [x, y, z] = position
-      audioContextRef.current.listener.setPosition(x, y, z)
+      try {
+        if (audioContextRef.current.listener.setPosition) {
+          audioContextRef.current.listener.setPosition(x, y, z)
+        }
+      } catch (error) {
+        console.warn("Could not set audio listener position:", error)
+      }
     }
   }
 
@@ -264,26 +322,25 @@ const useMultiAudio = () => {
     try {
       if (transitionSoundRef.current) {
         transitionSoundRef.current.pause()
-        transitionSoundRef.current = null
       }
 
       Object.values(audioElementsRef.current).forEach(audio => {
         if (audio) {
           audio.pause()
-          audio.currentTime = 0
         }
       })
 
       Object.values(navExtraSoundsRef.current).forEach(audio => {
         if (audio) {
           audio.pause()
-          audio.currentTime = 0
         }
       })
 
-      if (audioContextRef.current) {
-        audioContextRef.current.close()
-        audioContextRef.current = null
+      if (
+        audioContextRef.current &&
+        audioContextRef.current.state !== "closed"
+      ) {
+        audioContextRef.current.close().catch(console.error)
       }
     } catch (error) {
       console.error("Error during cleanup:", error)
@@ -296,9 +353,88 @@ const useMultiAudio = () => {
     stopSound,
     updateListenerPosition,
     cleanup,
+    audioInitialized,
+    resumeAudioContext,
   }
 }
-// Materials textures---------------------------------------------
+
+// User interaction component to enable audio/video
+const InteractionPrompt = ({ onInteraction }) => {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        background: "rgba(0,0,0,0.7)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 1000,
+      }}
+    >
+      <button
+        onClick={onInteraction}
+        style={{
+          padding: "15px 30px",
+          fontSize: "18px",
+          background: "#FA3C81",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+        }}
+      >
+        Start Experience
+      </button>
+    </div>
+  )
+}
+
+// Materials textures with lazy loading -----------------------------
+
+// Video texture hook with iOS compatibility
+const useVideoTexture = videoPath => {
+  const [texture, setTexture] = useState(null)
+  const videoRef = useRef(null)
+
+  useEffect(() => {
+    const video = document.createElement("video")
+    video.src = videoPath
+    video.loop = true
+    video.muted = true
+    video.playsInline = true
+    // Don't autoplay until user interaction
+    video.load()
+
+    videoRef.current = video
+
+    const videoTexture = new VideoTexture(video)
+    videoTexture.minFilter = LinearFilter
+    videoTexture.magFilter = LinearFilter
+    videoTexture.flipY = false
+
+    setTexture(videoTexture)
+
+    // Cleanup
+    return () => {
+      video.pause()
+      video.src = ""
+    }
+  }, [videoPath])
+
+  const playVideo = () => {
+    if (videoRef.current) {
+      videoRef.current.play().catch(err => {
+        console.warn("Could not play video:", err)
+      })
+    }
+  }
+
+  return { texture, playVideo }
+}
 
 // Castle Material
 const useCastleMaterial = () => {
@@ -340,7 +476,7 @@ const useCastleMaterial = () => {
 // Floor Material
 const useFloorMaterial = () => {
   const textures = useTexture({
-    Map: "/texture/FloorColorB.webp",
+    map: "/texture/FloorColorB.webp",
     roughnessMap: "/texture/floorRoughness.webp",
     metalnessMap: "/texture/floorMetallic.webp",
     materialEmissive: "/texture/floorEmissive.webp",
@@ -373,6 +509,7 @@ const useFloorMaterial = () => {
     [textures]
   )
 }
+
 //wings Material
 const useWingsMaterial = () => {
   const textures = useTexture({
@@ -399,15 +536,13 @@ const useWingsMaterial = () => {
     [textures]
   )
 }
+
 //Logo Material
 const useLogoMaterial = () => {
-  // No need to load textures anymore
   return useMemo(
     () =>
       new MeshPhysicalMaterial({
-        color: new Color("#FA3C81"), // Using the hex color you specified
-        // emissive: new Color(0xf6d8fc),
-        // emissiveIntensity: 2,
+        color: new Color("#FA3C81"),
         transparent: false,
         alphaTest: 0.05,
         side: DoubleSide,
@@ -418,15 +553,13 @@ const useLogoMaterial = () => {
     []
   )
 }
+
 //Decor Material
 const useDecorMaterial = () => {
-  // No need to load textures anymore
   return useMemo(
     () =>
       new MeshPhysicalMaterial({
-        color: new Color("#DABB46"), // Using the hex color you specified
-        // emissive: new Color(0xf6d8fc),
-        // emissiveIntensity: 2,
+        color: new Color("#DABB46"),
         transparent: false,
         alphaTest: 0.05,
         side: DoubleSide,
@@ -437,6 +570,7 @@ const useDecorMaterial = () => {
     []
   )
 }
+
 // Flowers Material
 const useFlowersMaterial = () => {
   const textures = useTexture({
@@ -450,16 +584,8 @@ const useFlowersMaterial = () => {
       if (texture) {
         texture.flipY = false
         texture.minFilter = texture.magFilter = NearestFilter
-
-        // Set texture size to 1080x1080
         texture.repeat.set(1, 1)
         texture.wrapS = texture.wrapT = RepeatWrapping
-
-        // Explicitly set dimensions
-        if (texture.image) {
-          texture.image.width = 1080
-          texture.image.height = 1080
-        }
       }
     })
   }, [textures])
@@ -470,11 +596,9 @@ const useFlowersMaterial = () => {
         map: textures.map,
         normalMap: textures.normalMap,
         alphaMap: textures.alphaMap,
-        roughnessMap: textures.roughnessMap,
-        emissiveMap: textures.emissiveMap,
-        transparent: true, // Changed to true to enable alpha
-        opacity: 0.85, // Added opacity control
-        alphaTest: 0.1, // Adjusted alpha test threshold
+        transparent: true,
+        opacity: 0.85,
+        alphaTest: 0.1,
         side: DoubleSide,
         blending: NormalBlending,
         roughness: 1.6,
@@ -483,6 +607,7 @@ const useFlowersMaterial = () => {
     [textures]
   )
 }
+
 // Gods Material
 const useGodsMaterial = () => {
   const textures = useTexture({
@@ -494,7 +619,7 @@ const useGodsMaterial = () => {
       if (texture) {
         texture.flipY = true
         texture.minFilter = texture.magFilter = NearestFilter
-        texture.colorSpace = "srgb" // Adicione esta linha
+        texture.colorSpace = "srgb"
       }
     })
   }, [textures])
@@ -518,7 +643,7 @@ const useGodsMaterial = () => {
 const useHoofMaterial = () => {
   const textures = useTexture({
     map: "/texture/hoofGlassColorB.webp",
-    emissiveMap: "/texture/hoofGlassEmissive.webp", // Renomeado de roughnessMap para emissiveMap
+    emissiveMap: "/texture/hoofGlassEmissive.webp",
   })
 
   useMemo(() => {
@@ -534,9 +659,9 @@ const useHoofMaterial = () => {
     () =>
       new MeshPhysicalMaterial({
         map: textures.map,
-        emissiveMap: textures.emissiveMap, // Adicionado o emissiveMap
-        emissive: new Color(0xffffff), // Cor emissiva branca para preservar as cores do mapa
-        emissiveIntensity: 2.5, // Intensidade do efeito emissivo
+        emissiveMap: textures.emissiveMap,
+        emissive: new Color(0xffffff),
+        emissiveIntensity: 2.5,
         transparent: false,
         side: DoubleSide,
         blending: NormalBlending,
@@ -610,58 +735,13 @@ const useScrollMaterial = () => {
   )
 }
 
-//Portal Material
-const usePortalMaterial = () => {
-  return useMemo(() => {
-    const video = document.createElement("video")
-    video.src = "/video/tunel.mp4"
-    video.loop = true
-    video.muted = true
-    video.playsInline = true
-    video.autoplay = true
-    video.play()
-
-    const videoTexture = new VideoTexture(video)
-    videoTexture.minFilter = LinearFilter
-    videoTexture.magFilter = LinearFilter
-    videoTexture.flipY = false
-
-    return new MeshBasicMaterial({
-      map: videoTexture,
-      side: DoubleSide,
-    })
-  }, [])
-}
-// Fontaine Water Material
-const useWaterMaterial = () => {
-  return useMemo(() => {
-    const video = document.createElement("video")
-    video.src = "/video/waterColor.mp4"
-    video.loop = true
-    video.muted = true
-    video.playsInline = true
-    video.autoplay = true
-    video.play()
-
-    const videoTexture = new VideoTexture(video)
-    videoTexture.minFilter = LinearFilter
-    videoTexture.magFilter = LinearFilter
-    videoTexture.flipY = false
-
-    return new MeshPhysicalMaterial({
-      map: videoTexture,
-      transparent: false,
-      roughness: 0.2,
-      metalness: 0,
-      side: DoubleSide,
-      emissive: new Color(0xffa6f3),
-      emissiveIntensity: 2,
-    })
-  }, [])
-}
-
 // Components
-const CastleModel = ({ onCastleClick }) => {
+const CastleModel = ({
+  onCastleClick,
+  hasInteracted,
+  onPortalPlay,
+  onWaterPlay,
+}) => {
   const { nodes } = useGLTF("/models/Castle.glb")
   const material = useCastleMaterial()
   const logoMaterial = useLogoMaterial()
@@ -671,9 +751,53 @@ const CastleModel = ({ onCastleClick }) => {
   const floorMaterial = useFloorMaterial()
   const hoofMaterial = useHoofMaterial()
   const atmMaterial = useAtmMaterial()
-  const portal = usePortalMaterial()
   const scrollMaterial = useScrollMaterial()
-  const waterMaterial = useWaterMaterial()
+
+  // Use the video texture hook for portal
+  const { texture: portalTexture, playVideo: playPortal } =
+    useVideoTexture("/video/tunel.mp4")
+  const portalMaterial = useMemo(() => {
+    return portalTexture
+      ? new MeshBasicMaterial({
+          map: portalTexture,
+          side: DoubleSide,
+        })
+      : new MeshBasicMaterial({ color: 0x000000, side: DoubleSide })
+  }, [portalTexture])
+
+  // Use the video texture hook for water
+  const { texture: waterTexture, playVideo: playWater } = useVideoTexture(
+    "/video/waterColor.mp4"
+  )
+  const waterMaterial = useMemo(() => {
+    return waterTexture
+      ? new MeshPhysicalMaterial({
+          map: waterTexture,
+          transparent: false,
+          roughness: 0.2,
+          metalness: 0,
+          side: DoubleSide,
+          emissive: new Color(0xffa6f3),
+          emissiveIntensity: 2,
+        })
+      : new MeshPhysicalMaterial({
+          color: 0xffa6f3,
+          emissive: new Color(0xffa6f3),
+          emissiveIntensity: 2,
+          side: DoubleSide,
+        })
+  }, [waterTexture])
+
+  // Play videos when user has interacted
+  useEffect(() => {
+    if (hasInteracted) {
+      playPortal()
+      playWater()
+      if (onPortalPlay) onPortalPlay()
+      if (onWaterPlay) onWaterPlay()
+    }
+  }, [hasInteracted, playPortal, playWater, onPortalPlay, onWaterPlay])
+
   const wingsMaterial = useWingsMaterial()
 
   return (
@@ -736,7 +860,7 @@ const CastleModel = ({ onCastleClick }) => {
       <Select disabled>
         <mesh
           geometry={nodes.HeartVid.geometry}
-          material={portal}
+          material={portalMaterial}
           layers-enable={1}
           castShadow={false}
           receiveShadow={false}
@@ -766,8 +890,35 @@ const CastleModel = ({ onCastleClick }) => {
 // Main Component
 const Castle = ({ activeSection }) => {
   const controls = useRef()
-  const { initAudio, playSound, stopSound, updateListenerPosition, cleanup } =
-    useMultiAudio()
+  const {
+    initAudio,
+    playSound,
+    stopSound,
+    updateListenerPosition,
+    cleanup,
+    audioInitialized,
+    resumeAudioContext,
+  } = useMultiAudio()
+
+  const [hasInteracted, setHasInteracted] = useState(false)
+  const [showInteractionPrompt, setShowInteractionPrompt] = useState(isIOS())
+
+  const handleUserInteraction = () => {
+    setHasInteracted(true)
+    setShowInteractionPrompt(false)
+    initAudio()
+    resumeAudioContext()
+
+    // Delay playing sound slightly to ensure audio context is resumed
+    setTimeout(() => {
+      if (activeSection) {
+        playTransition(activeSection)
+      } else {
+        playTransition("nav")
+      }
+    }, 100)
+  }
+
   const getCameraPosition = section => {
     const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD
     const screenType = isSmallScreen ? "small" : "large"
@@ -782,7 +933,7 @@ const Castle = ({ activeSection }) => {
   const playTransition = sectionName => {
     if (!controls.current) return
 
-    controls.current.enabled = true // Sempre mantém enabled como true
+    controls.current.enabled = true
 
     const targetPosition = getCameraPosition(
       sectionName === "default" ? "default" : sectionName
@@ -807,27 +958,13 @@ const Castle = ({ activeSection }) => {
     if (!controls.current) return
 
     window.controls = controls
-    initAudio()
 
-    // REMOVIDO TODAS AS RESTRIÇÕES
-    const defaultPosition = getCameraPosition("default")
-    controls.current.setLookAt(...defaultPosition, false)
+    // Don't initialize audio automatically - wait for user interaction
+    if (!isIOS()) {
+      initAudio()
+    }
 
-    setTimeout(() => {
-      playTransition("nav")
-    }, TRANSITION_DELAY)
-
-    return cleanup
-  }, [])
-
-  // Initialize camera and audio
-
-  useEffect(() => {
-    if (!controls.current) return
-
-    window.controls = controls
-    // initAudio()
-
+    // Set camera controls configuration
     controls.current.minPolarAngle = Math.PI * 0.15
     controls.current.maxPolarAngle = Math.PI * 0.55
     controls.current.minDistance = 5
@@ -839,21 +976,26 @@ const Castle = ({ activeSection }) => {
     controls.current.minY = 1
     controls.current.maxY = 15
 
+    // Set initial position
     const defaultPosition = getCameraPosition("default")
     controls.current.setLookAt(...defaultPosition, false)
 
-    setTimeout(() => {
-      playTransition("nav")
-    }, TRANSITION_DELAY)
+    // Only auto-transition if not on iOS or after user interaction
+    if (!isIOS() || hasInteracted) {
+      setTimeout(() => {
+        playTransition("nav")
+      }, TRANSITION_DELAY)
+    }
 
     return cleanup
-  }, [])
+  }, [hasInteracted])
+
   // Handle active section changes
   useEffect(() => {
-    if (activeSection) {
+    if (activeSection && (hasInteracted || !isIOS())) {
       playTransition(activeSection)
     }
-  }, [activeSection])
+  }, [activeSection, hasInteracted])
 
   // Handle window resize
   useEffect(() => {
@@ -892,28 +1034,40 @@ const Castle = ({ activeSection }) => {
   })
 
   return (
-    <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
-      <CameraControls
-        ref={controls}
-        makeDefault
-        smoothTime={0.6}
-        minPolarAngle={Math.PI * 0.15}
-        maxPolarAngle={Math.PI * 0.55}
-        minDistance={0.1}
-        maxDistance={20}
-        boundaryFriction={1}
-        boundaryEnclosesCamera={true}
-        verticalDragToForward={false}
-        dollyToCursor={false}
-        minY={1}
-        maxY={15}
-      />
-      <Suspense>
-        <CastleModel onCastleClick={playTransition} />
-      </Suspense>
-    </group>
+    <>
+      {showInteractionPrompt && (
+        <InteractionPrompt onInteraction={handleUserInteraction} />
+      )}
+
+      <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
+        <CameraControls
+          ref={controls}
+          makeDefault
+          smoothTime={0.6}
+          minPolarAngle={Math.PI * 0.15}
+          maxPolarAngle={Math.PI * 0.55}
+          minDistance={0.1}
+          maxDistance={20}
+          boundaryFriction={1}
+          boundaryEnclosesCamera={true}
+          verticalDragToForward={false}
+          dollyToCursor={false}
+          minY={1}
+          maxY={15}
+        />
+        <Suspense fallback={null}>
+          <CastleModel
+            onCastleClick={playTransition}
+            hasInteracted={hasInteracted || !isIOS()}
+            onPortalPlay={() => console.log("Portal video started")}
+            onWaterPlay={() => console.log("Water video started")}
+          />
+        </Suspense>
+      </group>
+    </>
   )
 }
+
 useGLTF.preload("/models/Castle.glb")
 
 export default Castle
