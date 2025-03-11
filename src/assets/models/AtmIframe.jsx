@@ -1,59 +1,110 @@
-import React, { useEffect, useState } from "react"
-import { useGLTF } from "@react-three/drei"
-import * as THREE from "three"
+import { Html } from "@react-three/drei";
+import React, { useEffect, useRef, useState } from "react";
 
-export default function AtmIframe(props) {
-  const { nodes, materials } = useGLTF("/models/atmIframe.glb")
-  const [checkerTexture, setCheckerTexture] = useState(null)
+export default function AtmIframe({ onReturnToMain, isActive, ...props }) {
+  const [showContent, setShowContent] = useState(false);
+  const [showButtons, setShowButtons] = useState(false);
+  const iframeRef = useRef(null);
 
-  // Carrega a textura
+  // Monitora mudanças no estado isActive
   useEffect(() => {
-    const textureLoader = new THREE.TextureLoader()
-    textureLoader.load(
-      "/texture/checker.webp",
-      loadedTexture => {
-        loadedTexture.wrapS = THREE.RepeatWrapping
-        loadedTexture.wrapT = THREE.RepeatWrapping
-        loadedTexture.repeat.set(2, 2) // Ajuste a repetição conforme necessário
-        setCheckerTexture(loadedTexture)
-      },
-      undefined,
-      error => console.error("Erro ao carregar textura:", error)
-    )
-  }, [])
+    if (isActive) {
+      // Quando o componente se torna ativo, mostra o conteúdo com um pequeno delay
+      const timer = setTimeout(() => {
+        setShowContent(true);
+        // Mostra os botões após um tempo para garantir que a iframe carregou
+        setTimeout(() => {
+          setShowButtons(true);
+        }, 500);
+      }, 300);
 
-  // Criando um material com a textura xadrez
-  const checkerMaterial = React.useMemo(() => {
-    if (nodes.atmIframe?.material) {
-      // Clonar o material original para preservar outras propriedades
-      const newMaterial = nodes.atmIframe.material.clone()
-      // Configurar o material com a textura quando disponível
-      if (checkerTexture) {
-        newMaterial.map = checkerTexture
-        newMaterial.needsUpdate = true
-      }
-      // Tornar o material double-sided
-      newMaterial.side = THREE.DoubleSide
-      return newMaterial
+      return () => clearTimeout(timer);
+    } else {
+      // Quando o componente se torna inativo, esconde o conteúdo
+      setShowContent(false);
+      setShowButtons(false);
     }
+  }, [isActive]);
 
-    // Fallback para um material básico
-    return new THREE.MeshStandardMaterial({
-      map: checkerTexture,
-      side: THREE.DoubleSide,
-    })
-  }, [nodes.atmIframe?.material, checkerTexture])
+  // Função para lidar com o clique no botão Back to Main
+  const handleBackToMain = () => {
+    // Importante: Não esconder o conteúdo aqui, deixe o useEffect cuidar disso
+    // Apenas chame a função onReturnToMain para mudar a câmera
+    onReturnToMain();
+  };
 
   return (
     <group {...props} dispose={null}>
-      <mesh
-        geometry={nodes.atmIframe.geometry}
-        material={checkerMaterial}
-        position={[1.675, 1.185, 0.86]}
-        rotation={[1.47, 0.194, -1.088]}
-      />
-    </group>
-  )
-}
+      {showContent && (
+        <Html
+          transform
+          wrapperClass="atm-screen"
+          distanceFactor={0.17}
+          position={[0, 0, 0]}
+          rotation={[-Math.PI / 2, 0, 0]} // Rotação relativa ao grupo
+        >
+          <div style={{ width: "100%", height: "100%", position: "relative" }}>
+            <iframe
+              ref={iframeRef}
+              src="https://getcupid.ai/Blogs"
+              style={{
+                width: "100%",
+                height: "100%",
+                border: "none",
+                borderRadius: "8px",
+                boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+                backgroundColor: "white",
+              }}
+            />
 
-useGLTF.preload("/models/atmIframe.glb")
+            {showButtons && (
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: "20px",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  display: "flex",
+                  gap: "12px",
+                  zIndex: 1000,
+                }}
+              >
+
+
+                {/* <button
+                  onClick={() => {
+                    if (iframeRef.current) {
+                      iframeRef.current.src = iframeRef.current.src;
+                    }
+                  }}
+                  style={{
+                    padding: "8px 16px",
+                    fontSize: "14px",
+                    backgroundColor: "rgba(59, 130, 246, 0.9)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    fontWeight: "bold",
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                    transition: "background-color 0.3s",
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor =
+                      "rgba(37, 99, 235, 0.9)";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor =
+                      "rgba(59, 130, 246, 0.9)";
+                  }}
+                >
+                  Refresh
+                </button> */}
+              </div>
+            )}
+          </div>
+        </Html>
+      )}
+    </group>
+  );
+}
