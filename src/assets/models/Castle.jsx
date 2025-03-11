@@ -407,7 +407,7 @@ const useVideoTexture = videoPath => {
 // Castle Material
 const useCastleMaterial = () => {
   const textures = useTexture({
-    map: "/texture/castleColor.webp",
+    map: "/texture/castleColorAO.jpg",
     metalnessMap: "/texture/castleMetallic.webp",
     roughnessMap: "/texture/castleRoughness.webp",
     emissiveMap: "/texture/castleEmissive.webp",
@@ -444,7 +444,7 @@ const useCastleMaterial = () => {
 // Floor Material
 const useFloorMaterial = () => {
   const textures = useTexture({
-    map: "/texture/FloorColorB.webp",
+    map: "/texture/floorColorAO.jpg",
     roughnessMap: "/texture/floorRoughness.webp",
     metalnessMap: "/texture/floorMetallic.webp",
     materialEmissive: "/texture/floorEmissive.webp",
