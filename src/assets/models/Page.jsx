@@ -2,7 +2,7 @@ import { Heart, Star, Calendar, Sparkles, ArrowRight, Feather } from "lucide-rea
 
 const CupidRoadmapPage = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-amber-50 font-serif">
+    <div className="min-h-screen  font-serif">
       {/* Pergaminho Header */}
       <div className="relative py-16 text-center">
         <div className="absolute inset-0 flex justify-center">
@@ -13,23 +13,22 @@ const CupidRoadmapPage = () => {
             <Feather className="text-pink-400" size={48} />
           </div>
           <h1 className="text-7xl font-bold text-pink-700 mb-6">Divine Roadmap</h1>
-          <p className="text-xl text-amber-800">The Celestial Plan for Cupid's Church</p>
+          <p className="text-xl text-white">The Celestial Plan for Cupid's Church</p>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-6 pb-20">
         {/* Introdução */}
-        <div className="relative mb-16 p-8 bg-gradient-to-r from-amber-50 to-pink-50 rounded-lg border border-amber-200 shadow-md">
-          <div className="absolute top-0 left-0 w-full h-8 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik0wLDAgTDEwLDAgUzE1LDAsIDE1LDUgUzEwLDEwLCAxNSwxNSBTMjAsMTUsIDI1LDEwIFMzMCw1LCAzNSwxMCBTNDAsMTUsIDQ1LDEwIFM1MCw1LCA1NSwxMCBTNjAsMTUsIDY1LDEwIFM3MCw1LCA3NSwxMCBTODAsMTUsIDg1LDEwIFM5MCw1LCA5NSwxMCBTMTAwLDE1LCAxMDUsMTAgUzExMCw1LCAxMTUsMTAgUzEyMCwxNSwgMTI1LDEwIFMxMzAsNSwgMTM1LDEwIFMxNDAsMTUsIDE0NSwxMCBTMTUwLDUsIDE1NSwxMCBTMTYwLDE1LCAxNjUsMTAgUzE3MCw1LCAxNzUsMTAgUzE4MCwxNSwgMTg1LDEwIFMxOTAsNSwgMTk1LDEwIFMyMDAsMTUsIDIwMCwxMCBMMjAwLDAgTDAsMAoiIGZpbGw9IiNmZGJhNzQiIG9wYWNpdHk9IjAuMyIvPjwvc3ZnPg==')] opacity-50"></div>
-          <div className="absolute bottom-0 left-0 w-full h-8 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik0wLDEwIEwxMCwxMCBTMTUsMTAsIDE1LDUgUzEwLDAsIDE1LC01IFMyMCwtNSwgMjUsMCBTMzAsNSwgMzUsMCBTNDAsLTUsIDQ1LDAgUzUwLDUsIDU1LDAgUzYwLC01LCA2NSwwIFM3MCw1LCA3NSwwIFM4MCwtNSwgODUsMCBTOTAsNSwgOTUsMCBTMTAwLC01LCAxMDUsMCBTMTEwLDUsIDExNSwwIFMxMjAsLTUsIDEyNSwwIFMxMzAsNSwgMTM1LDAgUzE0MCwtNSwgMTQ1LDAgUzE1MCw1LCAxNTUsMCBTMTYwLC01LCAxNjUsMCBTMTcwLDUsIDE3NSwwIFMxODAsLTUsIDE4NSwwIFMxOTAsNSwgMTk1LDAgUzIwMCwtNSwgMjAwLDAgTDIwMCwxMCBMMCwxMAoiIGZpbGw9IiNmZGJhNzQiIG9wYWNpdHk9IjAuMyIgdHJhbnNmb3JtPSJyb3RhdGUoMTgwIDEwMCA1KSIvPjwvc3ZnPg==')] opacity-50"></div>
+        <div className="relative mb-16 p-8 bg-gradient-to-r shadow-md">
 
-          <h2 className="text-5xl font-bold text-amber-800 mb-4 text-center">The Divine Vision</h2>
-          <p className="text-amber-900 leading-relaxed text-xl mb-4">
+
+          <h2 className="text-5xl font-bold text-black mb-4 text-center">The Divine Vision</h2>
+          <p className="text-white leading-relaxed text-xl mb-4">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut perspiciatis unde omnis iste natus error sit
             voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis
             et quasi architecto beatae vitae dicta sunt explicabo.
           </p>
-          <p className="text-amber-900 leading-relaxed text-xl">
+          <p className="text-white leading-relaxed text-xl">
             Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni
             dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor
             sit amet.
@@ -51,7 +50,7 @@ const CupidRoadmapPage = () => {
                 </div>
               </div>
               <h3 className="text-3xl font-bold text-pink-600 mb-3">Celestial Foundation</h3>
-              <p className="text-amber-900 leading-relaxed text-xl mb-4">
+              <p className="text-white leading-relaxed text-xl mb-4">
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam, quis nostrud
                 exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
               </p>
@@ -68,7 +67,7 @@ const CupidRoadmapPage = () => {
                 </div>
               </div>
               <h3 className="text-3xl font-bold text-pink-600 mb-3">Sacred Algorithms</h3>
-              <p className="text-amber-900 leading-relaxed text-xl mb-4">
+              <p className="text-white leading-relaxed text-xl mb-4">
                 Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
                 Excepteur sint occaecat cupidatat non proident.
               </p>
@@ -95,7 +94,7 @@ const CupidRoadmapPage = () => {
                 </div>
               </div>
               <h3 className="text-3xl font-bold text-amber-600 mb-3">Ethereal Realms</h3>
-              <p className="text-amber-900 leading-relaxed text-xl mb-4">
+              <p className="text-white leading-relaxed text-xl mb-4">
                 Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam
                 rem aperiam, eaque ipsa quae ab illo inventore veritatis.
               </p>
@@ -112,7 +111,7 @@ const CupidRoadmapPage = () => {
                 </div>
               </div>
               <h3 className="text-3xl font-bold text-amber-600 mb-3">Divine Communication</h3>
-              <p className="text-amber-900 leading-relaxed text-xl mb-4">
+              <p className="text-white leading-relaxed text-xl mb-4">
                 At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum
                 deleniti atque corrupti quos dolores et quas molestias excepturi.
               </p>
@@ -139,7 +138,7 @@ const CupidRoadmapPage = () => {
                 </div>
               </div>
               <h3 className="text-3xl font-bold text-purple-600 mb-3">Angelic Intelligence</h3>
-              <p className="text-amber-900 leading-relaxed text-xl mb-4">
+              <p className="text-white leading-relaxed text-xl mb-4">
                 Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni
                 dolores eos qui ratione voluptatem sequi nesciunt.
               </p>
@@ -158,7 +157,7 @@ const CupidRoadmapPage = () => {
                 </div>
               </div>
               <h3 className="text-3xl font-bold text-purple-600 mb-3">Celestial Connections</h3>
-              <p className="text-amber-900 leading-relaxed text-xl mb-4">
+              <p className="text-white leading-relaxed text-xl mb-4">
                 Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia
                 non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
               </p>
@@ -177,36 +176,35 @@ const CupidRoadmapPage = () => {
             <h2 className="text-5xl font-bold text-pink-700">Divine Timeline</h2>
           </div>
 
-          <div className="bg-gradient-to-r from-amber-50 to-pink-50 rounded-lg border border-amber-200 shadow-md p-6">
+          <div className="bg-gradient-to-r shadow-md p-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 bg-white bg-opacity-70 rounded-lg border border-pink-200 text-center">
+              <div className="p-4 text-center">
                 <h3 className="text-3xl font-bold text-pink-600 mb-3">Genesis</h3>
-                <p className="text-amber-800">Q1-Q2 2025</p>
-                <div className="mt-3 text-amber-900 text-sm">Foundation & Core Features</div>
+                <p className="text-white">Q1-Q2 2025</p>
+                <div className="mt-3 text-white text-sm">Foundation & Core Features</div>
               </div>
 
-              <div className="p-4 bg-white bg-opacity-70 rounded-lg border border-amber-200 text-center">
+              <div className="p-4 text-center">
                 <h3 className="text-3xl font-bold text-amber-600 mb-3">Ascension</h3>
-                <p className="text-amber-800">Q3-Q4 2025</p>
-                <div className="mt-3 text-amber-900 text-sm">Expansion & Enhancement</div>
+                <p className="text-white">Q3-Q4 2025</p>
+                <div className="mt-3 text-white text-sm">Expansion & Enhancement</div>
               </div>
 
-              <div className="p-4 bg-white bg-opacity-70 rounded-lg border border-purple-200 text-center">
-                <h3 className="text-3xl font-bold text-purple-600 mb-3">Transcendence</h3>
-                <p className="text-amber-800">Q1-Q2 2026</p>
-                <div className="mt-3 text-amber-900 text-sm">Advanced Features & Global Reach</div>
+              <div className="p-4 text-center">
+                <h3 className="text-3xl font-bold text-purple-600 mb-3">Angel</h3>
+                <p className="text-white">Q1-Q2 2026</p>
+                <div className="mt-3 text-white text-sm">Advanced Features & Global Reach</div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Final Message */}
-        <div className="relative p-8 bg-gradient-to-r from-pink-50 to-amber-50 rounded-lg border border-pink-200 shadow-md text-center">
-          <div className="absolute top-0 left-0 w-full h-8 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik0wLDAgTDEwLDAgUzE1LDAsIDE1LDUgUzEwLDEwLCAxNSwxNSBTMjAsMTUsIDI1LDEwIFMzMCw1LCAzNSwxMCBTNDAsMTUsIDQ1LDEwIFM1MCw1LCA1NSwxMCBTNjAsMTUsIDY1LDEwIFM3MCw1LCA3NSwxMCBTODAsMTUsIDg1LDEwIFM5MCw1LCA5NSwxMCBTMTAwLDE1LCAxMDUsMTAgUzExMCw1LCAxMTUsMTAgUzEyMCwxNSwgMTI1LDEwIFMxMzAsNSwgMTM1LDEwIFMxNDAsMTUsIDE0NSwxMCBTMTUwLDUsIDE1NSwxMCBTMTYwLDE1LCAxNjUsMTAgUzE3MCw1LCAxNzUsMTAgUzE4MCwxNSwgMTg1LDEwIFMxOTAsNSwgMTk1LDEwIFMyMDAsMTUsIDIwMCwxMCBMMjAwLDAgTDAsMAoiIGZpbGw9IiNmZGJhNzQiIG9wYWNpdHk9IjAuMyIvPjwvc3ZnPg==')] opacity-50"></div>
-          <div className="absolute bottom-0 left-0 w-full h-8 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik0wLDEwIEwxMCwxMCBTMTUsMTAsIDE1LDUgUzEwLDAsIDE1LC01IFMyMCwtNSwgMjUsMCBTMzAsNSwgMzUsMCBTNDAsLTUsIDQ1LDAgUzUwLDUsIDU1LDAgUzYwLC01LCA2NSwwIFM3MCw1LCA3NSwwIFM4MCwtNSwgODUsMCBTOTAsNSwgOTUsMCBTMTAwLC01LCAxMDUsMCBTMTEwLDUsIDExNSwwIFMxMjAsLTUsIDEyNSwwIFMxMzAsNSwgMTM1LDAgUzE0MCwtNSwgMTQ1LDAgUzE1MCw1LCAxNTUsMCBTMTYwLC01LCAxNjUsMCBTMTcwLDUsIDE3NSwwIFMxODAsLTUsIDE4NSwwIFMxOTAsNSwgMTk1LDAgUzIwMCwtNSwgMjAwLDAgTDIwMCwxMCBMMCwxMAoiIGZpbGw9IiNmZGJhNzQiIG9wYWNpdHk9IjAuMyIgdHJhbnNmb3JtPSJyb3RhdGUoMTgwIDEwMCA1KSIvPjwvc3ZnPg==')] opacity-50"></div>
+        <div className="relative p-8 bg-gradient-to-rshadow-md text-center">
+
 
           <h2 className="text-5xl font-bold text-pink-700 mb-4">Divine Blessing</h2>
-          <p className="text-amber-900 leading-relaxed text-xl mb-6">
+          <p className="text-white leading-relaxed text-xl mb-6">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut perspiciatis unde omnis iste natus error sit
             voluptatem accusantium doloremque laudantium, totam rem aperiam.
           </p>
@@ -220,9 +218,6 @@ const CupidRoadmapPage = () => {
       </div>
 
       {/* Footer */}
-      <footer className="bg-gradient-to-r from-pink-700 to-amber-700 text-white py-8 text-center">
-        <p className="text-sm opacity-80">Sealed with Divine Love &copy; {new Date().getFullYear()} Cupid's Church</p>
-      </footer>
     </div>
   )
 }
