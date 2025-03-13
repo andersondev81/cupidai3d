@@ -1,6 +1,6 @@
 import { Html } from "@react-three/drei";
 import React, { useEffect, useState } from "react";
-import BlogsOverlay from "./Page"; // Import your custom component
+import BlogsOverlay from "./Page2"; // Import your custom component
 
 const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
   const [showContent, setShowContent] = useState(false);
