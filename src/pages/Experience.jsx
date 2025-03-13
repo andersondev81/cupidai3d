@@ -101,7 +101,6 @@ const CANVAS_CONFIG = {
   },
   shadows: false, // Disable shadows in the renderer
 }
-
 const useCameraAnimation = (section, cameraRef) => {
   const { camera } = useThree()
   const [isStarted, setIsStarted] = useState(false)
@@ -109,7 +108,9 @@ const useCameraAnimation = (section, cameraRef) => {
     progress: 0,
     isActive: false,
     startPosition: new THREE.Vector3(),
+    startRotation: new THREE.Euler(),
     startFov: 50,
+    lastTime: 0
   })
 
   useEffect(() => {
@@ -117,58 +118,101 @@ const useCameraAnimation = (section, cameraRef) => {
 
     const sectionKey = section in CAMERA_CONFIG.sections ? section : "intro"
     const config = CAMERA_CONFIG.sections[sectionKey]
-    const { intensity, curve } = CAMERA_CONFIG.transitions
 
+    // Use uma curva de easing mais suave para transições
+    const easing = (t) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+
+    // Armazene a posição e rotação inicial da câmera
     animationRef.current = {
       ...animationRef.current,
       isActive: true,
       startPosition: camera.position.clone(),
+      startRotation: camera.rotation.clone(),
       startFov: camera.fov,
+      lastTime: performance.now(),
       config,
     }
 
     let animationFrameId
 
-    const animate = () => {
+    const animate = (currentTime) => {
       if (!animationRef.current.isActive) return
 
-      animationRef.current.progress += intensity
+      // Calcule delta de tempo para ter uma velocidade consistente
+      const deltaTime = Math.min(
+        (currentTime - animationRef.current.lastTime) / 1000,
+        0.1
+      ) // Limita o delta para evitar saltos grandes
+
+      animationRef.current.lastTime = currentTime
+
+      // Velocidade de transição ajustável - quanto menor, mais suave
+      const transitionSpeed = 1.5 // Ajuste este valor para mais lento (menor) ou mais rápido (maior)
+
+      animationRef.current.progress += deltaTime * transitionSpeed
       const t = Math.min(animationRef.current.progress, 1)
       const { config, startPosition, startFov } = animationRef.current
 
-      const curveValue = curve(t)
-      const offsetZ = curveValue * config.transition.zOffset
-      const targetFovOffset =
-        curveValue * config.fov * config.transition.fovMultiplier
+      // Usa a função de easing para suavizar a transição
+      const curveValue = easing(t)
 
-      const targetPosition = new THREE.Vector3()
-        .lerpVectors(startPosition, config.position, t)
-        .add(new THREE.Vector3(0, 0, offsetZ))
+      // Calcule a posição de destino com interpolação suave
+      const targetPosition = new THREE.Vector3().lerpVectors(
+        startPosition,
+        config.position,
+        curveValue
+      )
 
-      const targetFov =
-        THREE.MathUtils.lerp(startFov, config.fov, t) - targetFovOffset
+      // Reduz o FOV máximo e usa um valor alvo mais baixo para evitar FOV alto
+      // Limita o FOV entre 35 e 60 para uma visualização mais confortável
+      const configFov = config.fov || 50; // Usa 50 como padrão se config.fov não estiver definido
+      const targetFov = THREE.MathUtils.clamp(
+        THREE.MathUtils.lerp(startFov, Math.min(configFov, 55), curveValue),
+        35, // valor mínimo de FOV
+        60  // valor máximo de FOV (reduzido para evitar FOV alto)
+      );
 
+      // Aplique as mudanças
       camera.position.copy(targetPosition)
       camera.fov = targetFov
       camera.updateProjectionMatrix()
 
+      // Continuar animação se não estiver completa
       if (t < 1) {
         animationFrameId = requestAnimationFrame(animate)
       } else {
         animationRef.current.isActive = false
         animationRef.current.progress = 0
+
+        // Define o FOV final para um valor confortável
+        camera.fov = Math.min(configFov, 55);
+        camera.updateProjectionMatrix();
       }
     }
 
-    animate()
+    animationFrameId = requestAnimationFrame(animate)
 
     if (cameraRef) {
       cameraRef.current = {
         goToHome: () => {
-          camera.position.set(15.9, 6.8, -11.4)
-          camera.updateProjectionMatrix()
-          animationRef.current.isActive = false
-          animationRef.current.progress = 0
+          // Inicie uma nova animação para retornar à posição inicial
+          animationRef.current = {
+            ...animationRef.current,
+            isActive: true,
+            progress: 0,
+            startPosition: camera.position.clone(),
+            startRotation: camera.rotation.clone(),
+            startFov: camera.fov,
+            lastTime: performance.now(),
+            config: {
+              position: new THREE.Vector3(15.9, 6.8, -11.4),
+              fov: 50, // FOV padrão para a posição inicial
+              transition: { fovMultiplier: 0, zOffset: 0 }
+            }
+          }
+
+          // Inicie a animação
+          requestAnimationFrame(animate)
         },
       }
     }

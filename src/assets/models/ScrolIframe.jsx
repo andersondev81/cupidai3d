@@ -13,7 +13,7 @@ export default function ScrollIframe({ onReturnToMain, isActive = false, ...prop
   useEffect(() => {
     const textureLoader = new THREE.TextureLoader();
     textureLoader.load(
-      "/texture/Scroll_Roughness.webp", // Make sure this path exists in your project
+      "/texture/Scroll_Roughness.webp",
       loadedTexture => {
         loadedTexture.wrapS = THREE.RepeatWrapping;
         loadedTexture.wrapT = THREE.RepeatWrapping;
@@ -71,7 +71,18 @@ export default function ScrollIframe({ onReturnToMain, isActive = false, ...prop
 
   // Function to handle Back to Main button click
   const handleBackToMain = () => {
-    if (onReturnToMain) onReturnToMain();
+    // Primeiro esconde o conteúdo para uma transição suave
+    setShowContent(false);
+    setShowButtons(false);
+
+    // Espera um pouco para garantir que a animação de fade out seja visível
+    setTimeout(() => {
+      // Chama a função de retorno fornecida pelo Castle.jsx
+      // Isso vai reiniciar o estado do CastleUi, movendo a câmera de volta para "nav"
+      if (onReturnToMain) {
+        onReturnToMain();
+      }
+    }, 300);
   };
 
   return (
@@ -89,71 +100,56 @@ export default function ScrollIframe({ onReturnToMain, isActive = false, ...prop
         <group position={[-1.805, 1.160, 0.908]} rotation={[-3.142, 1.051, -1.568]}>
           <Html
             transform
-            scale={0.01}
+            scale={0.022}
             position={[0, 0, 0]}
             rotation={[0, Math.PI, 1.568]}
-            distanceFactor={6.3}
+            distanceFactor={6.1}
             className="iframe-container"
           >
             <div style={{
-              width: "1600px",
-              height: "2000px",
+              width: "800px",
+              height: "1000px",
               position: "relative",
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
-              alignItems: "center"
+              alignItems: "center",
+              // backgroundColor: "rgba(248, 250, 252, 0.98)",
+              transition: "opacity 0.3s ease",
+              opacity: showContent ? 1 : 0,
             }}>
               <div style={{
                 width: "90%",
-                height: "90%",
-                overflow: "hidden",
+                height: "85%",
+                overflow: "auto",
                 borderRadius: "8px",
-                boxShadow: "0 4px 8px rgba(0,0,0,0.2)"
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
               }}>
-                {/* Instead of an iframe, directly render your component */}
                 <div style={{
                   width: "100%",
                   height: "100%",
-                  backgroundColor: "white",
-                  border: "none"
+                  // backgroundColor: "white",
+                  border: "none",
+                  padding: "20px",
+                  fontSize: "18px",
+                  lineHeight: "1.7",
+                  // color: "#000000",
+                  letterSpacing: "0.01em"
                 }}>
-                  <AboutOverlay />
+                  <div className="content-wrapper">
+                    <AboutOverlay />
+                  </div>
                 </div>
               </div>
 
-              {/* Back to Main button */}
+              {/* Back to Main button - Estilizado como o botão Return to Cupid's Church */}
               {showButtons && (
-                <div
-                  style={{
-                    marginTop: "40px",
-                    display: "flex",
-                    gap: "12px",
-                    zIndex: 1000,
-                  }}
-                >
+                <div className="text-center py-8">
                   <button
                     onClick={handleBackToMain}
-                    style={{
-                      padding: "12px 24px",
-                      fontSize: "18px",
-                      backgroundColor: "rgba(239, 68, 68, 0.9)",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                      fontWeight: "bold",
-                      boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                      transition: "background-color 0.3s",
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.backgroundColor = "rgba(220, 38, 38, 0.9)";
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.backgroundColor = "rgba(239, 68, 68, 0.9)";
-                    }}
+                    className="px-8 py-4 bg-pink-500 text-white rounded-full font-bold text-lg hover:bg-pink-600 transition-all duration-300 shadow-lg hover:shadow-pink-300"
                   >
-                    Back to Main
+                    Return to Cupid's Church
                   </button>
                 </div>
               )}

@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useEffect } from "react"
+import React, { useMemo, useRef, useEffect, useState } from "react"
 import { useGLTF, useTexture, Float } from "@react-three/drei"
 import {
   Color,
@@ -7,12 +7,9 @@ import {
   FrontSide,
   AdditiveBlending,
   Layers,
+  Vector3
 } from "three"
-import {
-  EffectComposer,
-  Bloom,
-  SelectiveBloom,
-} from "@react-three/postprocessing"
+import { useFrame } from "@react-three/fiber"
 import RotateAxis from "../../components/helpers/RotateAxis"
 
 // Cache de materiais
@@ -33,10 +30,33 @@ const MATERIAL_SETTINGS = {
 const BLOOM_LAYER = new Layers()
 BLOOM_LAYER.set(1) // Usando a camada 1 para os elementos com emissive map
 
-const OrbMesh = React.memo(props => {
+// Versão modificada da RotateAxis que mantém a velocidade original
+// Removendo a funcionalidade de desaceleração conforme solicitado
+const SlowableRotateAxis = React.memo(({ axis, speed, rotationType, isSlowed, children }) => {
+  const ref = useRef()
+
+  useFrame((_, delta) => {
+    if (!ref.current) return
+
+    // Velocidade constante, independente do estado de zoom
+    // Não desacelera mais a animação da orb
+    const effectiveSpeed = speed
+
+    if (rotationType === "euler") {
+      if (axis === "x") ref.current.rotation.x += effectiveSpeed * delta
+      else if (axis === "y") ref.current.rotation.y += effectiveSpeed * delta
+      else if (axis === "z") ref.current.rotation.z += effectiveSpeed * delta
+    }
+  })
+
+  return <group ref={ref}>{children}</group>
+})
+
+const OrbMesh = React.memo(({ isZoomed, setIsZoomed, ...props }) => {
   const { nodes } = useGLTF("/models/Orbit.glb")
   const materialsRef = useRef([])
   const emissiveGroupRef = useRef()
+  const groupRef = useRef()
 
   // Carrega e configura texturas uma única vez
   const textures = useTexture({
@@ -69,7 +89,7 @@ const OrbMesh = React.memo(props => {
             alphaMap: textures.alphaMap,
             emissive: MATERIAL_SETTINGS.emissiveColor,
             emissiveMap: textures.emissiveMap,
-            side: FrontSide, // Mudado de DoubleSide para FrontSide
+            side: FrontSide,
             ...config,
           })
         )
@@ -118,52 +138,77 @@ const OrbMesh = React.memo(props => {
     }
   }, [])
 
+  // Evento de clique para ativar o zoom
+  const handleClick = (e) => {
+    e.stopPropagation()
+    setIsZoomed(!isZoomed)
+  }
+
+  // Evento de hover
+  const handlePointerEnter = (e) => {
+    e.stopPropagation()
+    document.body.style.cursor = "pointer"
+  }
+
+  const handlePointerLeave = (e) => {
+    e.stopPropagation()
+    document.body.style.cursor = "default"
+  }
+
   // Reduz a complexidade da geometria da esfera
   const simplifiedSphereGeometry = useMemo(() => {
-    return <sphereGeometry args={[0.02, 16, 16]} /> // Reduzido de 30,30 para 16,16
+    return <sphereGeometry args={[0.02, 16, 16]} />
   }, [])
 
   return (
-    <group {...props} dispose={null} position={[1.76, 1.155, -0.883]}>
+    <group
+      {...props}
+      dispose={null}
+      position={[1.76, 1.155, -0.883]}
+      ref={groupRef}
+      onClick={handleClick}
+      onPointerEnter={handlePointerEnter}
+      onPointerLeave={handlePointerLeave}
+    >
       {/* Grupo para elementos com emissive que terão bloom */}
       <group ref={emissiveGroupRef}>
         {/* Linhas - com rotações otimizadas */}
         <group>
-          <RotateAxis axis="y" speed={1} rotationType="euler">
+          <SlowableRotateAxis axis="y" speed={1} rotationType="euler" isSlowed={isZoomed}>
             <mesh geometry={nodes.lineC?.geometry} material={materials.lines} />
-          </RotateAxis>
-          <RotateAxis axis="z" speed={6} rotationType="euler">
+          </SlowableRotateAxis>
+          <SlowableRotateAxis axis="z" speed={6} rotationType="euler" isSlowed={isZoomed}>
             <mesh geometry={nodes.lineB?.geometry} material={materials.lines} />
-          </RotateAxis>
-          <RotateAxis axis="x" speed={8} rotationType="euler">
+          </SlowableRotateAxis>
+          <SlowableRotateAxis axis="x" speed={8} rotationType="euler" isSlowed={isZoomed}>
             <mesh geometry={nodes.lineA?.geometry} material={materials.lines} />
-          </RotateAxis>
+          </SlowableRotateAxis>
         </group>
 
         {/* Center */}
-        <RotateAxis axis="y" speed={8} rotationType="euler">
+        <SlowableRotateAxis axis="y" speed={8} rotationType="euler" isSlowed={isZoomed}>
           <mesh geometry={nodes.center?.geometry} material={materials.center} />
-        </RotateAxis>
+        </SlowableRotateAxis>
 
         {/* Bolas - agrupadas para melhor performance */}
         <group>
-          <RotateAxis axis="x" speed={6} rotationType="euler">
+          <SlowableRotateAxis axis="x" speed={6} rotationType="euler" isSlowed={isZoomed}>
             <mesh geometry={nodes.ballC?.geometry} material={materials.balls} />
-          </RotateAxis>
-          <RotateAxis axis="y" speed={8} rotationType="euler">
+          </SlowableRotateAxis>
+          <SlowableRotateAxis axis="y" speed={8} rotationType="euler" isSlowed={isZoomed}>
             <mesh
               geometry={nodes.ballA?.geometry}
               material={materials.balls}
               scale={0.993}
             />
-          </RotateAxis>
-          <RotateAxis axis="z" speed={2} rotationType="euler">
+          </SlowableRotateAxis>
+          <SlowableRotateAxis axis="z" speed={2} rotationType="euler" isSlowed={isZoomed}>
             <mesh
               geometry={nodes.ballB?.geometry}
               material={materials.balls}
               scale={1.125}
             />
-          </RotateAxis>
+          </SlowableRotateAxis>
         </group>
       </group>
 
@@ -179,47 +224,71 @@ const OrbMesh = React.memo(props => {
         </mesh>
       </group>
 
-      <RotateAxis axis="y" speed={-0.5} rotationType="euler">
+      <SlowableRotateAxis axis="y" speed={-0.5} rotationType="euler" isSlowed={isZoomed}>
         <mesh
           geometry={nodes.particles.geometry}
           material={materials.sphere}
           rotation={[Math.PI / 2, 0, 0]}
           scale={0.01}
         />
-      </RotateAxis>
+      </SlowableRotateAxis>
     </group>
   )
 })
 
 // Componente principal
 const Orb = () => {
+  const [isZoomed, setIsZoomed] = useState(false)
   const sceneRef = useRef()
+  const floatGroupRef = useRef()
+  const originalScale = useRef(new Vector3(1, 1, 1))
+  const originalPosition = useRef(new Vector3(0.066, 0, -0.04))
+  const targetScale = new Vector3(1.5, 1.5, 1.5)
+  const targetPosition = new Vector3(0.066, 0.25, -0.04)
+
+  // Animação de zoom com transição mais lenta
+  useFrame((_, delta) => {
+    if (!floatGroupRef.current) return
+
+    const currentScale = floatGroupRef.current.scale
+    const currentPosition = floatGroupRef.current.position
+
+    // Fator de velocidade reduzido para transição mais lenta (0.5 = 4x mais lento)
+    const transitionSpeed = 0.5
+
+    if (isZoomed) {
+      // Interpolação muito mais suave para o zoom in
+      currentScale.lerp(targetScale, delta * transitionSpeed)
+      currentPosition.lerp(targetPosition, delta * transitionSpeed)
+    } else {
+      // Interpolação muito mais suave para o zoom out
+      currentScale.lerp(originalScale.current, delta * transitionSpeed)
+      currentPosition.lerp(originalPosition.current, delta * transitionSpeed)
+    }
+  })
+
+  // Salva a escala e posição original na primeira renderização
+  useEffect(() => {
+    if (floatGroupRef.current) {
+      originalScale.current.copy(floatGroupRef.current.scale)
+      originalPosition.current.copy(floatGroupRef.current.position)
+    }
+  }, [])
 
   return (
     <>
-      <group ref={sceneRef} position={[0.066, 0, -0.04]} rotation={[0, 0, 0]}>
-        <Float
-          floatIntensity={0.3}
-          speed={3}
-          rotationIntensity={0}
-          floatingRange={[-0.1, 0.1]} // Reduzido o range de flutuação
-        >
-          <OrbMesh />
-        </Float>
+      <group ref={sceneRef} position={[0, 0, 0]} rotation={[0, 0, 0]}>
+        <group ref={floatGroupRef} position={[0.066, 0, -0.04]}>
+          <Float
+            floatIntensity={0.3}
+            speed={3}
+            rotationIntensity={0}
+            floatingRange={[-0.1, 0.1]}
+          >
+            <OrbMesh isZoomed={isZoomed} setIsZoomed={setIsZoomed} />
+          </Float>
+        </group>
       </group>
-
-      {/* EffectComposer com efeito SelectiveBloom para aplicar apenas em layers específicas */}
-      {/* <EffectComposer>
-        <SelectiveBloom
-          lights={[]} // Não precisamos especificar luzes aqui
-          selection={sceneRef} // Aplica apenas aos objetos na referência sceneRef
-          selectionLayer={1} // Usa a camada 1 para identificar objetos
-          luminanceThreshold={1.1}
-          mipmapBlur
-          intensity={6}
-          radius={0.3}
-        />
-      </EffectComposer> */}
     </>
   )
 }
