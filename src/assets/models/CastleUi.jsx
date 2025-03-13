@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { AboutOverlay } from "/src/assets/models/AboutOverlay.jsx";
+import { AboutOverlay } from "/src/assets/models/AboutOverlay.jsx"; // Caminho correto de importação
+import Web3Connection from "../../pages/Web3Connection";
+import ChatInterface from "../../pages/AiDatingCoachChat";
+import { AnimatePresence } from "framer-motion";
 
 export const sections = [
   "nav",
@@ -31,6 +34,8 @@ const NavigationButton = ({ onClick, children, className }) => (
 
 export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
   const [showAboutOverlay, setShowAboutOverlay] = useState(false);
+  const [showWeb3Overlay, setShowWeb3Overlay] = useState(false);
+  const [showDatingCoachOverlay, setShowDatingCoachOverlay] = useState(false);
   const currentSectionKey = sections[section];
 
   // Show overlay only after the camera animation has completed
@@ -45,6 +50,24 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
     } else {
       // Hide overlay immediately when leaving the about section
       setShowAboutOverlay(false);
+    }
+
+    if (currentSectionKey === "token") {
+      const timer = setTimeout(() => {
+        setShowWeb3Overlay(true);
+      }, 3000); // 3 seconds delay to ensure animation is complete
+      return () => clearTimeout(timer);
+    } else {
+      setShowWeb3Overlay(false);
+    }
+
+    if (currentSectionKey === "aidatingcoach") {
+      const timer = setTimeout(() => {
+        setShowDatingCoachOverlay(true);
+      }, 2500); // 2.5 seconds delay to ensure animation is complete
+      return () => clearTimeout(timer);
+    } else {
+      setShowDatingCoachOverlay(false);
     }
   }, [currentSectionKey]);
 
@@ -63,6 +86,21 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
     }
   };
 
+  const handleCloseWeb3Overlay = () => {
+    setShowWeb3Overlay(false);
+    handleHomeNavigation();
+  };
+
+  const handleCloseDatingCoachOverlay = () => {
+    setShowDatingCoachOverlay(false);
+    handleHomeNavigation();
+  };
+
+  const handleOnClickLearnMore = () => {
+    setShowWeb3Overlay(false);
+    onSectionChange(1, "about")
+  }
+
   return (
     <main className="relative h-full w-full">
       {/* Seção About - Vazia agora, pois o overlay será mostrado automaticamente */}
@@ -71,19 +109,7 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
       </Section>
 
       {/* Seção AI Dating Coach */}
-      <Section isActive={currentSectionKey === "aidatingcoach"}>
-        <div className="flex flex-col items-center gap-6">
-          <h1 className="text-4xl font-bold text-stone-100">AI Dating Coach</h1>
-          <div className="flex gap-4">
-            <NavigationButton
-              onClick={handleHomeNavigation}
-              className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
-            >
-              Back to Main
-            </NavigationButton>
-          </div>
-        </div>
-      </Section>
+      <Section isActive={currentSectionKey === "aidatingcoach"}></Section>
 
       {/* Seção Download */}
       <Section isActive={currentSectionKey === "download"}>
@@ -92,14 +118,10 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
             Download the App
           </h1>
           <div className="flex gap-4">
-            <NavigationButton
-              className="bg-green-500 hover:bg-green-600 text-white pointer-events-auto"
-            >
+            <NavigationButton className="bg-green-500 hover:bg-green-600 text-white pointer-events-auto">
               iOS Version
             </NavigationButton>
-            <NavigationButton
-              className="bg-green-500 hover:bg-green-600 text-white pointer-events-auto"
-            >
+            <NavigationButton className="bg-green-500 hover:bg-green-600 text-white pointer-events-auto">
               Android Version
             </NavigationButton>
             <NavigationButton
@@ -113,18 +135,7 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
       </Section>
 
       {/* Seção Token */}
-      <Section isActive={currentSectionKey === "token"}>
-      <div className="flex flex-col items-center gap-6">
-          <div className="flex gap-4">
-            <NavigationButton
-              onClick={handleHomeNavigation}
-              className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
-            >
-              Back
-            </NavigationButton>
-          </div>
-        </div>
-      </Section>
+      <Section isActive={currentSectionKey === "token"}></Section>
 
       {/* Seção Roadmap */}
       <Section isActive={currentSectionKey === "roadmap"}>
@@ -144,10 +155,15 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
       </Section>
 
       {/* AboutOverlay Component - Only shown after camera animation completes */}
-      <AboutOverlay
-        isVisible={showAboutOverlay}
-        onClose={handleCloseOverlay}
-      />
+      <AboutOverlay isVisible={showAboutOverlay} onClose={handleCloseOverlay} />
+      {/* Web3 Connection Component - Only shown after camera animation completes (token key) */}
+      <AnimatePresence>
+        {showWeb3Overlay ? (
+          <Web3Connection key={0} onBack={handleCloseWeb3Overlay} onLearnMore={handleOnClickLearnMore} />
+        ) : showDatingCoachOverlay ? (
+          <ChatInterface key={1} onBack={handleCloseDatingCoachOverlay} />
+        ) : null}
+      </AnimatePresence>
     </main>
   );
 };
