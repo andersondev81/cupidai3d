@@ -87,7 +87,7 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
 
       {/* Seção Download */}
       <Section isActive={currentSectionKey === "download"}>
-        {/* <div className="flex flex-col items-center gap-6">
+        <div className="flex flex-col items-center gap-6">
           <h1 className="text-4xl font-bold text-stone-100">
             Download the App
           </h1>
@@ -109,7 +109,7 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
               Back
             </NavigationButton>
           </div>
-        </div> */}
+        </div>
       </Section>
 
       {/* Seção Token */}
