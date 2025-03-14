@@ -1,6 +1,7 @@
 import { Html } from "@react-three/drei";
 import React, { useEffect, useState } from "react";
-import BlogsOverlay from "./Page2"; // Import your custom component
+import MirrorPage from "../../components/iframes/Mirror";
+
 
 const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
   const [showContent, setShowContent] = useState(false);
@@ -80,7 +81,7 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
                 letterSpacing: "0.01em"
               }}>
                 <div className="content-wrapper">
-                  <BlogsOverlay />
+                  <MirrorPage />
                 </div>
               </div>
             </div>
@@ -88,12 +89,12 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
             {/* Back to Main button - styled like the Return to Cupid's Church button */}
             {showButtons && (
               <div className="text-center py-8">
-                {/* <button
+                <button
                   onClick={handleBackToMain}
                   className="px-8 py-4 bg-pink-500 text-white rounded-full font-bold text-lg hover:bg-pink-600 transition-all duration-300 shadow-lg hover:shadow-pink-300"
                 >
                   Return to Cupid's Church
-                </button> */}
+                </button>
               </div>
             )}
           </div>

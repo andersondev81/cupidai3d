@@ -73,21 +73,21 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
       {/* Seção AI Dating Coach */}
       <Section isActive={currentSectionKey === "aidatingcoach"}>
         <div className="flex flex-col items-center gap-6">
-          <h1 className="text-4xl font-bold text-stone-100">AI Dating Coach</h1>
+          {/* <h1 className="text-4xl font-bold text-stone-100">AI Dating Coach</h1> */}
           <div className="flex gap-4">
-            <NavigationButton
+            {/* <NavigationButton
               onClick={handleHomeNavigation}
               className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
             >
               Back to Main
-            </NavigationButton>
+            </NavigationButton> */}
           </div>
         </div>
       </Section>
 
       {/* Seção Download */}
       <Section isActive={currentSectionKey === "download"}>
-        <div className="flex flex-col items-center gap-6">
+        {/* <div className="flex flex-col items-center gap-6">
           <h1 className="text-4xl font-bold text-stone-100">
             Download the App
           </h1>
@@ -109,19 +109,19 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
               Back
             </NavigationButton>
           </div>
-        </div>
+        </div> */}
       </Section>
 
       {/* Seção Token */}
       <Section isActive={currentSectionKey === "token"}>
       <div className="flex flex-col items-center gap-6">
           <div className="flex gap-4">
-            <NavigationButton
+            {/* <NavigationButton
               onClick={handleHomeNavigation}
               className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
             >
               Back
-            </NavigationButton>
+            </NavigationButton> */}
           </div>
         </div>
       </Section>
@@ -130,14 +130,14 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
       <Section isActive={currentSectionKey === "roadmap"}>
         <div className="flex flex-col items-center gap-6">
 
-          <div className="flex gap-4">
+          {/* <div className="flex gap-4">
             <NavigationButton
               onClick={handleHomeNavigation}
               className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
             >
               Main Menu
             </NavigationButton>
-          </div>
+          </div> */}
         </div>
       </Section>
 
