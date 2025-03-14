@@ -12,19 +12,21 @@ export function Model(props) {
     <group {...props} dispose={null}>
       <mesh geometry={nodes.HeartVid.geometry} material={nodes.HeartVid.material} />
       <mesh geometry={nodes.water.geometry} material={nodes.water.material} />
-      <mesh geometry={nodes.scroll.geometry} material={nodes.scroll.material} />
       <mesh geometry={nodes.atm.geometry} material={nodes.atm.material} />
       <mesh geometry={nodes.stairs.geometry} material={nodes.stairs.material} />
       <mesh geometry={nodes.gods.geometry} material={nodes.gods.material} />
       <mesh geometry={nodes.LogoCupid.geometry} material={nodes.LogoCupid.material} position={[0.001, 4.18, -0.006]} />
       <mesh geometry={nodes.bow.geometry} material={nodes.bow.material} position={[-0.011, 1.262, -2.117]} />
-      <mesh geometry={nodes.floor.geometry} material={nodes.floor.material} />
       <mesh geometry={nodes.MirrorFrame.geometry} material={nodes.MirrorFrame.material} />
       <mesh geometry={nodes.wings.geometry} material={nodes.wings.material} />
-      <mesh geometry={nodes.Flowers.geometry} material={nodes.Flowers.material} />
+      <mesh geometry={nodes.Flowers.geometry} material={nodes.Flowers.material} position={[0, 2.849, 0]} />
       <mesh geometry={nodes.decor.geometry} material={nodes.decor.material} />
       <mesh geometry={nodes.hoofGlass.geometry} material={nodes.hoofGlass.material} />
       <mesh geometry={nodes.Castle.geometry} material={nodes.Castle.material} />
+      <mesh geometry={nodes.Mirror.geometry} material={nodes.Mirror.material} />
+      <mesh geometry={nodes.scroll.geometry} material={nodes.scroll.material} />
+      <mesh geometry={nodes.floor.geometry} material={nodes.floor.material} />
+      <mesh geometry={nodes.Hallos.geometry} material={nodes.Hallos.material} />
     </group>
   )
 }

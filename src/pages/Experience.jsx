@@ -11,6 +11,7 @@ import { Pole } from "../assets/models/Pole"
 import { Stairs } from "../assets/models/Stairs"
 import { CAMERA_CONFIG } from "../components/cameraConfig"
 import { EffectsTree } from "../components/helpers/EffectsTree"
+import { Flowers } from "../assets/models/Flowers"
 // Iframes
 import AtmIframe from "../assets/models/AtmIframe"
 import MirrorIframe from "../assets/models/MirrorIframe"
@@ -110,7 +111,7 @@ const useCameraAnimation = (section, cameraRef) => {
     startPosition: new THREE.Vector3(),
     startRotation: new THREE.Euler(),
     startFov: 50,
-    lastTime: 0
+    lastTime: 0,
   })
 
   useEffect(() => {
@@ -120,7 +121,7 @@ const useCameraAnimation = (section, cameraRef) => {
     const config = CAMERA_CONFIG.sections[sectionKey]
 
     // Use uma curva de easing mais suave para transições
-    const easing = (t) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    const easing = t => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t)
 
     // Armazene a posição e rotação inicial da câmera
     animationRef.current = {
@@ -135,7 +136,7 @@ const useCameraAnimation = (section, cameraRef) => {
 
     let animationFrameId
 
-    const animate = (currentTime) => {
+    const animate = currentTime => {
       if (!animationRef.current.isActive) return
 
       // Calcule delta de tempo para ter uma velocidade consistente
@@ -165,12 +166,12 @@ const useCameraAnimation = (section, cameraRef) => {
 
       // Reduz o FOV máximo e usa um valor alvo mais baixo para evitar FOV alto
       // Limita o FOV entre 35 e 60 para uma visualização mais confortável
-      const configFov = config.fov || 50; // Usa 50 como padrão se config.fov não estiver definido
+      const configFov = config.fov || 50 // Usa 50 como padrão se config.fov não estiver definido
       const targetFov = THREE.MathUtils.clamp(
         THREE.MathUtils.lerp(startFov, Math.min(configFov, 55), curveValue),
         35, // valor mínimo de FOV
-        60  // valor máximo de FOV (reduzido para evitar FOV alto)
-      );
+        60 // valor máximo de FOV (reduzido para evitar FOV alto)
+      )
 
       // Aplique as mudanças
       camera.position.copy(targetPosition)
@@ -185,8 +186,8 @@ const useCameraAnimation = (section, cameraRef) => {
         animationRef.current.progress = 0
 
         // Define o FOV final para um valor confortável
-        camera.fov = Math.min(configFov, 55);
-        camera.updateProjectionMatrix();
+        camera.fov = Math.min(configFov, 55)
+        camera.updateProjectionMatrix()
       }
     }
 
@@ -207,8 +208,8 @@ const useCameraAnimation = (section, cameraRef) => {
             config: {
               position: new THREE.Vector3(15.9, 6.8, -11.4),
               fov: 50, // FOV padrão para a posição inicial
-              transition: { fovMultiplier: 0, zOffset: 0 }
-            }
+              transition: { fovMultiplier: 0, zOffset: 0 },
+            },
           }
 
           // Inicie a animação
@@ -302,7 +303,8 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
   <>
     <EffectsTree />
     <Castle activeSection={activeSection} scale={[2, 2, 2]} />
-    <Stairs />
+    <Flowers />
+    {/* <Stairs /> */}
     <CloudsD />
     <Orb />
     <Pole
@@ -316,7 +318,6 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
 const SecondaryContent = React.memo(() => (
   <>
     <CloudsD />
-    <Orb />
     <Stairs />
   </>
 ))

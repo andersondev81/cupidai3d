@@ -11,13 +11,15 @@ import {
   NearestFilter,
   EquirectangularReflectionMapping,
 } from "three"
+import * as THREE from "three"
 
 const usePoleMaterial = () => {
   // Carregar texturas do Pole
   const textures = useTexture({
-    map: "/texture/Pole_ColorV3AO.webp",
+    map: "/texture/Pole_Color.1001.webp",
     metalnessMap: "/texture/Pole_Metalness.webp",
     roughnessMap: "/texture/Pole_Roughness.webp",
+    emissiveMap: "/texture/Pole_Emissive.1001.webp",
   })
 
   // Carregar HDR específico para o Pole
@@ -45,7 +47,9 @@ const usePoleMaterial = () => {
         roughness: 1,
         metalness: 1,
         envMap: envMap,
-        envMapIntensity: 1.2, // Ajuste para melhor reflexo
+        envMapIntensity: 1.2,
+        emissive: new THREE.Color(0xffffff),
+        emissiveIntensity: 1.5,
       }),
     [textures, envMap]
   )
