@@ -41,13 +41,13 @@ const useStairsMaterial = () => {
       new MeshPhysicalMaterial({
         ...textures,
         color: 0x62bfed,
-        transparent: true,
+        transparent: false,
         alphaTest: 0.01,
         depthWrite: true,
         depthTest: true,
         side: DoubleSide,
         blending: NormalBlending,
-        roughness: 0.4,
+        roughness: 1,
         metalness: 0.6,
       }),
     [textures, envMap]

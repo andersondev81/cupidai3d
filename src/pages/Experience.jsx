@@ -11,6 +11,8 @@ import { Pole } from "../assets/models/Pole";
 import { Stairs } from "../assets/models/Stairs";
 import { CAMERA_CONFIG } from "../components/cameraConfig";
 import { EffectsTree } from "../components/helpers/EffectsTree";
+import { Flowers } from "../assets/models/Flowers";
+
 // Iframes
 import AtmIframe from "../assets/models/AtmIframe";
 import MirrorIframe from "../assets/models/MirrorIframe";
@@ -100,6 +102,7 @@ const CANVAS_CONFIG = {
   },
   shadows: false, // Disable shadows in the renderer
 };
+
 const useCameraAnimation = (section, cameraRef) => {
   const { camera } = useThree();
   const [isStarted, setIsStarted] = useState(false);
@@ -301,7 +304,8 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
   <>
     <EffectsTree />
     <Castle activeSection={activeSection} scale={[2, 2, 2]} />
-    <Stairs />
+    <Flowers />
+    {/* <Stairs /> */}
     <CloudsD />
     <Orb />
     <Pole
@@ -315,7 +319,6 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
 const SecondaryContent = React.memo(() => (
   <>
     <CloudsD />
-    <Orb />
     <Stairs />
   </>
 ));
@@ -414,4 +417,5 @@ const Experience = () => {
     </div>
   );
 };
+
 export default Experience;
