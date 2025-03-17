@@ -806,7 +806,7 @@ const useAtmMaterial = () => {
 //Scroll Material
 const useScrollMaterial = () => {
   const textures = useTexture({
-    map: "/texture/scrollColor.webp",
+    map: "/texture/ScrollColor.webp",
   })
 
   useMemo(() => {
