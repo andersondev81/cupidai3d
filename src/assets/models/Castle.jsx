@@ -9,6 +9,8 @@ import {
   MeshBasicMaterial,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
+  MeshLambertMaterial,
+  MeshPhongMaterial,
   NearestFilter,
   NormalBlending,
   RepeatWrapping,
@@ -409,7 +411,7 @@ const useMultiAudio = () => {
   }
 }
 
-// Video texture hook with iOS compatibility
+// Localizar o hook useVideoTexture (por volta da linha 220-240)
 const useVideoTexture = videoPath => {
   const [texture, setTexture] = useState(null)
   const videoRef = useRef(null)
@@ -420,7 +422,9 @@ const useVideoTexture = videoPath => {
     video.loop = true
     video.muted = true
     video.playsInline = true
-    // Don't autoplay until user interaction
+    // Adicione essas duas linhas:
+    video.autoplay = true
+    video.play()
     video.load()
 
     videoRef.current = video
@@ -450,8 +454,12 @@ const useVideoTexture = videoPath => {
   return { texture, playVideo }
 }
 
-// Castle Material
-const useCastleMaterial = () => {
+const useCastleMaterial = (
+  materialType = "standard", // "standard", "physical", ou "basic"
+  metalness = 1,
+  roughness = 1.6,
+  emissiveIntensity = 2
+) => {
   const textures = useTexture({
     map: "/texture/castleColorBAO.webp",
     metalnessMap: "/texture/castleMetallic.webp",
@@ -468,27 +476,50 @@ const useCastleMaterial = () => {
     })
   }, [textures])
 
-  return useMemo(
-    () =>
-      new MeshPhysicalMaterial({
-        map: textures.map,
-        roughnessMap: textures.roughnessMap,
-        emissiveMap: textures.emissiveMap,
-        emissive: new Color(0xf6d8fc),
-        emissiveIntensity: 2,
-        transparent: false,
-        alphaTest: 0.05,
-        side: DoubleSide,
-        blending: NormalBlending,
-        roughness: 1.6,
-        metalness: 1,
-      }),
-    [textures]
-  )
+  return useMemo(() => {
+    // Propriedades base compartilhadas por todos os materiais
+    const commonProps = {
+      map: textures.map,
+      side: DoubleSide,
+      transparent: false,
+      alphaTest: 0.05,
+    }
+
+    // Propriedades específicas para materiais que suportam PBR
+    const pbrProps = {
+      ...commonProps,
+      roughnessMap: textures.roughnessMap,
+      roughness: roughness,
+      metalness: metalness,
+      emissiveMap: textures.emissiveMap,
+      emissive: new Color(0xf6d8fc),
+      emissiveIntensity: emissiveIntensity,
+      blending: NormalBlending,
+    }
+
+    // Criar o material baseado no tipo selecionado
+    switch (materialType) {
+      case "physical":
+        return new MeshPhysicalMaterial(pbrProps)
+      case "basic":
+        return new MeshBasicMaterial({
+          ...commonProps,
+          color: new Color(0xffffff),
+        })
+      case "standard":
+      default:
+        return new MeshStandardMaterial(pbrProps)
+    }
+  }, [textures, materialType, metalness, roughness, emissiveIntensity])
 }
 
 // Floor Material
-const useFloorMaterial = () => {
+const useFloorMaterial = (
+  materialType = "physical", // "standard", "physical", ou "basic"
+  metalness = 1,
+  roughness = 0.2,
+  emissiveIntensity = 2.2
+) => {
   const textures = useTexture({
     map: "/texture/floorColorBAO.webp",
     roughnessMap: "/texture/floorRoughness.webp",
@@ -505,24 +536,41 @@ const useFloorMaterial = () => {
     })
   }, [textures])
 
-  return useMemo(
-    () =>
-      new MeshPhysicalMaterial({
-        map: textures.map,
-        roughnessMap: textures.roughnessMap,
-        metalnessMap: textures.metalnessMap,
-        emissiveMap: textures.materialEmissive,
-        transparent: false,
-        side: DoubleSide,
-        metalness: 1,
-        roughness: 0.2,
-        blending: NormalBlending,
+  return useMemo(() => {
+    // Propriedades base compartilhadas por todos os materiais
+    const commonProps = {
+      map: textures.map,
+      side: DoubleSide,
+      transparent: false,
+    }
 
-        emissive: new Color(0x22bcff),
-        emissiveIntensity: 2.2,
-      }),
-    [textures]
-  )
+    // Propriedades específicas para materiais que suportam PBR
+    const pbrProps = {
+      ...commonProps,
+      roughnessMap: textures.roughnessMap,
+      metalnessMap: textures.metalnessMap,
+      roughness: roughness,
+      metalness: metalness,
+      emissiveMap: textures.materialEmissive,
+      emissive: new Color(0x22bcff),
+      emissiveIntensity: emissiveIntensity,
+      blending: NormalBlending,
+    }
+
+    // Criar o material baseado no tipo selecionado
+    switch (materialType) {
+      case "standard":
+        return new MeshStandardMaterial(pbrProps)
+      case "basic":
+        return new MeshBasicMaterial({
+          ...commonProps,
+          color: new Color(0xffffff),
+        })
+      case "physical":
+      default:
+        return new MeshPhysicalMaterial(pbrProps)
+    }
+  }, [textures, materialType, metalness, roughness, emissiveIntensity])
 }
 
 //wings Material
@@ -827,8 +875,6 @@ const useWaterMaterial = () => {
       roughness: 0.2,
       metalness: 1,
       side: DoubleSide,
-      // emissive: new Color(0xffa6f3),
-      // emissiveIntensity: 2,
     })
   }, [])
 }
@@ -842,15 +888,32 @@ const CastleModel = ({
   onWaterPlay,
   atmIframeActive,
   mirrorIframeActive,
-  scrollIframeActive, // This prop should be passed from Castle component
+  scrollIframeActive,
+  castleMaterialType,
+  castleMetalness,
+  castleRoughness,
+  castleEmissiveIntensity,
+  floorMaterialType,
+  floorMetalness,
+  floorRoughness,
+  floorEmissiveIntensity,
 }) => {
   const { nodes } = useGLTF("/models/Castle.glb")
-  const material = useCastleMaterial()
+  const material = useCastleMaterial(
+    castleMaterialType,
+    castleMetalness,
+    castleRoughness,
+    castleEmissiveIntensity
+  )
   const logoMaterial = useLogoMaterial()
   const decorMaterial = useDecorMaterial()
-  const flowersMaterial = useFlowersMaterial()
   const godsMaterial = useGodsMaterial()
-  const floorMaterial = useFloorMaterial()
+  const floorMaterial = useFloorMaterial(
+    floorMaterialType,
+    floorMetalness,
+    floorRoughness,
+    floorEmissiveIntensity
+  )
   const hoofMaterial = useHoofMaterial()
   const atmMaterial = useAtmMaterial()
   const scrollMaterial = useScrollMaterial()
@@ -1388,7 +1451,68 @@ const Castle = ({ activeSection }) => {
       }
     }
   }, [clipboardMessage])
+  // Adicione os controles de materiais usando useControls do Leva
+  const materialControls = useControls(
+    "Materials",
+    {
+      // Castle controls
+      castleMaterialType: {
+        options: ["standard", "physical", "basic", "lambert", "phong"],
+        value: "standard",
+        label: "Castle Material Type",
+      },
+      castleMetalness: {
+        value: 1,
+        min: 0,
+        max: 2,
+        step: 0.01,
+        label: "Castle Metalness",
+      },
+      castleRoughness: {
+        value: 1.6,
+        min: 0,
+        max: 2,
+        step: 0.01,
+        label: "Castle Roughness",
+      },
+      castleEmissiveIntensity: {
+        value: 2,
+        min: 0,
+        max: 5,
+        step: 0.1,
+        label: "Castle Emissive",
+      },
 
+      // Floor controls
+      floorMaterialType: {
+        options: ["standard", "physical", "basic", "lambert", "phong"],
+        value: "physical",
+        label: "Floor Material Type",
+      },
+      floorMetalness: {
+        value: 1,
+        min: 0,
+        max: 2,
+        step: 0.01,
+        label: "Floor Metalness",
+      },
+      floorRoughness: {
+        value: 0.2,
+        min: 0,
+        max: 2,
+        step: 0.01,
+        label: "Floor Roughness",
+      },
+      floorEmissiveIntensity: {
+        value: 2.2,
+        min: 0,
+        max: 5,
+        step: 0.1,
+        label: "Floor Emissive",
+      },
+    },
+    { collapsed: false }
+  )
   return (
     <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
       <CameraControls
@@ -1408,6 +1532,15 @@ const Castle = ({ activeSection }) => {
           atmIframeActive={atmiframeActive}
           mirrorIframeActive={mirrorIframeActive}
           scrollIframeActive={scrollIframeActive}
+          hasInteracted={true}
+          castleMaterialType={materialControls.castleMaterialType}
+          castleMetalness={materialControls.castleMetalness}
+          castleRoughness={materialControls.castleRoughness}
+          castleEmissiveIntensity={materialControls.castleEmissiveIntensity}
+          floorMaterialType={materialControls.floorMaterialType}
+          floorMetalness={materialControls.floorMetalness}
+          floorRoughness={materialControls.floorRoughness}
+          floorEmissiveIntensity={materialControls.floorEmissiveIntensity}
         />
       </Suspense>
     </group>

@@ -20,7 +20,6 @@ export function Flowers(props) {
       <mesh
         geometry={nodes.Flowers.geometry}
         material={materials.FlowersBake}
-        position={[0, 2.849, 0]}
       />
     </group>
   )
