@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { AboutOverlay } from "/src/assets/models/AboutOverlay.jsx";
+import { DownloadOverlay } from "./DownloadOverlay";
 
 export const sections = [
   "nav",
@@ -31,18 +32,31 @@ const NavigationButton = ({ onClick, children, className }) => (
 
 export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
   const [showAboutOverlay, setShowAboutOverlay] = useState(false);
+  const [showDownloadOverlay, setShowDownloadOverlay] = useState(false);
+
   const currentSectionKey = sections[section];
 
   // Show overlay only after the camera animation has completed
   useEffect(() => {
-    if (currentSectionKey === "about") {
+    // if is about setShowAboutOverlay to true
+    // if is download setShowDownloadOverlay to true
+    if (currentSectionKey === "about" ) {
       // Use a longer delay to ensure camera animation is complete before showing overlay
       // Camera transitions typically take around 1-1.5 seconds
       const timer = setTimeout(() => {
         setShowAboutOverlay(true);
       }, 1500); // 1.5 seconds delay to ensure animation is complete
       return () => clearTimeout(timer);
-    } else {
+    }
+    if (currentSectionKey === "download" ) {
+      // Use a longer delay to ensure camera animation is complete before showing overlay
+      // Camera transitions typically take around 1-1.5 seconds
+      const timer = setTimeout(() => {
+        setShowDownloadOverlay(true);
+      }, 1500); // 1.5 seconds delay to ensure animation is complete
+      return () => clearTimeout(timer);
+    }
+    else {
       // Hide overlay immediately when leaving the about section
       setShowAboutOverlay(false);
     }
@@ -57,10 +71,15 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
 
   const handleCloseOverlay = () => {
     setShowAboutOverlay(false);
+    setShowDownloadOverlay(false);
     // Navigate back to home if we're in the about section
+    if (currentSectionKey === "download") {
+      handleHomeNavigation();
+    }
     if (currentSectionKey === "about") {
       handleHomeNavigation();
     }
+
   };
 
   return (
@@ -144,6 +163,11 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
       {/* AboutOverlay Component - Only shown after camera animation completes */}
       <AboutOverlay
         isVisible={showAboutOverlay}
+        onClose={handleCloseOverlay}
+      />
+
+      <DownloadOverlay
+        isVisible={showDownloadOverlay}
         onClose={handleCloseOverlay}
       />
     </main>
