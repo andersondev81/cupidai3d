@@ -17,10 +17,10 @@ export function Flowers(props) {
 
   return (
     <group {...props} dispose={null}>
-      <mesh
-        geometry={nodes.Flowers.geometry}
-        material={materials.FlowersBake}
-      />
+      <group position={[0, 2.839, 0]}>
+        <mesh geometry={nodes.Mesh011.geometry} material={materials.leaf} />
+        <mesh geometry={nodes.Mesh011_1.geometry} material={materials.flower} />
+      </group>
     </group>
   )
 }

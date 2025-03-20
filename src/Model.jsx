@@ -10,8 +10,10 @@ export function Model(props) {
   const { nodes, materials } = useGLTF('/models/Flower.glb')
   return (
     <group {...props} dispose={null}>
-      <mesh geometry={nodes.Mesh011.geometry} material={materials.leaf} />
-      <mesh geometry={nodes.Mesh011_1.geometry} material={materials.flower} />
+      <group position={[0, 2.841, 0]}>
+        <mesh geometry={nodes.Mesh011.geometry} material={materials.leaf} />
+        <mesh geometry={nodes.Mesh011_1.geometry} material={materials.flower} />
+      </group>
     </group>
   )
 }

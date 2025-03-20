@@ -458,7 +458,8 @@ const useCastleMaterial = (
   materialType = "standard", // "standard", "physical", ou "basic"
   metalness = 1,
   roughness = 1.6,
-  emissiveIntensity = 2
+  emissiveIntensity = 2,
+  emissiveColor = "#f6d8fc"
 ) => {
   const textures = useTexture({
     map: "/texture/castleColorBAO.webp",
@@ -492,7 +493,7 @@ const useCastleMaterial = (
       roughness: roughness,
       metalness: metalness,
       emissiveMap: textures.emissiveMap,
-      emissive: new Color(0xf6d8fc),
+      emissive: new Color(emissiveColor),
       emissiveIntensity: emissiveIntensity,
       blending: NormalBlending,
     }
@@ -510,7 +511,14 @@ const useCastleMaterial = (
       default:
         return new MeshStandardMaterial(pbrProps)
     }
-  }, [textures, materialType, metalness, roughness, emissiveIntensity])
+  }, [
+    textures,
+    materialType,
+    metalness,
+    roughness,
+    emissiveIntensity,
+    emissiveColor,
+  ])
 }
 
 // Floor Material
@@ -518,7 +526,8 @@ const useFloorMaterial = (
   materialType = "physical", // "standard", "physical", ou "basic"
   metalness = 1,
   roughness = 0.2,
-  emissiveIntensity = 2.2
+  emissiveIntensity = 2.2,
+  emissiveColor = "#22bcff"
 ) => {
   const textures = useTexture({
     map: "/texture/floorColorBAO.webp",
@@ -552,7 +561,7 @@ const useFloorMaterial = (
       roughness: roughness,
       metalness: metalness,
       emissiveMap: textures.materialEmissive,
-      emissive: new Color(0x22bcff),
+      emissive: new Color(emissiveColor),
       emissiveIntensity: emissiveIntensity,
       blending: NormalBlending,
     }
@@ -570,7 +579,14 @@ const useFloorMaterial = (
       default:
         return new MeshPhysicalMaterial(pbrProps)
     }
-  }, [textures, materialType, metalness, roughness, emissiveIntensity])
+  }, [
+    textures,
+    materialType,
+    metalness,
+    roughness,
+    emissiveIntensity,
+    emissiveColor,
+  ])
 }
 
 //wings Material
@@ -785,7 +801,7 @@ const useAtmMaterial = () => {
 
   return useMemo(
     () =>
-      new MeshPhysicalMaterial({
+      new MeshStandardMaterial({
         map: textures.map,
         roughnessMap: textures.roughnessMap,
         metalnessMap: textures.metalnessMap,
@@ -795,7 +811,7 @@ const useAtmMaterial = () => {
         side: DoubleSide,
         blending: NormalBlending,
         metalness: 1,
-        roughness: 0.3,
+        roughness: 0.6,
         emissive: new Color(0xf6d8ff),
         emissiveIntensity: 1.2,
       }),
@@ -805,36 +821,51 @@ const useAtmMaterial = () => {
 
 //Scroll Material
 const useScrollMaterial = () => {
-  const textures = useTexture({
-    map: "/texture/ScrollColor.webp",
-  })
-
-  useMemo(() => {
-    Object.values(textures).forEach(texture => {
-      if (texture) {
-        texture.flipY = true
-        texture.minFilter = texture.magFilter = NearestFilter
-      }
+  // Try to load the texture, fallback to a basic material if it fails
+  try {
+    const textures = useTexture({
+      map: "./texture/scrollColor.webp",
     })
-  }, [textures])
 
-  return useMemo(
-    () =>
-      new MeshStandardMaterial({
-        map: textures.map,
-        roughness: 0.7,
-        metalness: 0.0,
-        side: DoubleSide,
-      }),
-    [textures]
-  )
+    useMemo(() => {
+      Object.values(textures).forEach(texture => {
+        if (texture) {
+          texture.flipY = true
+          texture.minFilter = texture.magFilter = NearestFilter
+        }
+      })
+    }, [textures])
+
+    return useMemo(
+      () =>
+        new MeshStandardMaterial({
+          map: textures.map,
+          roughness: 0.7,
+          metalness: 0.0,
+          side: DoubleSide,
+        }),
+      [textures]
+    )
+  } catch (error) {
+    console.warn("Failed to load ScrollColor texture, using fallback")
+    return useMemo(
+      () =>
+        new MeshStandardMaterial({
+          color: "#f0e6d2", // Scroll-like color
+          roughness: 0.7,
+          metalness: 0.0,
+          side: DoubleSide,
+        }),
+      []
+    )
+  }
 }
 
 //Portal Material
 const usePortalMaterial = () => {
   return useMemo(() => {
     const video = document.createElement("video")
-    video.src = "/video/tunel.mp4"
+    video.src = "/video/tunnel1.mp4"
     video.loop = true
     video.muted = true
     video.playsInline = true
@@ -857,7 +888,7 @@ const usePortalMaterial = () => {
 const useWaterMaterial = () => {
   return useMemo(() => {
     const video = document.createElement("video")
-    video.src = "/video/waterColor.mp4"
+    video.src = "/video/waterColorV1.mp4"
     video.loop = true
     video.muted = true
     video.playsInLine = true
@@ -923,7 +954,7 @@ const CastleModel = ({
 
   // Use the video texture hook for portal
   const { texture: portalTexture, playVideo: playPortal } =
-    useVideoTexture("/video/tunel.mp4")
+    useVideoTexture("/video/tunnel1.mp4")
   const portalMaterial = useMemo(
     () =>
       portalTexture
@@ -940,7 +971,7 @@ const CastleModel = ({
 
   // Use the video texture hook for water
   const { texture: waterTexture, playVideo: playWater } = useVideoTexture(
-    "/video/waterColor.mp4"
+    "/video/waterColorV1.mp4"
   )
   const waterMaterial = useMemo(
     () =>
@@ -1452,6 +1483,7 @@ const Castle = ({ activeSection }) => {
     }
   }, [clipboardMessage])
   // Adicione os controles de materiais usando useControls do Leva
+  // Adicione os controles de materiais usando useControls do Leva
   const materialControls = useControls(
     "Materials",
     {
@@ -1474,6 +1506,10 @@ const Castle = ({ activeSection }) => {
         max: 2,
         step: 0.01,
         label: "Castle Roughness",
+      },
+      castleEmissiveColor: {
+        value: "#f6d8fc",
+        label: "Castle Emissive Color",
       },
       castleEmissiveIntensity: {
         value: 2,
@@ -1502,6 +1538,10 @@ const Castle = ({ activeSection }) => {
         max: 2,
         step: 0.01,
         label: "Floor Roughness",
+      },
+      floorEmissiveColor: {
+        value: "#22bcff",
+        label: "Floor Emissive Color",
       },
       floorEmissiveIntensity: {
         value: 2.2,
