@@ -234,6 +234,7 @@ const useCameraAnimation = (section, cameraRef) => {
 };
 
 // Scene Controller component with environment controls
+// Scene Controller component with environment controls
 const SceneController = React.memo(({ section, cameraRef }) => {
   useCameraAnimation(section, cameraRef);
   const { scene } = useThree();
@@ -245,6 +246,10 @@ const SceneController = React.memo(({ section, cameraRef }) => {
     presetIntensity,
     backgroundBlur,
     environmentIntensity,
+    groundEnabled,
+    groundHeight,
+    groundRadius,
+    groundScale,
   } = useControls(
     "Environment",
     {
@@ -262,6 +267,32 @@ const SceneController = React.memo(({ section, cameraRef }) => {
         options: Object.keys(ENVIRONMENT_PRESETS),
         label: "Lighting Preset",
       },
+      // Ground controls
+      groundEnabled: {
+        value: false,
+        label: "Enable Ground"
+      },
+      groundHeight: {
+        value: 20,
+        min: 1,
+        max: 50,
+        step: 1,
+        label: "Ground Height"
+      },
+      groundRadius: {
+        value: 40,
+        min: 10,
+        max: 100,
+        step: 5,
+        label: "Ground Radius"
+      },
+      groundScale: {
+        value: 8,
+        min: 1,
+        max: 30,
+        step: 1,
+        label: "Ground Scale"
+      }
     },
     { collapsed: false }
   );
@@ -284,9 +315,14 @@ const SceneController = React.memo(({ section, cameraRef }) => {
         backgroundBlurriness={backgroundBlur}
         environmentIntensity={environmentIntensity}
         preset={null}
-        ground={{ height: 20, radius: 40, scale: 8 }}
+        ground={groundEnabled ? {
+          height: groundHeight,
+          radius: groundRadius,
+          scale: groundScale
+        } : undefined}
       />
 
+      {/* Only add second environment when preset is selected */}
       {presetValue && (
         <Environment
           preset={presetValue}
