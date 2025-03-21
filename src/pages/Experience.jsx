@@ -284,7 +284,7 @@ const SceneController = React.memo(({ section, cameraRef }) => {
         backgroundBlurriness={backgroundBlur}
         environmentIntensity={environmentIntensity}
         preset={null}
-        ground={{ height: 20, radius: 40, scale: 20 }}
+        ground={{ height: 20, radius: 40, scale: 8 }}
       />
 
       {presetValue && (
