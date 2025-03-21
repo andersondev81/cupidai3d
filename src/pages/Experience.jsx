@@ -284,10 +284,9 @@ const SceneController = React.memo(({ section, cameraRef }) => {
         backgroundBlurriness={backgroundBlur}
         environmentIntensity={environmentIntensity}
         preset={null}
-        ground={{ height: 5, radius: 40, scale: 30 }}
+        ground={{ height: 20, radius: 40, scale: 20 }}
       />
 
-      {/* Only render second Environment component when preset is not "None" */}
       {presetValue && (
         <Environment
           preset={presetValue}
