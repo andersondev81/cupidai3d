@@ -67,6 +67,8 @@ const ENVIRONMENT_OPTIONS = {
   "Sky 20": "/images/sky20.hdr",
   "Vino Sky": "/images/VinoSky.hdr",
   "Vino Sky V1": "/images/VinoSkyV1.hdr",
+  "Vino Sky V2": "/images/clouds-vino.hdr",
+  "Vino Sky V3": "/images/VinoSkyV2.hdr",
 };
 
 // Environment presets
@@ -282,6 +284,7 @@ const SceneController = React.memo(({ section, cameraRef }) => {
         backgroundBlurriness={backgroundBlur}
         environmentIntensity={environmentIntensity}
         preset={null}
+        ground={{ height: 5, radius: 40, scale: 30 }}
       />
 
       {/* Only render second Environment component when preset is not "None" */}
