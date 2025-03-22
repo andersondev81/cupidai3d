@@ -839,7 +839,7 @@ const useScrollMaterial = () => {
 const usePortalMaterial = () => {
   return useMemo(() => {
     const video = document.createElement("video")
-    video.src = "/video/tunnel1.mp4"
+    video.src = "/video/tunnel.mp4"
     video.loop = true
     video.muted = true
     video.playsInline = true
@@ -905,7 +905,7 @@ const CastleModel = ({
 
   // Use the video texture hook for portal
   const { texture: portalTexture, playVideo: playPortal } =
-    useVideoTexture("/video/tunnel1.mp4")
+    useVideoTexture("/video/tunnel.mp4")
   const portalMaterial = useMemo(
     () =>
       portalTexture
@@ -922,7 +922,7 @@ const CastleModel = ({
 
   // Use the video texture hook for water
   const { texture: waterTexture, playVideo: playWater } = useVideoTexture(
-    "/video/waterColorV1.mp4"
+    "/video/water.mp4"
   )
   const waterMaterial = useMemo(
     () =>
