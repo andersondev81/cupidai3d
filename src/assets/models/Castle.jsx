@@ -798,7 +798,7 @@ const useScrollMaterial = () => {
   // Try to load the texture, fallback to a basic material if it fails
   try {
     const textures = useTexture({
-      map: "./texture/scrollColor.webp",
+      map: "./texture/ScrollColor.webp",
     })
 
     useMemo(() => {
@@ -859,30 +859,7 @@ const usePortalMaterial = () => {
 }
 
 // Fontaine Water Material
-const useWaterMaterial = () => {
-  return useMemo(() => {
-    const video = document.createElement("video")
-    video.src = "/video/waterColorV1.mp4"
-    video.loop = true
-    video.muted = true
-    video.playsInLine = true
-    video.autoplay = true
-    video.play()
 
-    const videoTexture = new VideoTexture(video)
-    videoTexture.minFilter = LinearFilter
-    videoTexture.magFilter = LinearFilter
-    videoTexture.flipY = false
-
-    return new MeshPhysicalMaterial({
-      map: videoTexture,
-      transparent: false,
-      roughness: 0.2,
-      metalness: 1,
-      side: DoubleSide,
-    })
-  }, [])
-}
 
 // Components
 
