@@ -66,6 +66,8 @@ const ENVIRONMENT_OPTIONS = {
   "Sky 20": "/images/sky20.hdr",
   "Vino Sky": "/images/VinoSky.hdr",
   "Vino Sky V1": "/images/VinoSkyV1.hdr",
+  "Vino Sky V2": "/images/VinoSkyV2.hdr",
+  "Vino Sky V3": "/images/clouds-vino.hdr",
 };
 
 // Environment presets
