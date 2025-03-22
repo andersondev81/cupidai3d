@@ -89,9 +89,11 @@ const useHeartsMaterial = () => {
       new MeshPhysicalMaterial({
         map: textures.map,
         emissiveMap: textures.emissiveMap,
-        emissive: new THREE.Color(0xffffff),
-        emissiveIntensity: 3,
+        emissive: new THREE.Color(0x00bdff),
+        emissiveIntensity: 6,
         side: DoubleSide,
+        metalness: 1,
+        roughness: 0.4,
       }),
     [textures]
   )

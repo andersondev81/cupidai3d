@@ -19,9 +19,9 @@ import {
 import * as THREE from "three"
 import FountainParticles from "../../components/FountainParticles"
 import RotateAxis from "../../components/helpers/RotateAxis"
-import AtmIframe from "./AtmIframe"
-import MirrorIframe from "./MirrorIframe"
-import ScrollIframe from "./ScrolIframe" // Import the ScrollIframe component
+import AtmIframe from "../models/AtmIframe"
+import MirrorIframe from "../models/MirrorIframe"
+import ScrollIframe from "../models/ScrolIframe"
 
 const SMALL_SCREEN_THRESHOLD = 768
 const TRANSITION_DELAY = 100
@@ -455,17 +455,17 @@ const useVideoTexture = videoPath => {
 }
 
 const useCastleMaterial = (
-  materialType = "standard", // "standard", "physical", ou "basic"
+  materialType = "standard",
   metalness = 1,
   roughness = 1.6,
   emissiveIntensity = 2,
-  emissiveColor = "#f6d8fc"
+  emissiveColor = "#fff"
 ) => {
   const textures = useTexture({
-    map: "/texture/castleColorBAO.webp",
+    map: "/texture/castleColorAOT2.webp",
     metalnessMap: "/texture/castleMetallic.webp",
     roughnessMap: "/texture/castleRoughness.webp",
-    emissiveMap: "/texture/castleEmissive.webp",
+    emissiveMap: "/texture/castleEmissive.png",
   })
 
   useMemo(() => {
@@ -526,14 +526,14 @@ const useFloorMaterial = (
   materialType = "physical", // "standard", "physical", ou "basic"
   metalness = 1,
   roughness = 0.2,
-  emissiveIntensity = 2.2,
-  emissiveColor = "#22bcff"
+  emissiveIntensity = 8.2,
+  emissiveColor = "#00bdff"
 ) => {
   const textures = useTexture({
-    map: "/texture/floorColorBAO.webp",
+    map: "/texture/floorColorBake.webp",
     roughnessMap: "/texture/floorRoughness.webp",
-    metalnessMap: "/texture/floorMetallic.webp",
-    materialEmissive: "/texture/floor_EmissiveBlue.jpg",
+    metalnessMap: "/texture/floorMetallic .webp",
+    materialEmissive: "/texture/floorEmissive.webp",
   })
 
   useMemo(() => {
@@ -651,6 +651,14 @@ const useDecorMaterial = () => {
 }
 //MirrorMaterial
 const useMirrorMaterial = () => {
+  const clouds = useTexture("/images/clouds.jpg")
+
+  useEffect(() => {
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [clouds])
+
   return useMemo(
     () =>
       new MeshPhysicalMaterial({
@@ -661,8 +669,10 @@ const useMirrorMaterial = () => {
         blending: NormalBlending,
         roughness: 0,
         metalness: 0.3,
+        envMap: clouds,
+        envMapIntensity: 1.0,
       }),
-    []
+    [clouds]
   )
 }
 
@@ -683,46 +693,10 @@ const useHallosMaterial = () => {
   )
 }
 
-// Flowers Material
-const useFlowersMaterial = () => {
-  const textures = useTexture({
-    map: "/texture/FlowersColor.webp",
-    normalMap: "/texture/FlowersNormal.webp",
-    alphaMap: "/texture/FlowersAlpha.webp",
-  })
-
-  useMemo(() => {
-    Object.values(textures).forEach(texture => {
-      if (texture) {
-        texture.flipY = false
-        texture.minFilter = texture.magFilter = NearestFilter
-        texture.repeat.set(1, 1)
-        texture.wrapS = texture.wrapT = RepeatWrapping
-      }
-    })
-  }, [textures])
-
-  return useMemo(
-    () =>
-      new THREE.MeshPhysicalMaterial({
-        map: textures.map,
-        normalMap: textures.normalMap,
-        alphaMap: textures.alphaMap,
-        transparent: true,
-        opacity: 0.85,
-        alphaTest: 0.2,
-        side: THREE.DoubleSide, // Use THREE.DoubleSide com a importação correta
-        blending: THREE.NormalBlending, // Use THREE.NormalBlending com a importação
-        roughness: 1.6,
-        metalness: 1,
-      })
-  )
-}
-
 // Gods Material
 const useGodsMaterial = () => {
   const textures = useTexture({
-    map: "/texture/gods_colorsTest2.webp",
+    map: "/texture/godsColor.webp",
   })
 
   useMemo(() => {

@@ -21,8 +21,7 @@ import Orb from "../assets/models/Orb"
 // import OldOrb from "../assets/models/OldOrb"
 
 import CloudsD from "../assets/models/CloudsD"
-// import OldCloudsD from "../assets/models/OldCloudsD"
-
+import CloudsPole from "../assets/models/CloudsPole"
 import EnvMapLoader from "../components/helpers/EnvMapLoader"
 import Modeload from "../components/helpers/Modeload"
 
@@ -305,6 +304,7 @@ const SceneController = React.memo(({ section, cameraRef }) => {
         background={showBackground}
         backgroundBlurriness={backgroundBlur}
         environmentIntensity={environmentIntensity}
+        environmentRotation={[0, Math.PI / 2, 0]} // Adicione esta linha
         preset={null}
       />
 
@@ -313,6 +313,7 @@ const SceneController = React.memo(({ section, cameraRef }) => {
         <Environment
           preset={presetValue}
           environmentIntensity={presetIntensity}
+          environmentRotation={[0, Math.PI / 2, 0]} // Adicione esta linha
         />
       )}
 
@@ -329,8 +330,8 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
     <EffectsTree />
     <Castle activeSection={activeSection} scale={[2, 2, 2]} />
     <Flowers />
-    {/* <Stairs /> */}
     <CloudsD />
+    <CloudsPole />
     <Orb />
     <Pole
       position={[-0.8, 0, 5.8]}
@@ -349,8 +350,6 @@ const SecondaryContent = React.memo(() => (
 
 const TertiaryContent = React.memo(() => (
   <>
-    {/* <ScrolIframe /> */}
-
     <MirrorIframe />
   </>
 ))
