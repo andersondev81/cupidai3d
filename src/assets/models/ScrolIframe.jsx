@@ -1,10 +1,56 @@
-import { Html } from "@react-three/drei";
+import { Html, useGLTF } from "@react-three/drei";
 import React, { useEffect, useState } from "react";
+import * as THREE from "three";
 import MirrorPage from "../../components/iframes/Roadmap";
 
-const ScrolIframe = ({ onReturnToMain, isActive, ...props }) => {
+export default function ScrollIframe({
+  onReturnToMain,
+  isActive = false,
+  ...props
+}) {
+  const { nodes } = useGLTF("/models/scrollframe.glb");
   const [showContent, setShowContent] = useState(false);
   const [showButtons, setShowButtons] = useState(false);
+  const [checkerTexture, setCheckerTexture] = useState(null);
+
+  // Load texture
+  useEffect(() => {
+    const textureLoader = new THREE.TextureLoader();
+    textureLoader.load(
+      (loadedTexture) => {
+        loadedTexture.wrapS = THREE.RepeatWrapping;
+        loadedTexture.wrapT = THREE.RepeatWrapping;
+        loadedTexture.repeat.set(1, 1);
+        setCheckerTexture(loadedTexture);
+      },
+      undefined,
+      (error) => console.error("Error loading texture:", error)
+    );
+  }, []);
+
+  // Creating material with texture
+  const scrollMaterial = React.useMemo(() => {
+    if (nodes.scroolIframe?.material) {
+      // Clone original material to preserve other properties
+      const newMaterial = nodes.scroolIframe.material.clone();
+      // Configure material with texture when available
+      if (checkerTexture) {
+        newMaterial.map = checkerTexture;
+        newMaterial.needsUpdate = true;
+      }
+      // Make material double-sided
+      newMaterial.side = THREE.DoubleSide;
+      return newMaterial;
+    }
+
+    // Fallback to basic material
+    return new THREE.MeshStandardMaterial({
+      map: checkerTexture,
+      side: THREE.DoubleSide,
+      roughness: 0.7,
+      metalness: 0.0,
+    });
+  }, [nodes.scroolIframe?.material, checkerTexture]);
 
   // Monitor changes in isActive state
   useEffect(() => {
@@ -100,14 +146,16 @@ const ScrolIframe = ({ onReturnToMain, isActive, ...props }) => {
 
             {/* Fixed button container */}
             {showButtons && (
-              <div style={{
-                position: "absolute",
-                bottom: "-30px",
-                left: 0,
-                right: 0,
-                textAlign: "center",
-                zIndex: 10,
-              }}>
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: "-30px",
+                  left: 0,
+                  right: 0,
+                  textAlign: "center",
+                  zIndex: 10,
+                }}
+              >
                 <button
                   onClick={handleBackToMain}
                   className="px-8 py-4 bg-pink-500 text-white rounded-full font-bold text-lg hover:bg-pink-600 transition-all duration-300 shadow-lg hover:shadow-pink-300"
@@ -121,6 +169,6 @@ const ScrolIframe = ({ onReturnToMain, isActive, ...props }) => {
       )}
     </group>
   );
-};
+}
 
-export default ScrolIframe;
+useGLTF.preload("/models/scrollframe.glb");

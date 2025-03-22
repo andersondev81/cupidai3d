@@ -53,7 +53,6 @@ const useStairsMaterial = () => {
     [textures, envMap]
   )
 
-  // Força atualização quando o HDR for carregado
   useEffect(() => {
     if (envMap) {
       material.needsUpdate = true

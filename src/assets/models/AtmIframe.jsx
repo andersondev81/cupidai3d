@@ -1,118 +1,136 @@
-import { Html } from "@react-three/drei";
-import React, { useEffect, useRef, useState } from "react";
-import TokenPage from "../../components/iframes/Token";
+import { Html } from "@react-three/drei"
+import React, { useEffect, useRef, useState } from "react"
+import TokenPage from "../../components/iframes/Token"
 
-export default function AtmIframe({ onReturnToMain, isActive, cameraRef, onSectionChange, ...props }) {
-  const [showContent, setShowContent] = useState(false);
-  const [showButtons, setShowButtons] = useState(false);
-  const iframeContainerRef = useRef(null);
+// Animation timing constants
+const ANIMATION_TIMING = {
+  CONTENT_DELAY: 300,
+  BUTTONS_DELAY: 500,
+  TRANSITION_DELAY: 100,
+}
 
-  // Monitor changes in isActive state with debugging
+export default function AtmIframe({
+  onReturnToMain,
+  isActive,
+  cameraRef,
+  onSectionChange,
+  ...props
+}) {
+  const [showContent, setShowContent] = useState(false)
+  const [showButtons, setShowButtons] = useState(false)
+  const containerRef = useRef(null)
+
+  // Handle component activation/deactivation
   useEffect(() => {
-    console.log(`AtmIframe: isActive changed to ${isActive}`);
+    let contentTimer = null
+    let buttonsTimer = null
 
     if (isActive) {
-      // When component becomes active, show content with a small delay
-      console.log("AtmIframe: Activating content");
-      const timer = setTimeout(() => {
-        setShowContent(true);
+      // When component becomes active, show content with a delay
+      contentTimer = setTimeout(() => {
+        setShowContent(true)
+
         // Show buttons after content has loaded
-        setTimeout(() => {
-          setShowButtons(true);
-          console.log("AtmIframe: Buttons activated");
-        }, 500);
-      }, 300);
-
-      return () => clearTimeout(timer);
+        buttonsTimer = setTimeout(() => {
+          setShowButtons(true)
+        }, ANIMATION_TIMING.BUTTONS_DELAY)
+      }, ANIMATION_TIMING.CONTENT_DELAY)
     } else {
-      // When component becomes inactive, hide content and buttons
-      console.log("AtmIframe: Deactivating content");
-      setShowButtons(false);
-      setShowContent(false);
+      // When component becomes inactive, hide buttons and content
+      setShowButtons(false)
+      setShowContent(false)
     }
-  }, [isActive]);
 
-  // Function to handle Back to Main button click - EXATAMENTE como no CastleUI
+    // Cleanup timers on unmount or state change
+    return () => {
+      clearTimeout(contentTimer)
+      clearTimeout(buttonsTimer)
+    }
+  }, [isActive])
+
+  // Handle navigation back to main menu
   const handleHomeNavigation = () => {
-    console.log("AtmIframe: Main Menu button clicked");
-
     // First hide buttons for visual feedback
-    setShowButtons(false);
+    setShowButtons(false)
 
-    // Set a small delay before hiding content
+    // Hide content after a short delay
     setTimeout(() => {
-      setShowContent(false);
+      setShowContent(false)
 
-      // Pequeno delay adicional para completar transições visuais
+      // Additional delay to complete visual transitions
       setTimeout(() => {
-        if (cameraRef) {
-          console.log("AtmIframe: Calling cameraRef.goToHome()");
-          cameraRef.goToHome();
+        // Camera transition
+        if (cameraRef?.goToHome) {
+          cameraRef.goToHome()
         }
 
+        // Section change
         if (onSectionChange) {
-          console.log("AtmIframe: Calling onSectionChange(0, 'nav')");
-          onSectionChange(0, "nav");
+          onSectionChange(0, "nav")
         }
 
-        // Manter a chamada original para compatibilidade com código existente
+        // Legacy callback for compatibility
         if (onReturnToMain) {
-          console.log("AtmIframe: Calling original onReturnToMain()");
-          onReturnToMain();
+          onReturnToMain()
         }
-      }, 100);
-    }, 100);
-  };
+      }, ANIMATION_TIMING.TRANSITION_DELAY)
+    }, ANIMATION_TIMING.TRANSITION_DELAY)
+  }
+
+  // Styles
+  const containerStyle = {
+    width: "100%",
+    height: "100%",
+    position: "relative",
+    pointerEvents: showContent ? "auto" : "none",
+    backgroundColor: "transparent",
+  }
+
+  const contentStyle = {
+    width: "100%",
+    height: "100%",
+    border: "none",
+    borderRadius: "8px",
+    overflow: "hidden",
+    backgroundColor: "transparent",
+  }
+
+  const buttonContainerStyle = {
+    position: "absolute",
+    bottom: "30px",
+    width: "100%",
+    display: "flex",
+    justifyContent: "center",
+    zIndex: 1000,
+  }
 
   return (
     <group {...props} dispose={null}>
       {showContent && (
         <Html
-          ref={iframeContainerRef}
+          ref={containerRef}
           transform
           wrapperClass="atm-screen"
           distanceFactor={0.19}
           position={[0, 0, 0]}
           rotation={[-Math.PI / 2, 0, 0]}
           style={{
-            pointerEvents: isActive ? 'auto' : 'none',
-            backgroundColor: 'rgba(0,0,0,0)',
-            background: 'transparent'
+            pointerEvents: isActive ? "auto" : "none",
+            backgroundColor: "transparent",
           }}
         >
-          <div style={{
-            width: "100%",
-            height: "100%",
-            position: "relative",
-            pointerEvents: showContent ? 'auto' : 'none',
-            backgroundColor: 'rgba(0,0,0,0)',
-            background: 'transparent'
-          }}>
-            {/* Container for TokenPage component */}
-            <div
-              style={{
-                width: "100%",
-                height: "100%",
-                border: "none",
-                borderRadius: "8px",
-                overflow: "hidden",
-                backgroundColor: 'rgba(0,0,0,0)',
-                background: 'transparent'
-              }}
-            >
+          <div style={containerStyle}>
+            {/* Token page content */}
+            <div style={contentStyle}>
               <TokenPage />
             </div>
 
-            {/* Back button - Exatamente igual ao CastleUI */}
+            {/* Navigation buttons */}
             {showButtons && (
-              <div className="flex flex-col items-center gap-6" style={{
-                position: "absolute",
-                bottom: "30px",
-                width: "100%",
-                display: "flex",
-                justifyContent: "center",
-                zIndex: 1000
-              }}>
+              <div
+                className="flex flex-col items-center gap-6"
+                style={buttonContainerStyle}
+              >
                 <div className="flex gap-4">
                   <button
                     onClick={handleHomeNavigation}
@@ -127,5 +145,5 @@ export default function AtmIframe({ onReturnToMain, isActive, cameraRef, onSecti
         </Html>
       )}
     </group>
-  );
+  )
 }
