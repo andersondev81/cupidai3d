@@ -267,8 +267,8 @@ const SceneController = React.memo(({ section, cameraRef }) => {
         options: Object.keys(ENVIRONMENT_PRESETS),
         label: "Lighting Preset",
       },
-      // Ground controls
-      groundEnabled: {
+       // Ground controls
+       groundEnabled: {
         value: false,
         label: "Enable Ground"
       },
@@ -293,6 +293,62 @@ const SceneController = React.memo(({ section, cameraRef }) => {
         step: 1,
         label: "Ground Scale"
       }
+    },
+    { collapsed: false }
+  );
+
+  // New controls for directional light
+  const {
+    lightEnabled,
+    lightIntensity,
+    lightColor,
+    lightPositionX,
+    lightPositionY,
+    lightPositionZ,
+    castShadow,
+  } = useControls(
+    "Directional Light",
+    {
+      lightEnabled: {
+        value: true,
+        label: "Enable Light",
+      },
+      lightIntensity: {
+        value: 1.5,
+        min: 0,
+        max: 5,
+        step: 0.1,
+        label: "Intensity",
+      },
+      lightColor: {
+        value: "#ffffff",
+        label: "Color",
+      },
+      lightPositionX: {
+        value: -10,
+        min: -50,
+        max: 50,
+        step: 0.5,
+        label: "X",
+      },
+      lightPositionY: {
+        value: 20,
+        min: -50,
+        max: 50,
+        step: 0.5,
+        label: "Y",
+      },
+      lightPositionZ: {
+        value: 10,
+        min: -50,
+        max: 50,
+        step: 0.5,
+        label: "Z",
+      },
+      castShadow: {
+        value: false,
+        label: "Cast Shadow",
+      },
     },
     { collapsed: false }
   );
@@ -322,11 +378,19 @@ const SceneController = React.memo(({ section, cameraRef }) => {
         } : undefined}
       />
 
-      {/* Only add second environment when preset is selected */}
       {presetValue && (
         <Environment
           preset={presetValue}
           environmentIntensity={presetIntensity}
+        />
+      )}
+
+      {lightEnabled && (
+        <directionalLight
+          intensity={lightIntensity}
+          color={lightColor}
+          position={[lightPositionX, lightPositionY, lightPositionZ]}
+          castShadow={castShadow}
         />
       )}
 
