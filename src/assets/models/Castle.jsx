@@ -424,8 +424,8 @@ const useVideoTexture = videoPath => {
     video.playsInline = true
     // Adicione essas duas linhas:
     video.autoplay = true
-    video.play()
-    video.load()
+    // video.play()
+    // video.load()
 
     videoRef.current = video
 
@@ -1359,35 +1359,35 @@ const Castle = ({ activeSection }) => {
   )
 
   // Configuração de controles de mouse
-  useEffect(() => {
-    if (!controls.current) return
+  // useEffect(() => {
+  //   if (!controls.current) return
 
-    // Configuração principal
-    controls.current.mouseButtons.left = 1 // ROTATE com botão esquerdo
-    controls.current.mouseButtons.right = 4 // TRUCK (mover) com botão direito
-    controls.current.verticalDragToForward = false // Desativa o zoom ao arrastar verticalmente
+  //   // Configuração principal
+  //   controls.current.mouseButtons.left = 1 // ROTATE com botão esquerdo
+  //   controls.current.mouseButtons.right = 4 // TRUCK (mover) com botão direito
+  //   controls.current.verticalDragToForward = false // Desativa o zoom ao arrastar verticalmente
 
-    // Event listeners para Ctrl+MouseLeft
-    const handleKeyDown = event => {
-      if (event.ctrlKey && controls.current) {
-        controls.current._mouseButtons.left = 4 // TRUCK com Ctrl+MouseLeft
-      }
-    }
+  //   // Event listeners para Ctrl+MouseLeft
+  //   // const handleKeyDown = event => {
+  //   //   if (event.ctrlKey && controls.current) {
+  //   //     controls.current._mouseButtons.left = 4 // TRUCK com Ctrl+MouseLeft
+  //   //   }
+  //   }
 
-    const handleKeyUp = event => {
-      if (event.key === "Control" && controls.current) {
-        controls.current._mouseButtons.left = 1 // Volta para ROTATE quando solta Ctrl
-      }
-    }
+  //   // const handleKeyUp = event => {
+  //   //   if (event.key === "Control" && controls.current) {
+  //   //     controls.current._mouseButtons.left = 1 // Volta para ROTATE quando solta Ctrl
+  //   //   }
+  //   // }
 
-    window.addEventListener("keydown", handleKeyDown)
-    window.addEventListener("keyup", handleKeyUp)
+  //   window.addEventListener("keydown", handleKeyDown)
+  //   window.addEventListener("keyup", handleKeyUp)
 
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown)
-      window.removeEventListener("keyup", handleKeyUp)
-    }
-  }, [])
+  //   return () => {
+  //     window.removeEventListener("keydown", handleKeyDown)
+  //     window.removeEventListener("keyup", handleKeyUp)
+  //   }
+  // }, [])
 
   // Create notification element outside the 3D canvas
   useEffect(() => {
