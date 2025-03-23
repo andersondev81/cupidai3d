@@ -1154,7 +1154,7 @@ const Castle = ({ activeSection }) => {
         controls.current.enabled = sectionName === "nav"
       })
 
-      updateListenerPosition(targetPosition.slice(0, 3))
+      // updateListenerPosition(targetPosition.slice(0, 3))
 
       // if (sectionName !== "default") {
       //   playSound(sectionName)
