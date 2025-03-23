@@ -1,7 +1,8 @@
-import { CameraControls, useGLTF, useTexture } from "@react-three/drei"
-import { Select } from "@react-three/postprocessing"
-import { button, useControls } from "leva"
-import React, { Suspense, useEffect, useMemo, useRef, useState } from "react"
+import { CameraControls, useGLTF, useTexture } from "@react-three/drei";
+import { Select } from "@react-three/postprocessing";
+import { button, useControls } from "leva";
+import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import * as THREE from "three";
 import {
   Color,
   DoubleSide,
@@ -9,22 +10,18 @@ import {
   MeshBasicMaterial,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
-  MeshLambertMaterial,
-  MeshPhongMaterial,
   NearestFilter,
   NormalBlending,
-  RepeatWrapping,
   VideoTexture,
-} from "three"
-import * as THREE from "three"
-import FountainParticles from "../../components/FountainParticles"
-import RotateAxis from "../../components/helpers/RotateAxis"
-import AtmIframe from "../models/AtmIframe"
-import MirrorIframe from "../models/MirrorIframe"
-import ScrollIframe from "../models/ScrolIframe"
+} from "three";
+import FountainParticles from "../../components/FountainParticles";
+import RotateAxis from "../../components/helpers/RotateAxis";
+import AtmIframe from "../models/AtmIframe";
+import MirrorIframe from "../models/MirrorIframe";
+import ScrollIframe from "../models/ScrolIframe";
 
-const SMALL_SCREEN_THRESHOLD = 768
-const TRANSITION_DELAY = 100
+const SMALL_SCREEN_THRESHOLD = 768;
+const TRANSITION_DELAY = 100;
 
 // Adjust resource paths for deployment
 // const getAssetPath = path => {
@@ -167,7 +164,7 @@ const cameraConfig = {
       ],
     },
   },
-}
+};
 
 // Enhanced Audio Hook with iOS compatibility
 // const useMultiAudio = () => {
@@ -412,70 +409,170 @@ const cameraConfig = {
 // }
 
 // Localizar o hook useVideoTexture (por volta da linha 220-240)
-const useVideoTexture = videoPath => {
-  const [texture, setTexture] = useState(null)
-  const videoRef = useRef(null)
+const useVideoTexture = (videoPath, isMobileDevice) => {
+  const [texture, setTexture] = useState(null);
+  const videoRef = useRef(null);
 
   useEffect(() => {
-    const video = document.createElement("video")
-    video.src = videoPath
-    video.loop = true
-    video.muted = true
-    video.playsInline = true
-    // Adicione essas duas linhas:
-    video.autoplay = true
-    // video.play()
-    // video.load()
+    // For mobile, use a static image instead of video to save resources
+    if (isMobileDevice) {
+      const textureLoader = new THREE.TextureLoader();
+      // Create a poster image path by replacing .mp4 with -poster.jpg
+      const posterPath = videoPath.replace(/\.[^/.]+$/, "-poster.jpg");
 
-    videoRef.current = video
+      textureLoader.load(
+        posterPath,
+        (loadedTexture) => {
+          loadedTexture.minFilter = THREE.LinearFilter;
+          loadedTexture.magFilter = THREE.LinearFilter;
+          loadedTexture.flipY = false;
+          setTexture(loadedTexture);
+        },
+        undefined,
+        (error) => {
+          console.warn("Error loading texture poster:", error);
 
-    const videoTexture = new VideoTexture(video)
-    videoTexture.minFilter = LinearFilter
-    videoTexture.magFilter = LinearFilter
-    videoTexture.flipY = false
+          // Fallback to a simple color texture if loading fails
+          const canvas = document.createElement("canvas");
+          canvas.width = 2;
+          canvas.height = 2;
+          const ctx = canvas.getContext("2d");
+          ctx.fillStyle = "#000000";
+          ctx.fillRect(0, 0, 2, 2);
 
-    setTexture(videoTexture)
+          const fallbackTexture = new THREE.CanvasTexture(canvas);
+          fallbackTexture.minFilter = THREE.LinearFilter;
+          fallbackTexture.magFilter = THREE.LinearFilter;
+          setTexture(fallbackTexture);
+        }
+      );
 
-    // Cleanup
-    return () => {
-      video.pause()
-      video.src = ""
+      return;
     }
-  }, [videoPath])
+
+    // For desktop, use video texture with better loading strategy
+    const video = document.createElement("video");
+    video.crossOrigin = "anonymous";
+    video.src = videoPath;
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.autoplay = true;
+
+    // Create and set texture before video is loaded
+    const videoTexture = new THREE.VideoTexture(video);
+    videoTexture.minFilter = THREE.LinearFilter;
+    videoTexture.magFilter = THREE.LinearFilter;
+    videoTexture.flipY = false;
+    setTexture(videoTexture);
+
+    videoRef.current = video;
+
+    // Play video
+    const handleCanPlay = () => {
+      if (videoRef.current) {
+        videoRef.current.play().catch((err) => {
+          console.warn("Could not autoplay video:", err);
+        });
+      }
+    };
+
+    video.addEventListener("canplay", handleCanPlay);
+
+    // Try to play immediately as well
+    video.play().catch((err) => {
+      console.warn("Could not autoplay video on load:", err);
+
+      // Set up interaction handlers to play on user interaction
+      const playVideoOnInteraction = () => {
+        if (videoRef.current) {
+          videoRef.current.play().catch((e) => console.warn("Play failed:", e));
+        }
+
+        // Remove listeners after first interaction
+        document.removeEventListener("click", playVideoOnInteraction);
+        document.removeEventListener("touchstart", playVideoOnInteraction);
+      };
+
+      document.addEventListener("click", playVideoOnInteraction);
+      document.addEventListener("touchstart", playVideoOnInteraction);
+    });
+
+    return () => {
+      if (video) {
+        video.removeEventListener("canplay", handleCanPlay);
+        video.pause();
+        video.src = "";
+        video.load();
+      }
+
+      document.removeEventListener("click", playVideoOnInteraction);
+      document.removeEventListener("touchstart", playVideoOnInteraction);
+    };
+  }, [videoPath, isMobileDevice]);
 
   const playVideo = () => {
     if (videoRef.current) {
-      videoRef.current.play().catch(err => {
-        console.warn("Could not play video:", err)
-      })
+      videoRef.current.play().catch((err) => {
+        console.warn("Could not play video:", err);
+      });
+    }
+  };
+
+  return { texture, playVideo };
+};
+
+const configureTouchControls = (controls, isMobileDevice) => {
+  if (controls) {
+    if (isMobileDevice) {
+      // Better touch configuration for mobile
+      controls.mouseButtons.left = THREE.MOUSE.ROTATE;
+      controls.touches.one = THREE.TOUCH.ROTATE;
+      controls.touches.two = THREE.TOUCH.DOLLY_PAN;
+      controls.rotateSpeed = 0.7; // Slower rotation for better control
+      controls.zoomSpeed = 0.5; // Slower zoom for better control
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.1;
+      controls.minDistance = 3; // Prevent zooming in too close on mobile
+      controls.maxDistance = 15; // Limit how far out users can zoom
+    } else {
+      // Desktop configuration
+      controls.mouseButtons.left = THREE.MOUSE.ROTATE;
+      controls.touches.one = THREE.TOUCH.ROTATE;
+      controls.touches.two = THREE.TOUCH.DOLLY_PAN;
     }
   }
-
-  return { texture, playVideo }
-}
+};
 
 const useCastleMaterial = (
   materialType = "standard",
   metalness = 1,
   roughness = 1.6,
   emissiveIntensity = 2,
-  emissiveColor = "#fff"
+  emissiveColor = "#fff",
+  isMobileDevice = false
 ) => {
+  // Use optimized material type based on device
+  // const optimizedType = getOptimizedMaterialType(materialType, isMobileDevice);
+
+  // Reduce texture size for mobile
+  const textureQuality = isMobileDevice ? "Low" : "";
+
   const textures = useTexture({
-    map: "/texture/castleColorAOT2.webp",
-    metalnessMap: "/texture/castleMetallic.webp",
-    roughnessMap: "/texture/castleRoughness.webp",
-    emissiveMap: "/texture/castleEmissive.png",
-  })
+    map: `/texture/castleColorAOT2${textureQuality}.webp`,
+    metalnessMap: isMobileDevice ? null : "/texture/castleMetallic.webp",
+    roughnessMap: isMobileDevice ? null : "/texture/castleRoughness.webp",
+    emissiveMap: isMobileDevice ? null : "/texture/castleEmissive.png",
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = true
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.flipY = true;
+        texture.minFilter = texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(() => {
     // Propriedades base compartilhadas por todos os materiais
@@ -484,7 +581,7 @@ const useCastleMaterial = (
       side: DoubleSide,
       transparent: false,
       alphaTest: 0.05,
-    }
+    };
 
     // Propriedades específicas para materiais que suportam PBR
     const pbrProps = {
@@ -496,20 +593,20 @@ const useCastleMaterial = (
       emissive: new Color(emissiveColor),
       emissiveIntensity: emissiveIntensity,
       blending: NormalBlending,
-    }
+    };
 
     // Criar o material baseado no tipo selecionado
     switch (materialType) {
       case "physical":
-        return new MeshPhysicalMaterial(pbrProps)
+        return new MeshPhysicalMaterial(pbrProps);
       case "basic":
         return new MeshBasicMaterial({
           ...commonProps,
           color: new Color(0xffffff),
-        })
+        });
       case "standard":
       default:
-        return new MeshStandardMaterial(pbrProps)
+        return new MeshStandardMaterial(pbrProps);
     }
   }, [
     textures,
@@ -518,8 +615,8 @@ const useCastleMaterial = (
     roughness,
     emissiveIntensity,
     emissiveColor,
-  ])
-}
+  ]);
+};
 
 // Floor Material
 const useFloorMaterial = (
@@ -534,16 +631,16 @@ const useFloorMaterial = (
     roughnessMap: "/texture/floorRoughness.webp",
     metalnessMap: "/texture/floorMetallic .webp",
     materialEmissive: "/texture/floorEmissive.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = true
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.flipY = true;
+        texture.minFilter = texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(() => {
     // Propriedades base compartilhadas por todos os materiais
@@ -551,7 +648,7 @@ const useFloorMaterial = (
       map: textures.map,
       side: DoubleSide,
       transparent: false,
-    }
+    };
 
     // Propriedades específicas para materiais que suportam PBR
     const pbrProps = {
@@ -564,20 +661,20 @@ const useFloorMaterial = (
       emissive: new Color(emissiveColor),
       emissiveIntensity: emissiveIntensity,
       blending: NormalBlending,
-    }
+    };
 
     // Criar o material baseado no tipo selecionado
     switch (materialType) {
       case "standard":
-        return new MeshStandardMaterial(pbrProps)
+        return new MeshStandardMaterial(pbrProps);
       case "basic":
         return new MeshBasicMaterial({
           ...commonProps,
           color: new Color(0xffffff),
-        })
+        });
       case "physical":
       default:
-        return new MeshPhysicalMaterial(pbrProps)
+        return new MeshPhysicalMaterial(pbrProps);
     }
   }, [
     textures,
@@ -586,23 +683,23 @@ const useFloorMaterial = (
     roughness,
     emissiveIntensity,
     emissiveColor,
-  ])
-}
+  ]);
+};
 
 //wings Material
 const useWingsMaterial = () => {
   const textures = useTexture({
     map: "/texture/WingsColorAO.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = true
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.flipY = true;
+        texture.minFilter = texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(
     () =>
@@ -613,8 +710,8 @@ const useWingsMaterial = () => {
         side: DoubleSide,
       }),
     [textures]
-  )
-}
+  );
+};
 
 //Logo Material
 const useLogoMaterial = () => {
@@ -630,8 +727,8 @@ const useLogoMaterial = () => {
         metalness: 1,
       }),
     []
-  )
-}
+  );
+};
 
 //Decor Material
 const useDecorMaterial = () => {
@@ -647,17 +744,17 @@ const useDecorMaterial = () => {
         metalness: 1,
       }),
     []
-  )
-}
+  );
+};
 //MirrorMaterial
 const useMirrorMaterial = () => {
-  const clouds = useTexture("/images/clouds.jpg")
+  const clouds = useTexture("/images/clouds.jpg");
 
   useEffect(() => {
     if (clouds) {
-      clouds.mapping = THREE.EquirectangularReflectionMapping
+      clouds.mapping = THREE.EquirectangularReflectionMapping;
     }
-  }, [clouds])
+  }, [clouds]);
 
   return useMemo(
     () =>
@@ -673,8 +770,8 @@ const useMirrorMaterial = () => {
         envMapIntensity: 1.0,
       }),
     [clouds]
-  )
-}
+  );
+};
 
 //Hallos Material
 const useHallosMaterial = () => {
@@ -690,24 +787,24 @@ const useHallosMaterial = () => {
         metalness: 2,
       }),
     []
-  )
-}
+  );
+};
 
 // Gods Material
 const useGodsMaterial = () => {
   const textures = useTexture({
     map: "/texture/godsColor.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = true
-        texture.minFilter = texture.magFilter = NearestFilter
-        texture.colorSpace = "srgb"
+        texture.flipY = true;
+        texture.minFilter = texture.magFilter = NearestFilter;
+        texture.colorSpace = "srgb";
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(
     () =>
@@ -721,23 +818,23 @@ const useGodsMaterial = () => {
         metalness: 1,
       }),
     [textures]
-  )
-}
+  );
+};
 // Hoof Material
 const useHoofMaterial = () => {
   const textures = useTexture({
     map: "/texture/hoofGlassColorBAO.webp",
     emissiveMap: "/texture/hoofGlassEmissiveV2.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = true
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.flipY = true;
+        texture.minFilter = texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(
     () =>
@@ -753,8 +850,8 @@ const useHoofMaterial = () => {
         metalness: 1,
       }),
     [textures]
-  )
-}
+  );
+};
 //atm Material
 const useAtmMaterial = () => {
   const textures = useTexture({
@@ -762,16 +859,16 @@ const useAtmMaterial = () => {
     roughnessMap: "/texture/atmRoughness.webp",
     metalnessMap: "/texture/atmMetalness.webp",
     materialEmissive: "/texture/atmEmissive.webp",
-  })
+  });
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = true
-        texture.minFilter = texture.magFilter = NearestFilter
+        texture.flipY = true;
+        texture.minFilter = texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   return useMemo(
     () =>
@@ -790,8 +887,8 @@ const useAtmMaterial = () => {
         emissiveIntensity: 1.2,
       }),
     [textures]
-  )
-}
+  );
+};
 
 //Scroll Material
 const useScrollMaterial = () => {
@@ -799,16 +896,16 @@ const useScrollMaterial = () => {
   try {
     const textures = useTexture({
       map: "./texture/ScrollColor.webp",
-    })
+    });
 
     useMemo(() => {
-      Object.values(textures).forEach(texture => {
+      Object.values(textures).forEach((texture) => {
         if (texture) {
-          texture.flipY = true
-          texture.minFilter = texture.magFilter = NearestFilter
+          texture.flipY = true;
+          texture.minFilter = texture.magFilter = NearestFilter;
         }
-      })
-    }, [textures])
+      });
+    }, [textures]);
 
     return useMemo(
       () =>
@@ -819,9 +916,9 @@ const useScrollMaterial = () => {
           side: DoubleSide,
         }),
       [textures]
-    )
+    );
   } catch (error) {
-    console.warn("Failed to load ScrollColor texture, using fallback")
+    console.warn("Failed to load ScrollColor texture, using fallback");
     return useMemo(
       () =>
         new MeshStandardMaterial({
@@ -831,35 +928,34 @@ const useScrollMaterial = () => {
           side: DoubleSide,
         }),
       []
-    )
+    );
   }
-}
+};
 
 //Portal Material
 const usePortalMaterial = () => {
   return useMemo(() => {
-    const video = document.createElement("video")
-    video.src = "/video/tunnel.mp4"
-    video.loop = true
-    video.muted = true
-    video.playsInline = true
-    video.autoplay = true
-    video.play()
+    const video = document.createElement("video");
+    video.src = "/video/tunnel.mp4";
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.autoplay = true;
+    video.play();
 
-    const videoTexture = new VideoTexture(video)
-    videoTexture.minFilter = LinearFilter
-    videoTexture.magFilter = LinearFilter
-    videoTexture.flipY = true
+    const videoTexture = new VideoTexture(video);
+    videoTexture.minFilter = LinearFilter;
+    videoTexture.magFilter = LinearFilter;
+    videoTexture.flipY = true;
 
     return new MeshBasicMaterial({
       map: videoTexture,
       side: DoubleSide,
-    })
-  }, [])
-}
+    });
+  }, []);
+};
 
 // Fontaine Water Material
-
 
 // Components
 
@@ -880,32 +976,32 @@ const CastleModel = ({
   floorRoughness,
   floorEmissiveIntensity,
 }) => {
-  const { nodes } = useGLTF("/models/Castle.glb")
+  const { nodes } = useGLTF("/models/Castle.glb");
   const material = useCastleMaterial(
     castleMaterialType,
     castleMetalness,
     castleRoughness,
     castleEmissiveIntensity
-  )
-  const logoMaterial = useLogoMaterial()
-  const decorMaterial = useDecorMaterial()
-  const godsMaterial = useGodsMaterial()
+  );
+  const logoMaterial = useLogoMaterial();
+  const decorMaterial = useDecorMaterial();
+  const godsMaterial = useGodsMaterial();
   const floorMaterial = useFloorMaterial(
     floorMaterialType,
     floorMetalness,
     floorRoughness,
     floorEmissiveIntensity
-  )
-  const hoofMaterial = useHoofMaterial()
-  const atmMaterial = useAtmMaterial()
-  const scrollMaterial = useScrollMaterial()
-  const portal = usePortalMaterial()
-  const mirror = useMirrorMaterial()
-  const hallosMaterial = useHallosMaterial()
+  );
+  const hoofMaterial = useHoofMaterial();
+  const atmMaterial = useAtmMaterial();
+  const scrollMaterial = useScrollMaterial();
+  const portal = usePortalMaterial();
+  const mirror = useMirrorMaterial();
+  const hallosMaterial = useHallosMaterial();
 
   // Use the video texture hook for portal
   const { texture: portalTexture, playVideo: playPortal } =
-    useVideoTexture("/video/tunnel.mp4")
+    useVideoTexture("/video/tunnel.mp4");
   const portalMaterial = useMemo(
     () =>
       portalTexture
@@ -918,12 +1014,11 @@ const CastleModel = ({
             side: DoubleSide,
           }),
     [portalTexture]
-  )
+  );
 
   // Use the video texture hook for water
-  const { texture: waterTexture, playVideo: playWater } = useVideoTexture(
-    "/video/water.mp4"
-  )
+  const { texture: waterTexture, playVideo: playWater } =
+    useVideoTexture("/video/water.mp4");
   const waterMaterial = useMemo(
     () =>
       waterTexture
@@ -942,29 +1037,29 @@ const CastleModel = ({
             side: DoubleSide,
           }),
     [waterTexture]
-  )
+  );
 
   // Depois no useEffect para iniciar a reprodução:
   useEffect(() => {
     if (hasInteracted) {
-      playPortal()
-      playWater()
-      if (onPortalPlay) onPortalPlay()
-      if (onWaterPlay) onWaterPlay()
+      playPortal();
+      playWater();
+      if (onPortalPlay) onPortalPlay();
+      if (onWaterPlay) onWaterPlay();
     }
-  }, [hasInteracted, playPortal, playWater, onPortalPlay, onWaterPlay])
+  }, [hasInteracted, playPortal, playWater, onPortalPlay, onWaterPlay]);
 
   // Play videos when user has interacted
   useEffect(() => {
     if (hasInteracted) {
-      playPortal()
-      playWater()
-      if (onPortalPlay) onPortalPlay()
-      if (onWaterPlay) onWaterPlay()
+      playPortal();
+      playWater();
+      if (onPortalPlay) onPortalPlay();
+      if (onWaterPlay) onWaterPlay();
     }
-  }, [hasInteracted, playPortal, playWater, onPortalPlay, onWaterPlay])
+  }, [hasInteracted, playPortal, playWater, onPortalPlay, onWaterPlay]);
 
-  const wingsMaterial = useWingsMaterial()
+  const wingsMaterial = useWingsMaterial();
 
   return (
     <group dispose={null}>
@@ -1060,14 +1155,14 @@ const CastleModel = ({
         position={[1.675, 1.185, 0.86]}
         rotation={[1.47, 0.194, -1.088]}
         onReturnToMain={() => {
-          onCastleClick("nav")
+          onCastleClick("nav");
         }}
         isActive={atmIframeActive}
       />
 
       <MirrorIframe
         onReturnToMain={() => {
-          onCastleClick("nav")
+          onCastleClick("nav");
         }}
         isActive={mirrorIframeActive}
       />
@@ -1075,84 +1170,101 @@ const CastleModel = ({
       {/* Add the ScrollIframe component, but make sure it's always rendered */}
       <ScrollIframe
         onReturnToMain={() => {
-          onCastleClick("nav")
+          onCastleClick("nav");
         }}
         isActive={scrollIframeActive}
       />
     </group>
-  )
-}
+  );
+};
 
 // Main Component
 const Castle = ({ activeSection }) => {
-  const controls = useRef()
-  const [atmiframeActive, setAtmiframeActive] = useState(false)
-  const [mirrorIframeActive, setMirrorIframeActive] = useState(false)
-  const [scrollIframeActive, setScrollIframeActive] = useState(false)
-  const [cameraLocked, setCameraLocked] = useState(true)
-  const [clipboardMessage, setClipboardMessage] = useState("")
+  const controls = useRef();
+  const [atmiframeActive, setAtmiframeActive] = useState(false);
+  const [mirrorIframeActive, setMirrorIframeActive] = useState(false);
+  const [scrollIframeActive, setScrollIframeActive] = useState(false);
+  const [cameraLocked, setCameraLocked] = useState(true);
+  const [clipboardMessage, setClipboardMessage] = useState("");
 
   useEffect(() => {
     if (activeSection === "aidatingcoach") {
-      setMirrorIframeActive(true)
+      setMirrorIframeActive(true);
     } else {
-      setMirrorIframeActive(false)
+      setMirrorIframeActive(false);
     }
-  }, [activeSection])
+  }, [activeSection]);
 
   // const { initAudio, playSound, stopSound, updateListenerPosition, cleanup } =
   //   useMultiAudio()
 
-  const getCameraPosition = section => {
-    const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD
-    const screenType = isSmallScreen ? "small" : "large"
+  // const getOptimizedMaterialType = (desiredType, isMobileDevice) => {
+  //   if (isMobileDevice) {
+  //     // Mobile devices: use simpler materials
+  //     switch (desiredType) {
+  //       case "physical":
+  //         return "standard"; // Downgrade physical to standard
+  //       case "standard":
+  //         return "standard";
+  //       default:
+  //         return "basic"; // Use basic as fallback for performance
+  //     }
+  //   }
+
+  //   // Desktop: use the desired material type
+  //   return desiredType;
+  // };
+
+  const getCameraPosition = (section) => {
+    const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD;
+    const screenType = isSmallScreen ? "small" : "large";
 
     if (section === "default") {
-      return cameraConfig.default[screenType]
+      return cameraConfig.default[screenType];
     }
 
-    return cameraConfig.sections[screenType][section]
-  }
+    return cameraConfig.sections[screenType][section];
+  };
 
   // Fix the useEffect that handles section changes
   useEffect(() => {
     if (activeSection === "token" || activeSection === "atm") {
-      setAtmiframeActive(true)
+      setAtmiframeActive(true);
     } else {
-      setAtmiframeActive(false)
+      setAtmiframeActive(false);
     }
 
     if (activeSection === "aidatingcoach") {
-      setMirrorIframeActive(true)
+      setMirrorIframeActive(true);
     } else {
-      setMirrorIframeActive(false)
+      setMirrorIframeActive(false);
     }
 
     // Add this condition for ScrollIframe
     if (activeSection === "roadmap") {
-      setScrollIframeActive(true)
+      setScrollIframeActive(true);
     } else {
-      setScrollIframeActive(false)
+      setScrollIframeActive(false);
     }
-  }, [activeSection])
+  }, [activeSection]);
 
-  const playTransition = sectionName => {
-    if (!controls.current) return
+  const playTransition = (sectionName) => {
+    if (!controls.current) return;
 
     // Se a câmera estiver destravada, não fazemos nada
-    if (!cameraLocked) return
+    if (!cameraLocked) return;
 
-    controls.current.enabled = true
+    controls.current.enabled = true;
 
     const targetPosition = getCameraPosition(
       sectionName === "default" ? "default" : sectionName
-    )
+    );
 
     if (targetPosition) {
       controls.current.setLookAt(...targetPosition, true).then(() => {
         // Habilita os controles apenas para a navegação principal
-        controls.current.enabled = sectionName === "nav"
-      })
+        controls.current.enabled = sectionName === "nav";
+      });
 
       // updateListenerPosition(targetPosition.slice(0, 3))
 
@@ -1162,138 +1274,138 @@ const Castle = ({ activeSection }) => {
       //   stopSound()
       // }
     }
-  }
+  };
 
   // Function to copy camera position to clipboard
   const copyPositionToClipboard = () => {
-    if (!controls.current) return
+    if (!controls.current) return;
 
     try {
       // Get position and target from controls
-      const position = controls.current.getPosition()
-      const target = controls.current.getTarget()
+      const position = controls.current.getPosition();
+      const target = controls.current.getTarget();
 
       // Handle different possible return formats
-      let posArray, targetArray
+      let posArray, targetArray;
 
       // Handle position - might be Vector3, array, or object with x,y,z
       if (Array.isArray(position)) {
-        posArray = position
+        posArray = position;
       } else if (typeof position.toArray === "function") {
-        posArray = position.toArray()
+        posArray = position.toArray();
       } else {
-        posArray = [position.x, position.y, position.z]
+        posArray = [position.x, position.y, position.z];
       }
 
       // Handle target - might be Vector3, array, or object with x,y,z
       if (Array.isArray(target)) {
-        targetArray = target
+        targetArray = target;
       } else if (typeof target.toArray === "function") {
-        targetArray = target.toArray()
+        targetArray = target.toArray();
       } else {
-        targetArray = [target.x, target.y, target.z]
+        targetArray = [target.x, target.y, target.z];
       }
 
       // Combine into the format needed for the camera config
-      const positionArray = [...posArray, ...targetArray]
+      const positionArray = [...posArray, ...targetArray];
 
       // Format the array for display and copy
       const formattedArray = positionArray
-        .map(val => Number(val).toFixed(15))
-        .join(", ")
+        .map((val) => Number(val).toFixed(15))
+        .join(", ");
 
       // Also create a formatted JS array for console
       const jsArrayFormat = `[\n  ${posArray
-        .map(val => Number(val).toFixed(15))
+        .map((val) => Number(val).toFixed(15))
         .join(",\n  ")},\n  ${targetArray
-        .map(val => Number(val).toFixed(15))
-        .join(",\n  ")}\n]`
+        .map((val) => Number(val).toFixed(15))
+        .join(",\n  ")}\n]`;
 
       // Copy to clipboard
       navigator.clipboard
         .writeText(formattedArray)
         .then(() => {
-          setClipboardMessage("Position copied to clipboard!")
+          setClipboardMessage("Position copied to clipboard!");
 
           // Clear message after 3 seconds
           setTimeout(() => {
-            setClipboardMessage("")
-          }, 3000)
+            setClipboardMessage("");
+          }, 3000);
         })
-        .catch(err => {
-          console.error("Could not copy position to clipboard:", err)
-          setClipboardMessage("Failed to copy position.")
+        .catch((err) => {
+          console.error("Could not copy position to clipboard:", err);
+          setClipboardMessage("Failed to copy position.");
 
           // Clear message after 3 seconds
           setTimeout(() => {
-            setClipboardMessage("")
-          }, 3000)
-        })
+            setClipboardMessage("");
+          }, 3000);
+        });
 
       // Log to console in different formats for reference
-      console.log("Camera raw position:", position)
-      console.log("Camera raw target:", target)
-      console.log("Camera position array:", positionArray)
-      console.log("Camera position formatted for config:", jsArrayFormat)
+      console.log("Camera raw position:", position);
+      console.log("Camera raw target:", target);
+      console.log("Camera position array:", positionArray);
+      console.log("Camera position formatted for config:", jsArrayFormat);
     } catch (error) {
-      console.error("Error getting camera position:", error)
-      setClipboardMessage("Error getting camera position")
+      console.error("Error getting camera position:", error);
+      setClipboardMessage("Error getting camera position");
 
       setTimeout(() => {
-        setClipboardMessage("")
-      }, 3000)
+        setClipboardMessage("");
+      }, 3000);
     }
-  }
+  };
 
   // Efeito de inicialização
   useEffect(() => {
-    if (!controls.current) return
+    if (!controls.current) return;
 
-    window.controls = controls
+    window.controls = controls;
     // initAudio()
 
     // Configuração inicial
     if (cameraLocked) {
-      controls.current.minPolarAngle = Math.PI * 0.4
-      controls.current.maxPolarAngle = Math.PI * 0.5
-      controls.current.minDistance = 5
-      controls.current.maxDistance = 20
-      controls.current.boundaryFriction = 1
-      controls.current.boundaryEnclosesCamera = true
-      controls.current.dollyToCursor = false
-      controls.current.minY = 1
-      controls.current.maxY = 15
+      controls.current.minPolarAngle = Math.PI * 0.4;
+      controls.current.maxPolarAngle = Math.PI * 0.5;
+      controls.current.minDistance = 5;
+      controls.current.maxDistance = 20;
+      controls.current.boundaryFriction = 1;
+      controls.current.boundaryEnclosesCamera = true;
+      controls.current.dollyToCursor = false;
+      controls.current.minY = 1;
+      controls.current.maxY = 15;
 
-      const defaultPosition = getCameraPosition("default")
-      controls.current.setLookAt(...defaultPosition, false)
+      const defaultPosition = getCameraPosition("default");
+      controls.current.setLookAt(...defaultPosition, false);
 
       setTimeout(() => {
-        playTransition("nav")
-      }, TRANSITION_DELAY)
+        playTransition("nav");
+      }, TRANSITION_DELAY);
     }
 
     // return cleanup
-  }, [])
+  }, []);
 
   // Handle active section changes
   useEffect(() => {
     if (activeSection && cameraLocked) {
-      playTransition(activeSection)
+      playTransition(activeSection);
     }
-  }, [activeSection, cameraLocked])
+  }, [activeSection, cameraLocked]);
 
   // Handle window resize
   useEffect(() => {
     const handleResize = () => {
       if (controls.current && activeSection && cameraLocked) {
-        const newPosition = getCameraPosition(activeSection)
-        controls.current.setLookAt(...newPosition, true)
+        const newPosition = getCameraPosition(activeSection);
+        controls.current.setLookAt(...newPosition, true);
       }
-    }
+    };
 
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [activeSection, cameraLocked])
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [activeSection, cameraLocked]);
 
   // Debug controls e toggle de câmera
   useControls(
@@ -1302,61 +1414,61 @@ const Castle = ({ activeSection }) => {
       cameraLocked: {
         value: cameraLocked,
         label: "Lock Camera",
-        onChange: locked => {
-          setCameraLocked(locked)
+        onChange: (locked) => {
+          setCameraLocked(locked);
 
-          if (!controls.current) return
+          if (!controls.current) return;
 
           if (locked) {
             // Quando travada, aplicar restrições
-            controls.current.minPolarAngle = Math.PI * 0.4
-            controls.current.maxPolarAngle = Math.PI * 0.5
-            controls.current.minDistance = 5
-            controls.current.maxDistance = 20
-            controls.current.boundaryFriction = 1
-            controls.current.boundaryEnclosesCamera = true
-            controls.current.dollyToCursor = false
-            controls.current.minY = 1
-            controls.current.maxY = 15
+            controls.current.minPolarAngle = Math.PI * 0.4;
+            controls.current.maxPolarAngle = Math.PI * 0.5;
+            controls.current.minDistance = 5;
+            controls.current.maxDistance = 20;
+            controls.current.boundaryFriction = 1;
+            controls.current.boundaryEnclosesCamera = true;
+            controls.current.dollyToCursor = false;
+            controls.current.minY = 1;
+            controls.current.maxY = 15;
 
             // Retornar para a posição da seção atual
-            const targetPosition = getCameraPosition(activeSection || "nav")
+            const targetPosition = getCameraPosition(activeSection || "nav");
             if (targetPosition) {
-              controls.current.setLookAt(...targetPosition, true)
+              controls.current.setLookAt(...targetPosition, true);
             }
 
             // Desabilitar controle contínuo
-            controls.current.enabled = activeSection === "nav"
+            controls.current.enabled = activeSection === "nav";
           } else {
             // Quando destravada, remover todas as restrições
-            controls.current.minPolarAngle = 0
-            controls.current.maxPolarAngle = Math.PI
-            controls.current.minDistance = 0.1
-            controls.current.maxDistance = 100
-            controls.current.boundaryFriction = 0
-            controls.current.boundaryEnclosesCamera = false
-            controls.current.minY = null
-            controls.current.maxY = null
+            controls.current.minPolarAngle = 0;
+            controls.current.maxPolarAngle = Math.PI;
+            controls.current.minDistance = 0.1;
+            controls.current.maxDistance = 100;
+            controls.current.boundaryFriction = 0;
+            controls.current.boundaryEnclosesCamera = false;
+            controls.current.minY = null;
+            controls.current.maxY = null;
 
             // Habilitar controle contínuo
-            controls.current.enabled = true
+            controls.current.enabled = true;
           }
         },
       },
       getLookAt: button(() => {
-        copyPositionToClipboard()
+        copyPositionToClipboard();
       }),
       resetCamera: button(() => {
-        if (!controls.current) return
+        if (!controls.current) return;
 
-        const targetPosition = getCameraPosition(activeSection || "nav")
+        const targetPosition = getCameraPosition(activeSection || "nav");
         if (targetPosition) {
-          controls.current.setLookAt(...targetPosition, true)
+          controls.current.setLookAt(...targetPosition, true);
         }
       }),
     },
     { collapsed: false }
-  )
+  );
 
   // Configuração de controles de mouse
   // useEffect(() => {
@@ -1393,46 +1505,46 @@ const Castle = ({ activeSection }) => {
   useEffect(() => {
     if (clipboardMessage) {
       // Create and append notification element
-      const notification = document.createElement("div")
-      notification.style.position = "absolute"
-      notification.style.top = "10px"
-      notification.style.right = "10px"
-      notification.style.padding = "8px 12px"
-      notification.style.backgroundColor = "rgba(0, 0, 0, 0.7)"
-      notification.style.color = "white"
-      notification.style.borderRadius = "4px"
-      notification.style.zIndex = "1000"
-      notification.style.fontFamily = "sans-serif"
-      notification.style.fontSize = "14px"
-      notification.style.transition = "opacity 0.3s ease"
-      notification.style.opacity = "0"
-      notification.textContent = clipboardMessage
+      const notification = document.createElement("div");
+      notification.style.position = "absolute";
+      notification.style.top = "10px";
+      notification.style.right = "10px";
+      notification.style.padding = "8px 12px";
+      notification.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+      notification.style.color = "white";
+      notification.style.borderRadius = "4px";
+      notification.style.zIndex = "1000";
+      notification.style.fontFamily = "sans-serif";
+      notification.style.fontSize = "14px";
+      notification.style.transition = "opacity 0.3s ease";
+      notification.style.opacity = "0";
+      notification.textContent = clipboardMessage;
 
-      document.body.appendChild(notification)
+      document.body.appendChild(notification);
 
       // Fade in
       setTimeout(() => {
-        notification.style.opacity = "1"
-      }, 10)
+        notification.style.opacity = "1";
+      }, 10);
 
       // Remove after timeout
       setTimeout(() => {
-        notification.style.opacity = "0"
+        notification.style.opacity = "0";
         setTimeout(() => {
           if (document.body.contains(notification)) {
-            document.body.removeChild(notification)
+            document.body.removeChild(notification);
           }
-        }, 300)
-      }, 3000)
+        }, 300);
+      }, 3000);
 
       // Cleanup on unmount
       return () => {
         if (document.body.contains(notification)) {
-          document.body.removeChild(notification)
+          document.body.removeChild(notification);
         }
-      }
+      };
     }
-  }, [clipboardMessage])
+  }, [clipboardMessage]);
   // Adicione os controles de materiais usando useControls do Leva
   // Adicione os controles de materiais usando useControls do Leva
   const materialControls = useControls(
@@ -1503,7 +1615,7 @@ const Castle = ({ activeSection }) => {
       },
     },
     { collapsed: false }
-  )
+  );
   return (
     <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
       <CameraControls
@@ -1535,7 +1647,7 @@ const Castle = ({ activeSection }) => {
         />
       </Suspense>
     </group>
-  )
-}
+  );
+};
 
-export default Castle
+export default Castle;

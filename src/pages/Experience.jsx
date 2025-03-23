@@ -232,6 +232,28 @@ const useCameraAnimation = (section, cameraRef) => {
   return isStarted;
 };
 
+const getMobileOptimizedCanvasConfig = (isMobileDevice) => {
+  return {
+    gl: {
+      antialias: false,
+      powerPreference: isMobileDevice ? "default" : "high-performance",
+      stencil: false,
+      depth: true,
+      alpha: false,
+    },
+    dpr: isMobileDevice ? [0.5, 1.0] : [1, 1.5], // Reduce resolution on mobile
+    camera: {
+      fov: 50,
+      near: 0.1,
+      far: isMobileDevice ? 500 : 1000, // Reduce far plane on mobile
+      position: [15.9, 6.8, -11.4],
+    },
+    shadows: false,
+    flat: isMobileDevice, // Enable flat rendering on mobile
+    legacy: false,
+  };
+};
+
 // Scene Controller component with environment controls
 const SceneController = React.memo(({ section, cameraRef }) => {
   useCameraAnimation(section, cameraRef);
