@@ -836,27 +836,27 @@ const useScrollMaterial = () => {
 }
 
 //Portal Material
-const usePortalMaterial = () => {
-  return useMemo(() => {
-    const video = document.createElement("video")
-    video.src = "/video/tunnel.mp4"
-    video.loop = true
-    video.muted = true
-    video.playsInline = true
-    video.autoplay = true
-    video.play()
+// const usePortalMaterial = () => {
+//   return useMemo(() => {
+//     const video = document.createElement("video")
+//     video.src = "/video/tunnel.mp4"
+//     video.loop = true
+//     video.muted = true
+//     video.playsInline = true
+//     video.autoplay = true
+//     video.play()
 
-    const videoTexture = new VideoTexture(video)
-    videoTexture.minFilter = LinearFilter
-    videoTexture.magFilter = LinearFilter
-    videoTexture.flipY = true
+//     const videoTexture = new VideoTexture(video)
+//     videoTexture.minFilter = LinearFilter
+//     videoTexture.magFilter = LinearFilter
+//     videoTexture.flipY = true
 
-    return new MeshBasicMaterial({
-      map: videoTexture,
-      side: DoubleSide,
-    })
-  }, [])
-}
+//     return new MeshBasicMaterial({
+//       map: videoTexture,
+//       side: DoubleSide,
+//     })
+//   }, [])
+// }
 
 // Fontaine Water Material
 
@@ -899,70 +899,70 @@ const CastleModel = ({
   const hoofMaterial = useHoofMaterial()
   const atmMaterial = useAtmMaterial()
   const scrollMaterial = useScrollMaterial()
-  const portal = usePortalMaterial()
+  // const portal = usePortalMaterial()
   const mirror = useMirrorMaterial()
   const hallosMaterial = useHallosMaterial()
 
   // Use the video texture hook for portal
-  const { texture: portalTexture, playVideo: playPortal } =
-    useVideoTexture("/video/tunnel.mp4")
-  const portalMaterial = useMemo(
-    () =>
-      portalTexture
-        ? new MeshBasicMaterial({
-            map: portalTexture,
-            side: DoubleSide,
-          })
-        : new MeshBasicMaterial({
-            color: 0x000000,
-            side: DoubleSide,
-          }),
-    [portalTexture]
-  )
+  // const { texture: portalTexture, playVideo: playPortal } =
+  //   useVideoTexture("/video/tunnel.mp4")
+  // const portalMaterial = useMemo(
+  //   () =>
+  //     portalTexture
+  //       ? new MeshBasicMaterial({
+  //           map: portalTexture,
+  //           side: DoubleSide,
+  //         })
+  //       : new MeshBasicMaterial({
+  //           color: 0x000000,
+  //           side: DoubleSide,
+  //         }),
+  //   [portalTexture]
+  // )
 
   // Use the video texture hook for water
-  const { texture: waterTexture, playVideo: playWater } = useVideoTexture(
-    "/video/water.mp4"
-  )
-  const waterMaterial = useMemo(
-    () =>
-      waterTexture
-        ? new MeshPhysicalMaterial({
-            map: waterTexture,
-            transparent: false,
-            roughness: 0.2,
-            metalness: 1,
-            side: DoubleSide,
-            emissive: new Color(0xffa6f3),
-            emissiveIntensity: 1,
-          })
-        : new MeshPhysicalMaterial({
-            emissive: new Color(0xffa6f3),
-            emissiveIntensity: 1,
-            side: DoubleSide,
-          }),
-    [waterTexture]
-  )
+  // const { texture: waterTexture, playVideo: playWater } = useVideoTexture(
+  //   "/video/water.mp4"
+  // )
+  // const waterMaterial = useMemo(
+  //   () =>
+  //     waterTexture
+  //       ? new MeshPhysicalMaterial({
+  //           map: waterTexture,
+  //           transparent: false,
+  //           roughness: 0.2,
+  //           metalness: 1,
+  //           side: DoubleSide,
+  //           emissive: new Color(0xffa6f3),
+  //           emissiveIntensity: 1,
+  //         })
+  //       : new MeshPhysicalMaterial({
+  //           emissive: new Color(0xffa6f3),
+  //           emissiveIntensity: 1,
+  //           side: DoubleSide,
+  //         }),
+  //   [waterTexture]
+  // )
 
   // Depois no useEffect para iniciar a reprodução:
   useEffect(() => {
     if (hasInteracted) {
-      playPortal()
-      playWater()
+      // playPortal()
+      // playWater()
       if (onPortalPlay) onPortalPlay()
-      if (onWaterPlay) onWaterPlay()
+      // if (onWaterPlay) onWaterPlay()
     }
-  }, [hasInteracted, playPortal, playWater, onPortalPlay, onWaterPlay])
+  }, [hasInteracted,   onPortalPlay, ])
 
   // Play videos when user has interacted
   useEffect(() => {
     if (hasInteracted) {
-      playPortal()
-      playWater()
+      // playPortal()
+      // playWater()
       if (onPortalPlay) onPortalPlay()
       if (onWaterPlay) onWaterPlay()
     }
-  }, [hasInteracted, playPortal, playWater, onPortalPlay, onWaterPlay])
+  }, [hasInteracted,onPortalPlay, onWaterPlay])
 
   const wingsMaterial = useWingsMaterial()
 
@@ -1033,7 +1033,7 @@ const CastleModel = ({
       <Select disabled>
         <mesh
           geometry={nodes.HeartVid.geometry}
-          material={portal}
+          // material={portal}
           layers-enable={1}
           castShadow={false}
           receiveShadow={false}
@@ -1041,7 +1041,7 @@ const CastleModel = ({
       </Select>
       <mesh
         geometry={nodes.water.geometry}
-        material={waterMaterial}
+        // material={waterMaterial}
         layers-enable={2}
         castShadow={false}
         receiveShadow={false}
