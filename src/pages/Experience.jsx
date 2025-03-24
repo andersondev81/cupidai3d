@@ -433,7 +433,7 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
     <EffectsTree />
     <Castle activeSection={activeSection} scale={[2, 2, 2]} />
     <Flowers />
-    <CloudsD />
+    {/* <CloudsD /> */}
     <CloudsPole />
     <Orb />
     <Pole
@@ -446,7 +446,7 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
 
 const SecondaryContent = React.memo(() => (
   <>
-    <CloudsD />
+    {/* <CloudsD /> */}
     <Stairs />
   </>
 ));
