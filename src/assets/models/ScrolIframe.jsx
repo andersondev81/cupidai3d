@@ -13,20 +13,20 @@ export default function ScrollIframe({
   const [showButtons, setShowButtons] = useState(false);
   const [checkerTexture, setCheckerTexture] = useState(null);
 
-  // Load texture
-  useEffect(() => {
-    const textureLoader = new THREE.TextureLoader();
-    textureLoader.load(
-      (loadedTexture) => {
-        loadedTexture.wrapS = THREE.RepeatWrapping;
-        loadedTexture.wrapT = THREE.RepeatWrapping;
-        loadedTexture.repeat.set(1, 1);
-        setCheckerTexture(loadedTexture);
-      },
-      undefined,
-      (error) => console.error("Error loading texture:", error)
-    );
-  }, []);
+  // // Load texture
+  // useEffect(() => {
+  //   const textureLoader = new THREE.TextureLoader();
+  //   textureLoader.load(
+  //     (loadedTexture) => {
+  //       loadedTexture.wrapS = THREE.RepeatWrapping;
+  //       loadedTexture.wrapT = THREE.RepeatWrapping;
+  //       loadedTexture.repeat.set(1, 1);
+  //       setCheckerTexture(loadedTexture);
+  //     },
+  //     undefined,
+  //     (error) => console.error("Error loading texture:", error)
+  //   );
+  // }, []);
 
   // Creating material with texture
   const scrollMaterial = React.useMemo(() => {

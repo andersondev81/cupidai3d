@@ -445,8 +445,8 @@ const useVideoTexture = videoPath => {
     video.playsInline = true
     // Adicione essas duas linhas:
     video.autoplay = true
-    video.play()
-    video.load()
+    // video.play()
+    // video.load()
 
     videoRef.current = video
 
@@ -973,7 +973,7 @@ const CastleModel = ({
       if (onPortalPlay) onPortalPlay()
       if (onWaterPlay) onWaterPlay()
     }
-  }, [hasInteracted, playPortal, playWater, onPortalPlay, onWaterPlay])
+  }, [hasInteracted,   onPortalPlay, ])
 
   // Play videos when user has interacted
   useEffect(() => {
@@ -983,7 +983,7 @@ const CastleModel = ({
       if (onPortalPlay) onPortalPlay()
       if (onWaterPlay) onWaterPlay()
     }
-  }, [hasInteracted, playPortal, playWater, onPortalPlay, onWaterPlay])
+  }, [hasInteracted,onPortalPlay, onWaterPlay])
 
   const wingsMaterial = useWingsMaterial()
 
@@ -1175,12 +1175,14 @@ const Castle = ({ activeSection }) => {
     }
   };
 
+
   window.globalNavigation.navigateTo = playTransition;
 
   const handleReturnToMain = () => {
     console.log("Back to main requested");
     playTransition("nav");
   };
+
 
 
   // Function to copy camera position to clipboard
@@ -1352,6 +1354,7 @@ const Castle = ({ activeSection }) => {
     },
     { collapsed: false }
   )
+
   useEffect(() => {
     if (!controls.current || !controls.current.mouseButtons) return;
 
@@ -1380,6 +1383,7 @@ const Castle = ({ activeSection }) => {
       window.removeEventListener("keyup", handleKeyUp);
     };
   }, []);
+
   // Create notification element outside the 3D canvas
   useEffect(() => {
     if (clipboardMessage) {

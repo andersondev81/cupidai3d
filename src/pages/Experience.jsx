@@ -68,6 +68,7 @@ const ENVIRONMENT_OPTIONS = {
   "Vino Sky V1": "/images/VinoSkyV1.hdr",
   "Vino Sky V2": "/images/VinoSkyV2.hdr",
   "Vino Sky V3": "/images/clouds-vino.hdr",
+  "Vino Sky V4": "/images/VinoSkyV4.hdr",
 };
 
 // Environment presets
@@ -432,7 +433,7 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
     <EffectsTree />
     <Castle activeSection={activeSection} scale={[2, 2, 2]} />
     <Flowers />
-    <CloudsD />
+    {/* <CloudsD /> */}
     <CloudsPole />
     <Orb />
     <Pole
@@ -445,7 +446,7 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
 
 const SecondaryContent = React.memo(() => (
   <>
-    <CloudsD />
+    {/* <CloudsD /> */}
     <Stairs />
   </>
 ));
