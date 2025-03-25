@@ -104,12 +104,21 @@ export function Pole({ onSectionChange, ...props }) {
   const material = usePoleMaterial()
   const materialHearts = useHeartsMaterial()
 
-  // Função para eventos de clique
   const createClickHandler = (sectionIndex, sectionName) => e => {
     e.stopPropagation()
-    if (onSectionChange) {
+    console.log(`Pole: Clicked on section ${sectionName}`)
+
+    if (onSectionChange && typeof onSectionChange === 'function') {
+      console.log(`Pole: Using onSectionChange callback for ${sectionName}`)
       onSectionChange(sectionIndex, sectionName)
     }
+
+    if (window.globalNavigation && window.globalNavigation.navigateTo) {
+      console.log(`Pole: Using global navigation for ${sectionName}`)
+      window.globalNavigation.navigateTo(sectionName)
+    }
+
+    console.log(`Pole: Navigation to ${sectionName} attempted. Check if camera moved.`)
   }
 
   const pointerHandlers = {

@@ -59,6 +59,7 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
     else {
       // Hide overlay immediately when leaving the about section
       setShowAboutOverlay(false);
+      setShowDownloadOverlay(false);
     }
   }, [currentSectionKey]);
 
@@ -69,17 +70,76 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
     }
   };
 
-  const handleCloseOverlay = () => {
-    setShowAboutOverlay(false);
-    setShowDownloadOverlay(false);
-    // Navigate back to home if we're in the about section
-    if (currentSectionKey === "download") {
-      handleHomeNavigation();
-    }
-    if (currentSectionKey === "about") {
-      handleHomeNavigation();
+  // Special handlers for specific sections
+  const handleBackFromAbout = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
     }
 
+    console.log("Direct handler: Back from About section");
+
+    // Close the About overlay immediately
+    setShowAboutOverlay(false);
+
+    // Use a direct navigation approach
+    if (cameraRef && cameraRef.goToHome) {
+      cameraRef.goToHome();
+    }
+
+    // Force section change after a small delay
+    setTimeout(() => {
+      onSectionChange(0, "nav");
+
+      // Try global navigation as a backup
+      if (window.globalNavigation && window.globalNavigation.navigateTo) {
+        window.globalNavigation.navigateTo("nav");
+      }
+    }, 100);
+  };
+
+  // Special handler for Download section
+  const handleBackFromDownload = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    console.log("Direct handler: Back from Download section");
+
+    // Close the overlay immediately
+    setShowDownloadOverlay(false);
+
+    // Use a direct navigation approach
+    if (cameraRef && cameraRef.goToHome) {
+      cameraRef.goToHome();
+    }
+
+    // Force section change after a small delay
+    setTimeout(() => {
+      onSectionChange(0, "nav");
+
+      // Try global navigation as a backup
+      if (window.globalNavigation && window.globalNavigation.navigateTo) {
+        window.globalNavigation.navigateTo("nav");
+      }
+    }, 100);
+  };
+
+  // Determine which handler to use based on current section
+  const handleCloseOverlay = (e) => {
+    if (currentSectionKey === "about") {
+      handleBackFromAbout(e);
+    }
+    else if (currentSectionKey === "download") {
+      handleBackFromDownload(e);
+    }
+    else {
+      // Default handler
+      setShowAboutOverlay(false);
+      setShowDownloadOverlay(false);
+      handleHomeNavigation();
+    }
   };
 
   return (
@@ -160,15 +220,14 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
         </div>
       </Section>
 
-      {/* AboutOverlay Component - Only shown after camera animation completes */}
       <AboutOverlay
         isVisible={showAboutOverlay}
-        onClose={handleCloseOverlay}
+        onClose={handleBackFromAbout}
       />
 
       <DownloadOverlay
         isVisible={showDownloadOverlay}
-        onClose={handleCloseOverlay}
+        onClose={handleBackFromDownload}
       />
     </main>
   );

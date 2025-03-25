@@ -48,6 +48,27 @@ const TRANSITION_DELAY = 100
 //   fountain: getAssetPath("/assets/sounds/fountain.mp3"),
 // }
 // Camera Positions Configuration
+window.globalNavigation = {
+  navigateTo: null,
+  lastSection: "nav",
+  sectionIndices: {
+    "nav": 0,
+    "about": 1,
+    "aidatingcoach": 2,
+    "download": 3,
+    "token": 4,
+    "roadmap": 5
+  },
+  reset: function() {
+    if (window.resetIframes) {
+      window.resetIframes();
+    }
+  },
+  log: function(message) {
+    console.log(`[Navigation] ${message}`);
+  }
+};
+
 const cameraConfig = {
   default: {
     large: [
@@ -1085,84 +1106,84 @@ const CastleModel = ({
 
 // Main Component
 const Castle = ({ activeSection }) => {
-  const controls = useRef()
-  const [atmiframeActive, setAtmiframeActive] = useState(false)
-  const [mirrorIframeActive, setMirrorIframeActive] = useState(false)
-  const [scrollIframeActive, setScrollIframeActive] = useState(false)
-  const [cameraLocked, setCameraLocked] = useState(true)
+  const controls = useRef();
+  const [atmiframeActive, setAtmiframeActive] = useState(false);
+  const [mirrorIframeActive, setMirrorIframeActive] = useState(false);
+  const [scrollIframeActive, setScrollIframeActive] = useState(false);
+  const [cameraLocked, setCameraLocked] = useState(true);
   const [clipboardMessage, setClipboardMessage] = useState("")
 
-  useEffect(() => {
-    if (activeSection === "aidatingcoach") {
-      setMirrorIframeActive(true)
-    } else {
-      setMirrorIframeActive(false)
-    }
-  }, [activeSection])
 
-  // const { initAudio, playSound, stopSound, updateListenerPosition, cleanup } =
-  //   useMultiAudio()
+  window.resetIframes = () => {
+    setAtmiframeActive(false);
+    setMirrorIframeActive(false);
+    setScrollIframeActive(false);
+  };
 
   const getCameraPosition = section => {
-    const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD
-    const screenType = isSmallScreen ? "small" : "large"
+    const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD;
+    const screenType = isSmallScreen ? "small" : "large";
 
     if (section === "default") {
-      return cameraConfig.default[screenType]
+      return cameraConfig.default[screenType];
     }
 
-    return cameraConfig.sections[screenType][section]
-  }
+    return cameraConfig.sections[screenType][section];
+  };
 
-  // Fix the useEffect that handles section changes
-  useEffect(() => {
-    if (activeSection === "token" || activeSection === "atm") {
-      setAtmiframeActive(true)
-    } else {
-      setAtmiframeActive(false)
+  const playTransition = (sectionName) => {
+    if (!controls.current) return;
+
+    console.log(`Playing transition to section: ${sectionName}`);
+
+    if (sectionName === "roadmap") {
+      setScrollIframeActive(true);
+      setAtmiframeActive(false);
+      setMirrorIframeActive(false);
+    }
+    else if (sectionName === "token" || sectionName === "atm") {
+      setAtmiframeActive(true);
+      setScrollIframeActive(false);
+      setMirrorIframeActive(false);
+    }
+    else if (sectionName === "aidatingcoach") {
+      setMirrorIframeActive(true);
+      setScrollIframeActive(false);
+      setAtmiframeActive(false);
+    }
+    else {
+      setScrollIframeActive(false);
+      setAtmiframeActive(false);
+      setMirrorIframeActive(false);
     }
 
-    if (activeSection === "aidatingcoach") {
-      setMirrorIframeActive(true)
-    } else {
-      setMirrorIframeActive(false)
-    }
-
-    // Add this condition for ScrollIframe
-    if (activeSection === "roadmap") {
-      setScrollIframeActive(true)
-    } else {
-      setScrollIframeActive(false)
-    }
-  }, [activeSection])
-
-  const playTransition = sectionName => {
-    if (!controls.current) return
-
-    // Se a câmera estiver destravada, não fazemos nada
-    if (!cameraLocked) return
-
-    controls.current.enabled = true
+    controls.current.enabled = true;
 
     const targetPosition = getCameraPosition(
       sectionName === "default" ? "default" : sectionName
-    )
+    );
 
     if (targetPosition) {
-      controls.current.setLookAt(...targetPosition, true).then(() => {
-        // Habilita os controles apenas para a navegação principal
-        controls.current.enabled = sectionName === "nav"
-      })
-
-      // updateListenerPosition(targetPosition.slice(0, 3))
-
-      // if (sectionName !== "default") {
-      //   playSound(sectionName)
-      // } else {
-      //   stopSound()
-      // }
+      controls.current.setLookAt(...targetPosition, true)
+        .catch(error => {
+          console.error("Camera transition error:", error);
+        })
+        .finally(() => {
+          controls.current.enabled = sectionName === "nav";
+          console.log(`Transition to ${sectionName} complete`);
+        });
     }
-  }
+  };
+
+
+  window.globalNavigation.navigateTo = playTransition;
+
+  const handleReturnToMain = () => {
+    console.log("Back to main requested");
+    playTransition("nav");
+  };
+
+
 
   // Function to copy camera position to clipboard
   const copyPositionToClipboard = () => {
@@ -1245,57 +1266,33 @@ const Castle = ({ activeSection }) => {
     }
   }
 
-  // Efeito de inicialização
   useEffect(() => {
-    if (!controls.current) return
+    if (!controls.current) return;
 
-    window.controls = controls
-    // initAudio()
+    window.controls = controls;
 
-    // Configuração inicial
+    // Initial configuration
     if (cameraLocked) {
-      controls.current.minPolarAngle = Math.PI * 0.4
-      controls.current.maxPolarAngle = Math.PI * 0.5
-      controls.current.minDistance = 5
-      controls.current.maxDistance = 20
-      controls.current.boundaryFriction = 1
-      controls.current.boundaryEnclosesCamera = true
-      controls.current.dollyToCursor = false
-      controls.current.minY = 1
-      controls.current.maxY = 15
+      controls.current.minPolarAngle = Math.PI * 0.4;
+      controls.current.maxPolarAngle = Math.PI * 0.5;
+      controls.current.minDistance = 5;
+      controls.current.maxDistance = 20;
+      controls.current.boundaryFriction = 1;
+      controls.current.boundaryEnclosesCamera = true;
+      controls.current.dollyToCursor = false;
+      controls.current.minY = 1;
+      controls.current.maxY = 15;
 
-      const defaultPosition = getCameraPosition("default")
-      controls.current.setLookAt(...defaultPosition, false)
+      const defaultPosition = getCameraPosition("default");
+      controls.current.setLookAt(...defaultPosition, false);
 
+      // Use direct navigation function
       setTimeout(() => {
-        playTransition("nav")
-      }, TRANSITION_DELAY)
+        playTransition("nav");
+      }, TRANSITION_DELAY);
     }
+  }, []);
 
-    // return cleanup
-  }, [])
-
-  // Handle active section changes
-  useEffect(() => {
-    if (activeSection && cameraLocked) {
-      playTransition(activeSection)
-    }
-  }, [activeSection, cameraLocked])
-
-  // Handle window resize
-  useEffect(() => {
-    const handleResize = () => {
-      if (controls.current && activeSection && cameraLocked) {
-        const newPosition = getCameraPosition(activeSection)
-        controls.current.setLookAt(...newPosition, true)
-      }
-    }
-
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [activeSection, cameraLocked])
-
-  // Debug controls e toggle de câmera
   useControls(
     "Controls",
     {
@@ -1358,36 +1355,34 @@ const Castle = ({ activeSection }) => {
     { collapsed: false }
   )
 
-  // Configuração de controles de mouse
-  // useEffect(() => {
-  //   if (!controls.current) return
+  useEffect(() => {
+    if (!controls.current || !controls.current.mouseButtons) return;
 
-  //   // Configuração principal
-  //   controls.current.mouseButtons.left = 1 // ROTATE com botão esquerdo
-  //   controls.current.mouseButtons.right = 4 // TRUCK (mover) com botão direito
-  //   controls.current.verticalDragToForward = false // Desativa o zoom ao arrastar verticalmente
+    controls.current.mouseButtons.left = 1;
+    controls.current.mouseButtons.right = 4; // Truck (move) with right button
+    controls.current.verticalDragToForward = false; // Disable zoom on vertical drag
 
-  //   // Event listeners para Ctrl+MouseLeft
-  //   // const handleKeyDown = event => {
-  //   //   if (event.ctrlKey && controls.current) {
-  //   //     controls.current._mouseButtons.left = 4 // TRUCK com Ctrl+MouseLeft
-  //   //   }
-  //   }
+    // Handle Ctrl+Click safely
+    const handleKeyDown = event => {
+      if (event.ctrlKey && controls.current && controls.current.mouseButtons) {
+        controls.current.mouseButtons.left = 4; // Truck with Ctrl+MouseLeft
+      }
+    };
 
-  //   // const handleKeyUp = event => {
-  //   //   if (event.key === "Control" && controls.current) {
-  //   //     controls.current._mouseButtons.left = 1 // Volta para ROTATE quando solta Ctrl
-  //   //   }
-  //   // }
+    const handleKeyUp = event => {
+      if (event.key === "Control" && controls.current && controls.current.mouseButtons) {
+        controls.current.mouseButtons.left = 1; // Back to ROTATE when Ctrl is released
+      }
+    };
 
-  //   window.addEventListener("keydown", handleKeyDown)
-  //   window.addEventListener("keyup", handleKeyUp)
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
 
-  //   return () => {
-  //     window.removeEventListener("keydown", handleKeyDown)
-  //     window.removeEventListener("keyup", handleKeyUp)
-  //   }
-  // }, [])
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
 
   // Create notification element outside the 3D canvas
   useEffect(() => {
@@ -1433,8 +1428,6 @@ const Castle = ({ activeSection }) => {
       }
     }
   }, [clipboardMessage])
-  // Adicione os controles de materiais usando useControls do Leva
-  // Adicione os controles de materiais usando useControls do Leva
   const materialControls = useControls(
     "Materials",
     {
@@ -1524,6 +1517,7 @@ const Castle = ({ activeSection }) => {
           mirrorIframeActive={mirrorIframeActive}
           scrollIframeActive={scrollIframeActive}
           hasInteracted={true}
+          onReturnToMain={handleReturnToMain}
           castleMaterialType={materialControls.castleMaterialType}
           castleMetalness={materialControls.castleMetalness}
           castleRoughness={materialControls.castleRoughness}
@@ -1535,7 +1529,8 @@ const Castle = ({ activeSection }) => {
         />
       </Suspense>
     </group>
-  )
-}
+  );
+};
 
-export default Castle
+export default Castle;
+
