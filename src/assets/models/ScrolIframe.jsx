@@ -1,7 +1,7 @@
 import { Html, useGLTF } from "@react-three/drei";
 import React, { useEffect, useState } from "react";
 import * as THREE from "three";
-import MirrorPage from "../../components/iframes/Roadmap";
+import RoadmapPage from "../../components/iframes/Roadmap";
 
 export default function ScrollIframe({
   onReturnToMain,
@@ -50,41 +50,77 @@ export default function ScrollIframe({
       roughness: 0.7,
       metalness: 0.0,
     });
-  }, [nodes.scroolIframe?.material, checkerTexture]);
+  }, [nodes, checkerTexture]);
 
   // Monitor changes in isActive state
   useEffect(() => {
+    console.log(`ScrollIframe: isActive changed to ${isActive}`);
+
     if (isActive) {
       // When component becomes active, show content with a small delay
+      console.log("ScrollIframe: Activating content");
       const timer = setTimeout(() => {
         setShowContent(true);
         // Show buttons after a delay to ensure content has loaded
         setTimeout(() => {
           setShowButtons(true);
+          console.log("ScrollIframe: Buttons activated");
         }, 500);
       }, 300);
 
       return () => clearTimeout(timer);
     } else {
       // When component becomes inactive, hide content
-      setShowContent(false);
+      console.log("ScrollIframe: Deactivating content");
       setShowButtons(false);
+      setShowContent(false);
     }
   }, [isActive]);
 
-  // Function to handle Back to Main button click
-  const handleBackToMain = () => {
-    // Hide content for a smooth transition
-    setShowContent(false);
-    setShowButtons(false);
+  // MEGA WORKAROUND: Use multiple approaches to handle the return to main
+  const handleBackToMain = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
 
-    // Wait a bit to ensure the fade-out animation is visible
+    console.log("ScrollIframe: Back button clicked");
+
+    // Hide UI immediately for visual feedback
+    setShowButtons(false);
+    setShowContent(false);
+
+    // 1. Try the callback approach first
+    if (onReturnToMain && typeof onReturnToMain === 'function') {
+      console.log("Method 1: Using callback");
+      onReturnToMain();
+    }
+
+    // 2. Try the global navigation object as backup
+    if (window.globalNavigation && window.globalNavigation.navigateTo) {
+      console.log("Method 2: Using global navigation");
+      window.globalNavigation.navigateTo("nav");
+    }
+
+    // 3. Try to reset all iframes
+    if (window.globalNavigation && window.globalNavigation.reset) {
+      console.log("Method 3: Using global reset");
+      window.globalNavigation.reset();
+    }
+
+    // 4. Force a small delay and try again
     setTimeout(() => {
-      // Call the callback function provided by parent component
-      if (onReturnToMain) {
+      console.log("Method 4: Delayed callback");
+      if (onReturnToMain && typeof onReturnToMain === 'function') {
         onReturnToMain();
       }
-    }, 300);
+
+      // 5. Add a final attempt with global navigation
+      if (window.globalNavigation && window.globalNavigation.navigateTo) {
+        console.log("Method 5: Delayed global navigation");
+        window.globalNavigation.navigateTo("nav");
+      }
+    }, 100);
   };
 
   return (
@@ -93,6 +129,8 @@ export default function ScrollIframe({
       rotation={[-3.142, 1.051, -1.568]}
       {...props}
     >
+
+
       {/* HTML content - only shown when isActive is true */}
       {showContent && (
         <Html
@@ -100,7 +138,7 @@ export default function ScrollIframe({
           scale={0.01}
           position={[0, 0, 0]}
           rotation={[0, Math.PI, 1.568]}
-          className="mirror-screen"
+          className="scroll-content"
           prepend={true}
           zIndexRange={[100, 0]}
         >
@@ -137,30 +175,70 @@ export default function ScrollIframe({
                   letterSpacing: "0.01em",
                 }}
               >
-                <MirrorPage />
+                <RoadmapPage />
               </div>
 
               {/* Space for the fixed button */}
               <div style={{ height: "100px" }}></div>
             </div>
 
-            {/* Fixed button container */}
+            {/* Multiple Back Buttons for redundancy */}
             {showButtons && (
               <div
                 style={{
                   position: "absolute",
-                  bottom: "-30px",
+                  bottom: "20px",
                   left: 0,
                   right: 0,
                   textAlign: "center",
                   zIndex: 10,
                 }}
               >
+                {/* Main button */}
                 <button
                   onClick={handleBackToMain}
-                  className="px-8 py-4 bg-pink-500 text-white rounded-full font-bold text-lg hover:bg-pink-600 transition-all duration-300 shadow-lg hover:shadow-pink-300"
+                  style={{
+                    padding: "16px 32px",
+                    fontSize: "18px",
+                    backgroundColor: "#ec4899",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "9999px",
+                    fontWeight: "bold",
+                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                    zIndex: 20,
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = "#db2777";
+                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(236, 72, 153, 0.4)";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = "#ec4899";
+                    e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+                  }}
                 >
                   Return to Cupid's Church
+                </button>
+
+                {/* Hidden backup button that uses direct window navigation */}
+                <button
+                  onClick={() => {
+                    console.log("Using direct global navigation");
+                    if (window.globalNavigation && window.globalNavigation.navigateTo) {
+                      window.globalNavigation.navigateTo("nav");
+                    }
+                  }}
+                  style={{
+                    position: "fixed",
+                    top: "-9999px", // Hide it off-screen
+                    left: "-9999px",
+                    opacity: 0,
+                    pointerEvents: "none",
+                  }}
+                >
+                  Emergency Return
                 </button>
               </div>
             )}
