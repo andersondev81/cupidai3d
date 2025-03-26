@@ -434,7 +434,7 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
     <Castle activeSection={activeSection} scale={[2, 2, 2]} />
     <Flowers />
     {/* <CloudsD /> */}
-    <CloudsPole />
+    {/* <CloudsPole /> */}
     <Orb />
     <Pole
       position={[-0.8, 0, 5.8]}
