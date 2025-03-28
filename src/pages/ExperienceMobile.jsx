@@ -1,24 +1,24 @@
 // pages/ExperienceMobile.jsx
-import { Environment } from "@react-three/drei"
-import { Canvas, useThree } from "@react-three/fiber"
-import React, { Suspense, useEffect, useRef, useState } from "react"
-import * as THREE from "three"
-import Castle from "../assets/models/Castle"
-import { CastleUi } from "../assets/models/CastleUi"
-import Modeload from "../components/helpers/Modeload"
+import { Environment } from "@react-three/drei";
+import { Canvas, useThree } from "@react-three/fiber";
+import React, { Suspense, useEffect, useRef, useState } from "react";
+import Castle from "../assets/models/Castle";
+import { CastleUi } from "../assets/models/CastleUi";
+import { PoleMobile } from "../assets/models/pole-mobile";
+import Modeload from "../components/helpers/Modeload";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
-    super(props)
-    this.state = { hasError: false, error: null }
+    super(props);
+    this.state = { hasError: false, error: null };
   }
 
   static getDerivedStateFromError(error) {
-    return { hasError: true, error }
+    return { hasError: true, error };
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error("Mobile 3D Scene Error:", error, errorInfo)
+    console.error("Mobile 3D Scene Error:", error, errorInfo);
   }
 
   render() {
@@ -26,7 +26,9 @@ class ErrorBoundary extends React.Component {
       return (
         <div className="w-full h-full flex items-center justify-center bg-gray-900 text-white">
           <div className="text-center p-8">
-            <h2 className="text-xl mb-4">Unable to load 3D scene on your device</h2>
+            <h2 className="text-xl mb-4">
+              Unable to load 3D scene on your device
+            </h2>
             <button
               onClick={() => window.location.reload()}
               className="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600"
@@ -35,9 +37,9 @@ class ErrorBoundary extends React.Component {
             </button>
           </div>
         </div>
-      )
+      );
     }
-    return this.props.children
+    return this.props.children;
   }
 }
 
@@ -57,25 +59,25 @@ const MOBILE_CANVAS_CONFIG = {
     position: [15.9, 6.8, -11.4],
   },
   shadows: false,
-}
+};
 
 const CameraController = ({ cameraRef }) => {
-  const { camera } = useThree()
+  const { camera } = useThree();
 
   useEffect(() => {
     if (cameraRef) {
       cameraRef.current = {
         goToHome: () => {
-          camera.position.set(15.9, 6.8, -11.4)
-          camera.lookAt(0, 0, 0)
-          camera.updateProjectionMatrix()
-        }
-      }
+          camera.position.set(15.9, 6.8, -11.4);
+          camera.lookAt(0, 0, 0);
+          camera.updateProjectionMatrix();
+        },
+      };
     }
-  }, [camera, cameraRef])
+  }, [camera, cameraRef]);
 
-  return null
-}
+  return null;
+};
 
 const MobileSceneContent = React.memo(({ onSectionChange }) => {
   return (
@@ -95,12 +97,9 @@ const MobileSceneContent = React.memo(({ onSectionChange }) => {
         environmentRotation={[0, Math.PI / 2, 0]}
       />
 
-      <Castle
-        activeSection="nav"
-        scale={[2, 2, 2]}
-      />
+      <Castle activeSection="nav" scale={[2, 2, 2]} />
 
-      <Pole
+      <PoleMobile
         position={[-0.8, 0, 5.8]}
         scale={[0.6, 0.6, 0.6]}
         // onSectionChange={onSectionChange}
@@ -108,23 +107,22 @@ const MobileSceneContent = React.memo(({ onSectionChange }) => {
 
       <ambientLight intensity={0.5} />
     </>
-  )
-})
-
+  );
+});
 
 const ExperienceMobile = () => {
-  const [isLoaded, setIsLoaded] = useState(false)
-  const [currentSection, setCurrentSection] = useState(0)
-  const cameraRef = useRef(null)
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [currentSection, setCurrentSection] = useState(0);
+  const cameraRef = useRef(null);
 
   const handleSectionChange = (index, sectionName) => {
-    setCurrentSection(index)
-  }
+    setCurrentSection(index);
+  };
 
   // Handle start button from loading screen
   const handleStart = () => {
-    setIsLoaded(true)
-  }
+    setIsLoaded(true);
+  };
 
   if (!isLoaded) {
     return (
@@ -133,7 +131,7 @@ const ExperienceMobile = () => {
           <Modeload onStart={handleStart} />
         </Canvas>
       </div>
-    )
+    );
   }
 
   return (
@@ -160,7 +158,7 @@ const ExperienceMobile = () => {
         </div>
       </ErrorBoundary>
     </div>
-  )
-}
+  );
+};
 
-export default ExperienceMobile
+export default ExperienceMobile;
