@@ -28,7 +28,7 @@ const CastleScene = () => {
       />
 
       {/* Adicionando o componente Stairs */}
-      <Stairs />
+      {/* <Stairs /> */}
 
       {/* Controles de câmera simplificados */}
       <OrbitControls
