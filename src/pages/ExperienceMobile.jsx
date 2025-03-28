@@ -3,32 +3,21 @@ import React, { useState, useRef, Suspense } from "react"
 import { Canvas } from "@react-three/fiber"
 import { Environment, OrbitControls } from "@react-three/drei"
 import Castle from "../assets/models/Castle"
-import { Stairs } from "../assets/models/Stairs"
 
-// Componente de cena com Castle e Stairs
+// Componente de cena com o Castle
 const CastleScene = () => {
-  console.log("Rendering CastleScene with Stairs")
+  console.log("Rendering CastleScene")
   return (
     <>
-      {/* Iluminação básica */}
+      {/* Iluminação e ambiente */}
       <ambientLight intensity={0.8} />
-      <directionalLight position={[5, 5, 5]} intensity={0.5} />
-
-      {/* Apenas Environment com preset para melhor performance */}
-      <Environment
-        preset="sunset"
-        environmentIntensity={4.0}
-        background={true}
-      />
+      <Environment preset="sunset" />
 
       {/* Castle com configurações mínimas */}
       <Castle
         scale={[2, 2, 2]}
         activeSection="nav"
       />
-
-      {/* Adicionando o componente Stairs */}
-      {/* <Stairs /> */}
 
       {/* Controles de câmera simplificados */}
       <OrbitControls
