@@ -1,116 +1,34 @@
 // pages/ExperienceMobile.jsx
-import { Environment } from "@react-three/drei"
-import { Canvas, useThree } from "@react-three/fiber"
-import React, { Suspense, useEffect, useRef, useState } from "react"
-import * as THREE from "three"
-import Castle from "../assets/models/Castle"
-import { CastleUi } from "../assets/models/CastleUi"
+import React, { useState, useRef, Suspense } from "react"
+import { Canvas } from "@react-three/fiber"
+import { Environment, Box, OrbitControls } from "@react-three/drei"
 import Modeload from "../components/helpers/Modeload"
 
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = { hasError: false, error: null }
-  }
 
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error }
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.error("Mobile 3D Scene Error:", error, errorInfo)
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="w-full h-full flex items-center justify-center bg-gray-900 text-white">
-          <div className="text-center p-8">
-            <h2 className="text-xl mb-4">Unable to load 3D scene on your device</h2>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600"
-            >
-              Try Again
-            </button>
-          </div>
-        </div>
-      )
-    }
-    return this.props.children
-  }
-}
-
-const MOBILE_CANVAS_CONFIG = {
-  gl: {
-    antialias: false,
-    powerPreference: "default",
-    stencil: false,
-    depth: true,
-    alpha: false,
-  },
-  dpr: 1,
-  camera: {
-    fov: 60,
-    near: 0.1,
-    far: 1000,
-    position: [15.9, 6.8, -11.4],
-  },
-  shadows: false,
-}
-
-const CameraController = ({ cameraRef }) => {
-  const { camera } = useThree()
-
-  useEffect(() => {
-    if (cameraRef) {
-      cameraRef.current = {
-        goToHome: () => {
-          camera.position.set(15.9, 6.8, -11.4)
-          camera.lookAt(0, 0, 0)
-          camera.updateProjectionMatrix()
-        }
-      }
-    }
-  }, [camera, cameraRef])
-
-  return null
-}
-
-// Simple scene content with minimal elements
-const MobileSceneContent = React.memo(({ onSectionChange }) => {
+const SimpleTestScene = () => {
+  console.log("Rendering SimpleTestScene")
   return (
     <>
-      <Environment
-        preset="sunset"
-        background={true}
-      />
-
-      <Castle
-        activeSection="nav"
-        scale={[2, 2, 2]}
-      />
-
-      <ambientLight intensity={0.5} />
+      <ambientLight intensity={0.8} />
+      <Box position={[0, 0, 0]} args={[1, 1, 1]}>
+        <meshStandardMaterial color="hotpink" />
+      </Box>
+      <Environment preset="sunset" />
+      <OrbitControls />
     </>
   )
-})
+}
 
 const ExperienceMobile = () => {
+  console.log("Rendering ExperienceMobile component")
   const [isLoaded, setIsLoaded] = useState(false)
-  const [currentSection, setCurrentSection] = useState(0)
-  const cameraRef = useRef(null)
 
-  const handleSectionChange = (index, sectionName) => {
-    setCurrentSection(index)
-  }
-
-  // Handle start button from loading screen
   const handleStart = () => {
+    console.log("Start button clicked")
     setIsLoaded(true)
   }
-
   if (!isLoaded) {
+    console.log("Showing loading screen")
     return (
       <div className="relative w-full h-screen">
         <Canvas>
@@ -121,28 +39,25 @@ const ExperienceMobile = () => {
   }
 
   return (
-    <div className="relative w-full h-screen">
-      <ErrorBoundary>
-        <div className="absolute inset-0 z-0">
-          <Canvas {...MOBILE_CANVAS_CONFIG} className="w-full h-full">
-            <Suspense fallback={null}>
-              <CameraController cameraRef={cameraRef} />
-              <MobileSceneContent onSectionChange={handleSectionChange} />
-            </Suspense>
-          </Canvas>
-        </div>
-
-        <div className="absolute inset-0 z-10 pointer-events-none">
-          <div className="w-full h-full">
-            <CastleUi
-              section={currentSection}
-              onSectionChange={handleSectionChange}
-              cameraRef={cameraRef.current}
-              className="pointer-events-auto"
-            />
-          </div>
-        </div>
-      </ErrorBoundary>
+    <div className="relative w-full h-screen bg-black">
+      <div className="absolute inset-0">
+        <Canvas
+          className="w-full h-full"
+          gl={{
+            antialias: false,
+            powerPreference: "default"
+          }}
+          dpr={1}
+          camera={{
+            fov: 60,
+            position: [0, 0, 5]
+          }}
+        >
+          <Suspense fallback={null}>
+            <SimpleTestScene />
+          </Suspense>
+        </Canvas>
+      </div>
     </div>
   )
 }
