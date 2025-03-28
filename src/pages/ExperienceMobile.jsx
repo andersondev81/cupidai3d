@@ -11,7 +11,23 @@ const CastleScene = () => {
     <>
       {/* Iluminação e ambiente */}
       <ambientLight intensity={0.8} />
-      <Environment preset="sunset" />
+
+      {/* Environment com arquivo HDR (igual ao desktop) */}
+      <Environment
+        files={"/images/VinoSkyV1.hdr"}
+        resolution={64} // Resolução baixa para melhor performance mobile
+        background={true}
+        backgroundBlurriness={0}
+        environmentIntensity={1.0}
+        environmentRotation={[0, Math.PI / 2, 0]}
+      />
+
+      {/* Environment adicional com preset para melhorar a iluminação */}
+      <Environment
+        preset="sunset"
+        environmentIntensity={4.0}
+        environmentRotation={[0, Math.PI / 2, 0]}
+      />
 
       {/* Castle com configurações mínimas */}
       <Castle
