@@ -77,22 +77,13 @@ const CameraController = ({ cameraRef }) => {
   return null
 }
 
+// Simple scene content with minimal elements
 const MobileSceneContent = React.memo(({ onSectionChange }) => {
   return (
     <>
       <Environment
-        files={"/images/VinoSkyV1.hdr"}
-        resolution={128}
-        background={true}
-        backgroundBlurriness={0}
-        environmentIntensity={1.0}
-        environmentRotation={[0, Math.PI / 2, 0]}
-      />
-
-      <Environment
         preset="sunset"
-        environmentIntensity={4.0}
-        environmentRotation={[0, Math.PI / 2, 0]}
+        background={true}
       />
 
       <Castle
@@ -100,17 +91,10 @@ const MobileSceneContent = React.memo(({ onSectionChange }) => {
         scale={[2, 2, 2]}
       />
 
-      {/* <Pole
-        position={[-0.8, 0, 5.8]}
-        scale={[0.6, 0.6, 0.6]}
-        onSectionChange={onSectionChange}
-      /> */}
-
       <ambientLight intensity={0.5} />
     </>
   )
 })
-
 
 const ExperienceMobile = () => {
   const [isLoaded, setIsLoaded] = useState(false)
