@@ -100,11 +100,11 @@ const MobileSceneContent = React.memo(({ onSectionChange }) => {
         scale={[2, 2, 2]}
       />
 
-      <Pole
+      {/* <Pole
         position={[-0.8, 0, 5.8]}
         scale={[0.6, 0.6, 0.6]}
         onSectionChange={onSectionChange}
-      />
+      /> */}
 
       <ambientLight intensity={0.5} />
     </>
