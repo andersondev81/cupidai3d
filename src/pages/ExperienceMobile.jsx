@@ -3,27 +3,55 @@ import { Environment } from "@react-three/drei"
 import { Canvas, useThree } from "@react-three/fiber"
 import React, { Suspense, useEffect, useRef, useState } from "react"
 import * as THREE from "three"
-import { CAMERA_CONFIG } from "../components/cameraConfig"
-import Modeload from "../components/helpers/Modeload"
-import WebGLCheck from "../components/WebGLCheck" // Importando do arquivo separado
-
-// Reduzindo a quantidade de importações para inicialização mais rápida
-import { EffectsTree } from "../components/helpers/EffectsTree"
-import CastleModel from "../assets/models/Castle"
+import Castle from "../assets/models/Castle"
 import { CastleUi } from "../assets/models/CastleUi"
+import Modeload from "../components/helpers/Modeload"
 
-// Configuração de Canvas otimizada para dispositivos móveis
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("Mobile 3D Scene Error:", error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="w-full h-full flex items-center justify-center bg-gray-900 text-white">
+          <div className="text-center p-8">
+            <h2 className="text-xl mb-4">Unable to load 3D scene on your device</h2>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
 const MOBILE_CANVAS_CONFIG = {
   gl: {
     antialias: false,
-    powerPreference: "default", // Menos agressivo que "high-performance"
+    powerPreference: "default",
     stencil: false,
     depth: true,
     alpha: false,
   },
-  dpr: window.devicePixelRatio > 2 ? 1 : window.devicePixelRatio, // Limita DPR para dispositivos móveis
+  dpr: 1,
   camera: {
-    fov: 50,
+    fov: 60,
     near: 0.1,
     far: 1000,
     position: [15.9, 6.8, -11.4],
@@ -31,183 +59,58 @@ const MOBILE_CANVAS_CONFIG = {
   shadows: false,
 }
 
-// Detector de dispositivo iOS - mais preciso que user-agent
-const isIOS = () => {
-  return (
-    /iPad|iPhone|iPod/.test(navigator.platform) ||
-    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
-  )
-}
-
-const useCameraAnimation = (section, cameraRef) => {
+const CameraController = ({ cameraRef }) => {
   const { camera } = useThree()
-  const [isStarted, setIsStarted] = useState(false)
-  const animationRef = useRef({
-    progress: 0,
-    isActive: false,
-    startPosition: new THREE.Vector3(),
-    startFov: 50,
-  })
 
   useEffect(() => {
-    if (!camera) return
-
-    const sectionKey = section in CAMERA_CONFIG.sections ? section : "intro"
-    const config = CAMERA_CONFIG.sections[sectionKey]
-    const { intensity, curve } = CAMERA_CONFIG.transitions
-
-    // Otimização para iOS - transições mais leves
-    const mobileIntensity = isIOS() ? intensity * 0.7 : intensity
-
-    animationRef.current = {
-      ...animationRef.current,
-      isActive: true,
-      startPosition: camera.position.clone(),
-      startFov: camera.fov,
-      config,
-    }
-
-    let animationFrameId
-    let lastFrameTime = 0
-
-    const animate = time => {
-      if (!animationRef.current.isActive) return
-
-      // Limita a taxa de atualização em dispositivos móveis
-      const deltaTime = time - lastFrameTime
-      if (isIOS() && deltaTime < 32) {
-        // Aproximadamente 30fps no iOS
-        animationFrameId = requestAnimationFrame(animate)
-        return
-      }
-
-      lastFrameTime = time
-      animationRef.current.progress += mobileIntensity
-      const t = Math.min(animationRef.current.progress, 1)
-      const { config, startPosition, startFov } = animationRef.current
-
-      const curveValue = curve(t)
-
-      // Reduz efeitos de câmera intensos no iOS
-      const zOffsetScale = isIOS() ? 0.5 : 1.0
-      const offsetZ = curveValue * config.transition.zOffset * zOffsetScale
-
-      const targetFovOffset =
-        curveValue * config.fov * config.transition.fovMultiplier
-
-      const targetPosition = new THREE.Vector3()
-        .lerpVectors(startPosition, config.position, t)
-        .add(new THREE.Vector3(0, 0, offsetZ))
-
-      const targetFov =
-        THREE.MathUtils.lerp(startFov, config.fov, t) - targetFovOffset
-
-      camera.position.copy(targetPosition)
-      camera.fov = targetFov
-      camera.updateProjectionMatrix()
-
-      if (t < 1) {
-        animationFrameId = requestAnimationFrame(animate)
-      } else {
-        animationRef.current.isActive = false
-        animationRef.current.progress = 0
-      }
-    }
-
-    animationFrameId = requestAnimationFrame(animate)
-
     if (cameraRef) {
       cameraRef.current = {
         goToHome: () => {
           camera.position.set(15.9, 6.8, -11.4)
+          camera.lookAt(0, 0, 0)
           camera.updateProjectionMatrix()
-          animationRef.current.isActive = false
-          animationRef.current.progress = 0
-        },
+        }
       }
     }
+  }, [camera, cameraRef])
 
-    return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId)
-      }
-
-      animationRef.current.isActive = false
-    }
-  }, [section, camera, cameraRef])
-
-  return isStarted
+  return null
 }
 
-// Scene Controller com configurações simplificadas para iOS
-const SceneController = React.memo(({ section, cameraRef }) => {
-  useCameraAnimation(section, cameraRef)
-
+// Simple scene content with minimal elements
+const MobileSceneContent = React.memo(({ onSectionChange }) => {
   return (
     <>
       <Environment
-        files={"/images/VinoSkyV1.hdr"}
-        resolution={isIOS() ? 128 : 256} // Resolução mais baixa para iOS
+        preset="sunset"
         background={true}
-        backgroundBlurriness={0.1}
-        environmentIntensity={0.8} // Intensidade reduzida para melhor desempenho
-        preset={null}
       />
 
-      {/* Simplificado para dispositivos móveis - usar apenas um Environment */}
-      {!isIOS() && <Environment preset="sunset" environmentIntensity={0.5} />}
+      <Castle
+        activeSection="nav"
+        scale={[2, 2, 2]}
+      />
+
+      <ambientLight intensity={0.5} />
     </>
   )
 })
 
-// Versão simplificada do conteúdo da cena para iOS
-const MobileFriendlyContent = React.memo(
-  ({ activeSection, onSectionChange }) => (
-    <>
-      <EffectsTree mobile={isIOS()} />
-      <CastleModel
-        activeSection={activeSection}
-        scale={[2, 2, 2]}
-        optimizeForMobile={isIOS()}
-      />
-    </>
-  )
-)
-
-// Main Experience Component
 const ExperienceMobile = () => {
-  const [isStarted, setIsStarted] = useState(false)
-  const [webGLSupported, setWebGLSupported] = useState(true)
+  const [isLoaded, setIsLoaded] = useState(false)
   const [currentSection, setCurrentSection] = useState(0)
-  const [activeSection, setActiveSection] = useState("intro")
   const cameraRef = useRef(null)
-
-  useEffect(() => {
-    // Verifica se o WebGL é suportado
-    const canvas = document.createElement("canvas")
-    const gl =
-      canvas.getContext("webgl") || canvas.getContext("experimental-webgl")
-
-    if (!gl) {
-      setWebGLSupported(false)
-    }
-  }, [])
 
   const handleSectionChange = (index, sectionName) => {
     setCurrentSection(index)
-    setActiveSection(sectionName)
   }
 
+  // Handle start button from loading screen
   const handleStart = () => {
-    setIsStarted(true)
+    setIsLoaded(true)
   }
 
-  // Renderiza aviso se WebGL não for suportado
-  if (!webGLSupported) {
-    return <WebGLCheck />
-  }
-
-  if (!isStarted) {
+  if (!isLoaded) {
     return (
       <div className="relative w-full h-screen">
         <Canvas>
@@ -219,28 +122,27 @@ const ExperienceMobile = () => {
 
   return (
     <div className="relative w-full h-screen">
-      <div className="absolute inset-0 z-0">
-        <Canvas {...MOBILE_CANVAS_CONFIG} className="w-full h-full">
-          <Suspense fallback={null}>
-            <SceneController section={activeSection} cameraRef={cameraRef} />
-            <MobileFriendlyContent
-              activeSection={activeSection}
-              onSectionChange={handleSectionChange}
-            />
-          </Suspense>
-        </Canvas>
-      </div>
-
-      <div className="absolute inset-0 z-10 pointer-events-none">
-        <div className="w-full h-full">
-          <CastleUi
-            section={currentSection}
-            onSectionChange={handleSectionChange}
-            cameraRef={cameraRef.current}
-            className="pointer-events-auto"
-          />
+      <ErrorBoundary>
+        <div className="absolute inset-0 z-0">
+          <Canvas {...MOBILE_CANVAS_CONFIG} className="w-full h-full">
+            <Suspense fallback={null}>
+              <CameraController cameraRef={cameraRef} />
+              <MobileSceneContent onSectionChange={handleSectionChange} />
+            </Suspense>
+          </Canvas>
         </div>
-      </div>
+
+        <div className="absolute inset-0 z-10 pointer-events-none">
+          <div className="w-full h-full">
+            <CastleUi
+              section={currentSection}
+              onSectionChange={handleSectionChange}
+              cameraRef={cameraRef.current}
+              className="pointer-events-auto"
+            />
+          </div>
+        </div>
+      </ErrorBoundary>
     </div>
   )
 }
