@@ -2,7 +2,7 @@
 import React, { useState, useRef, Suspense } from "react"
 import { Canvas } from "@react-three/fiber"
 import { Environment, Box, OrbitControls } from "@react-three/drei"
-import Modeload from "../components/helpers/Modeload"
+// import Modeload from "../components/helpers/Modeload"
 
 
 const SimpleTestScene = () => {
@@ -23,20 +23,20 @@ const ExperienceMobile = () => {
   console.log("Rendering ExperienceMobile component")
   const [isLoaded, setIsLoaded] = useState(false)
 
-  const handleStart = () => {
-    console.log("Start button clicked")
-    setIsLoaded(true)
-  }
-  if (!isLoaded) {
-    console.log("Showing loading screen")
-    return (
-      <div className="relative w-full h-screen">
-        <Canvas>
-          <Modeload onStart={handleStart} />
-        </Canvas>
-      </div>
-    )
-  }
+  // const handleStart = () => {
+  //   console.log("Start button clicked")
+  //   setIsLoaded(true)
+  // }
+  // if (!isLoaded) {
+    // console.log("Showing loading screen")
+    // return (
+    //   <div className="relative w-full h-screen">
+    //     <Canvas>
+    //       {/* <Modeload onStart={handleStart} /> */}
+    //     </Canvas>
+    //   </div>
+    // )
+  // }
 
   return (
     <div className="relative w-full h-screen bg-black">

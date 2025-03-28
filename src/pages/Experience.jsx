@@ -23,7 +23,7 @@ import Orb from "../assets/models/Orb";
 import CloudsD from "../assets/models/CloudsD";
 import CloudsPole from "../assets/models/CloudsPole";
 import EnvMapLoader from "../components/helpers/EnvMapLoader";
-import Modeload from "../components/helpers/Modeload";
+// import Modeload from "../components/helpers/Modeload";
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -495,19 +495,19 @@ const Experience = () => {
     setActiveSection(sectionName);
   };
 
-  const handleStart = () => {
-    setIsStarted(true);
-  };
+  // const handleStart = () => {
+  //   setIsStarted(true);
+  // };
 
-  if (!isStarted) {
-    return (
-      <div className="relative w-full h-screen">
-        <Canvas>
-          <Modeload onStart={handleStart} />
-        </Canvas>
-      </div>
-    );
-  }
+  // if (!isStarted) {
+    // return (
+    //   <div className="relative w-full h-screen">
+    //     <Canvas>
+    //       {/* <Modeload onStart={handleStart} /> */}
+    //     </Canvas>
+    //   </div>
+    // );
+  // }
 
   return (
     <div className="relative w-full h-screen">
