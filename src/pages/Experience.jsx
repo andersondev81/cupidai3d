@@ -485,7 +485,7 @@ const SceneContent = React.memo(({ activeSection, onSectionChange }) => {
 
 // Main Experience Component
 const Experience = () => {
-  const [isStarted, setIsStarted] = useState(false); // Adiciona o estado isStarted
+  const [isStarted, setIsStarted] = useState(false);
   const [currentSection, setCurrentSection] = useState(0);
   const [activeSection, setActiveSection] = useState("intro");
   const cameraRef = useRef(null);
@@ -494,6 +494,27 @@ const Experience = () => {
     setCurrentSection(index);
     setActiveSection(sectionName);
   };
+
+  // ADD THIS: Make the section change handler globally available
+  useEffect(() => {
+    // Make the section change handler available globally
+    window.onSectionChange = handleSectionChange;
+
+    // Listen for the sectionChange event as a backup method
+    const handleSectionChangeEvent = (event) => {
+      if (event.detail && typeof event.detail.sectionIndex === 'number') {
+        handleSectionChange(event.detail.sectionIndex, event.detail.sectionName);
+      }
+    };
+
+    window.addEventListener('sectionChange', handleSectionChangeEvent);
+
+    return () => {
+      window.removeEventListener('sectionChange', handleSectionChangeEvent);
+      window.onSectionChange = null;
+    };
+  }, []);
+  
 
   // const handleStart = () => {
   //   setIsStarted(true);

@@ -52,11 +52,12 @@ const SlowableRotateAxis = React.memo(({ axis, speed, rotationType, isSlowed, ch
   return <group ref={ref}>{children}</group>
 })
 
-const OrbMesh = React.memo(({ isZoomed, setIsZoomed, ...props }) => {
+const OrbMesh = React.memo(({ isZoomed, setIsZoomed, isPointerDown, setIsPointerDown, onOrbClick, ...props }) => {
   const { nodes } = useGLTF("/models/Orbit.glb")
   const materialsRef = useRef([])
   const emissiveGroupRef = useRef()
   const groupRef = useRef()
+  const clickTimerRef = useRef(null)
 
   // Carrega e configura texturas uma única vez
   const textures = useTexture({
@@ -138,10 +139,32 @@ const OrbMesh = React.memo(({ isZoomed, setIsZoomed, ...props }) => {
     }
   }, [])
 
-  // Evento de clique para ativar o zoom
-  const handleClick = (e) => {
+  const handlePointerDown = (e) => {
     e.stopPropagation()
-    setIsZoomed(!isZoomed)
+    setIsPointerDown(true)
+
+    clickTimerRef.current = setTimeout(() => {
+      if (isPointerDown) {
+        setIsZoomed(!isZoomed)
+      }
+      clickTimerRef.current = null
+    }, 300)
+  }
+
+  const handlePointerUp = (e) => {
+    e.stopPropagation()
+
+    if (clickTimerRef.current) {
+      clearTimeout(clickTimerRef.current)
+      clickTimerRef.current = null
+
+      if (onOrbClick) {
+        console.log("Orb clicked - triggering camera movement")
+        onOrbClick(e)
+      }
+    }
+
+    setIsPointerDown(false)
   }
 
   // Evento de hover
@@ -153,6 +176,13 @@ const OrbMesh = React.memo(({ isZoomed, setIsZoomed, ...props }) => {
   const handlePointerLeave = (e) => {
     e.stopPropagation()
     document.body.style.cursor = "default"
+
+    // Limpar o timer e estado se o ponteiro sair enquanto estiver pressionado
+    if (clickTimerRef.current) {
+      clearTimeout(clickTimerRef.current)
+      clickTimerRef.current = null
+    }
+    setIsPointerDown(false)
   }
 
   // Reduz a complexidade da geometria da esfera
@@ -166,7 +196,8 @@ const OrbMesh = React.memo(({ isZoomed, setIsZoomed, ...props }) => {
       dispose={null}
       position={[1.76, 1.155, -0.883]}
       ref={groupRef}
-      onClick={handleClick}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
       onPointerEnter={handlePointerEnter}
       onPointerLeave={handlePointerLeave}
     >
@@ -239,12 +270,39 @@ const OrbMesh = React.memo(({ isZoomed, setIsZoomed, ...props }) => {
 // Componente principal
 const Orb = () => {
   const [isZoomed, setIsZoomed] = useState(false)
+  const [isPointerDown, setIsPointerDown] = useState(false)
   const sceneRef = useRef()
   const floatGroupRef = useRef()
   const originalScale = useRef(new Vector3(1, 1, 1))
   const originalPosition = useRef(new Vector3(0.066, 0, -0.04))
   const targetScale = new Vector3(1.5, 1.5, 1.5)
   const targetPosition = new Vector3(0.066, 0.25, -0.04)
+
+  const handleOrbClick = (e) => {
+    console.log("Orb clicked - navigating to about section")
+
+    if (window.globalNavigation && window.globalNavigation.navigateTo) {
+      window.globalNavigation.navigateTo("about")
+    }
+
+    if (window.globalNavigation && window.globalNavigation.sectionIndices) {
+      const aboutIndex = window.globalNavigation.sectionIndices["about"]
+      if (typeof aboutIndex === 'number') {
+        if (window.onSectionChange && typeof window.onSectionChange === 'function') {
+          window.onSectionChange(aboutIndex, "about")
+        }
+
+        const event = new CustomEvent('sectionChange', {
+          detail: { sectionIndex: aboutIndex, sectionName: "about" }
+        })
+        window.dispatchEvent(event)
+      }
+    }
+
+    if (window.globalNavigation && window.globalNavigation.log) {
+      window.globalNavigation.log("Orb clicked - navigation requested")
+    }
+  }
 
   // Animação de zoom com transição mais lenta
   useFrame((_, delta) => {
@@ -285,7 +343,13 @@ const Orb = () => {
             rotationIntensity={0}
             floatingRange={[-0.1, 0.1]}
           >
-            <OrbMesh isZoomed={isZoomed} setIsZoomed={setIsZoomed} />
+            <OrbMesh
+              isZoomed={isZoomed}
+              setIsZoomed={setIsZoomed}
+              isPointerDown={isPointerDown}
+              setIsPointerDown={setIsPointerDown}
+              onOrbClick={handleOrbClick}
+            />
           </Float>
         </group>
       </group>
