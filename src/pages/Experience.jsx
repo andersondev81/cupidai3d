@@ -20,10 +20,10 @@ import MirrorIframe from "../assets/models/MirrorIframe"
 import Orb from "../assets/models/Orb"
 // import OldOrb from "../assets/models/OldOrb"
 
-import CloudsD from "../assets/models/CloudsD"
-import CloudsPole from "../assets/models/CloudsPole"
-import EnvMapLoader from "../components/helpers/EnvMapLoader"
-import Modeload from "../components/helpers/Modeload"
+import CloudsD from "../assets/models/CloudsD";
+import CloudsPole from "../assets/models/CloudsPole";
+import EnvMapLoader from "../components/helpers/EnvMapLoader";
+// import Modeload from "../components/helpers/Modeload";
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -434,7 +434,7 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
     <Castle activeSection={activeSection} scale={[2, 2, 2]} />
     <Flowers />
     {/* <CloudsD /> */}
-    <CloudsPole />
+    {/* <CloudsPole /> */}
     <Orb />
     <Pole
       position={[-0.8, 0, 5.8]}
@@ -495,19 +495,19 @@ const Experience = () => {
     setActiveSection(sectionName)
   }
 
-  const handleStart = () => {
-    setIsStarted(true)
-  }
+  // const handleStart = () => {
+  //   setIsStarted(true);
+  // };
 
-  if (!isStarted) {
-    return (
-      <div className="relative w-full h-screen">
-        <Canvas>
-          <Modeload onStart={handleStart} />
-        </Canvas>
-      </div>
-    )
-  }
+  // if (!isStarted) {
+    // return (
+    //   <div className="relative w-full h-screen">
+    //     <Canvas>
+    //       {/* <Modeload onStart={handleStart} /> */}
+    //     </Canvas>
+    //   </div>
+    // );
+  // }
 
   return (
     <div className="relative w-full h-screen">
