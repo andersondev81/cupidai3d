@@ -453,20 +453,22 @@ const useVideoTexture = videoPath => {
 
   return { texture, playVideo }
 }
-
+// Castle materials
 const useCastleMaterial = (
   materialType = "standard",
   metalness = 1,
   roughness = 1.6,
   emissiveIntensity = 2,
-  emissiveColor = "#fff"
+  emissiveColor = "#f4f4f4"
 ) => {
   const textures = useTexture({
-    map: "/texture/castleColorAOT2.webp",
+    map: "/texture/CastleBake.webp",
     metalnessMap: "/texture/castleMetallic.webp",
     roughnessMap: "/texture/castleRoughness.webp",
-    emissiveMap: "/texture/castleEmissive.png",
+    emissiveMap: "/texture/castleEmissive.webp",
   })
+
+  const clouds = useTexture("/images/venice_sunset_2k.png")
 
   useMemo(() => {
     Object.values(textures).forEach(texture => {
@@ -475,7 +477,11 @@ const useCastleMaterial = (
         texture.minFilter = texture.magFilter = NearestFilter
       }
     })
-  }, [textures])
+
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [textures, clouds])
 
   return useMemo(() => {
     // Propriedades base compartilhadas por todos os materiais
@@ -496,6 +502,8 @@ const useCastleMaterial = (
       emissive: new Color(emissiveColor),
       emissiveIntensity: emissiveIntensity,
       blending: NormalBlending,
+      envMap: clouds,
+      envMapIntensity: 1.0,
     }
 
     // Criar o material baseado no tipo selecionado
@@ -518,22 +526,63 @@ const useCastleMaterial = (
     roughness,
     emissiveIntensity,
     emissiveColor,
+    clouds, // Adicionado clouds como dependência
   ])
 }
 
-// Floor Material
-const useFloorMaterial = (
-  materialType = "physical", // "standard", "physical", ou "basic"
+const useCastleHeartMaterial = (
   metalness = 1,
-  roughness = 0.2,
-  emissiveIntensity = 8.2,
-  emissiveColor = "#00bdff"
+  roughness = 0,
+  emissiveIntensity = 5,
+  emissiveColor = "#f4f4f4"
 ) => {
   const textures = useTexture({
-    map: "/texture/floorColorBake.webp",
-    roughnessMap: "/texture/floorRoughness.webp",
-    metalnessMap: "/texture/floorMetallic .webp",
-    materialEmissive: "/texture/floorEmissive.webp",
+    map: "/texture/CastleBake.webp",
+    metalnessMap: "/texture/castleMetallic.webp",
+    roughnessMap: "/texture/castleRoughness.webp",
+    emissiveMap: "/texture/castleEmissive.webp",
+  })
+
+  const clouds = useTexture("/images/clouds.jpg")
+
+  useMemo(() => {
+    Object.values(textures).forEach(texture => {
+      if (texture) {
+        texture.flipY = true
+        texture.minFilter = texture.magFilter = NearestFilter
+      }
+    })
+
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [textures, clouds])
+
+  return useMemo(() => {
+    return new MeshStandardMaterial({
+      map: textures.map,
+      side: DoubleSide,
+      transparent: false,
+      alphaTest: 0.05,
+      roughnessMap: textures.roughnessMap,
+      roughness: roughness,
+      metalness: metalness,
+      metalnessMap: textures.metalnessMap,
+      emissiveMap: textures.emissiveMap,
+      emissive: new Color(emissiveColor),
+      emissiveIntensity: emissiveIntensity,
+      blending: NormalBlending,
+      envMap: clouds,
+      envMapIntensity: 1.0,
+    })
+  }, [textures, metalness, roughness, emissiveIntensity, emissiveColor, clouds])
+}
+
+const useCastleHeartMaskMaterial = (metalness = 1, roughness = 0) => {
+  const textures = useTexture({
+    map: "/texture/CastleBake.webp",
+    metalnessMap: "/texture/castleMetallic.webp",
+    roughnessMap: "/texture/castleRoughness.webp",
   })
 
   useMemo(() => {
@@ -544,6 +593,62 @@ const useFloorMaterial = (
       }
     })
   }, [textures])
+
+  return useMemo(() => {
+    return new MeshStandardMaterial({
+      map: textures.map,
+      side: DoubleSide,
+      transparent: false,
+      alphaTest: 0.05,
+      roughnessMap: textures.roughnessMap,
+      roughness: roughness,
+      metalness: metalness,
+      metalnessMap: textures.metalnessMap,
+    })
+  }, [textures, metalness, roughness])
+}
+
+const useCastleLightsMaterial = () => {
+  const { emissiveMap } = useTexture({
+    emissiveMap: "/texture/castleEmissive.webp",
+  })
+
+  return new MeshStandardMaterial({
+    emissive: new Color("#fff"),
+    emissiveIntensity: 2,
+    emissiveMap: emissiveMap,
+    side: DoubleSide,
+  })
+}
+// Floor Material
+const useFloorMaterial = (
+  materialType = "physical", // "standard", "physical", ou "basic"
+  metalness = 1,
+  roughness = 0.2,
+  emissiveIntensity = 20.2,
+  emissiveColor = "#fff"
+) => {
+  const textures = useTexture({
+    map: "/texture/floorColorBake.webp",
+    roughnessMap: "/texture/floorRoughness.webp",
+    metalnessMap: "/texture/floorMetallic.webp",
+    materialEmissive: "/texture/floorEmissive.webp",
+  })
+
+  const clouds = useTexture("/images/venice_sunset_2k.png")
+
+  useMemo(() => {
+    Object.values(textures).forEach(texture => {
+      if (texture) {
+        texture.flipY = true
+        texture.minFilter = texture.magFilter = NearestFilter
+      }
+    })
+
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [textures, clouds])
 
   return useMemo(() => {
     // Propriedades base compartilhadas por todos os materiais
@@ -564,6 +669,8 @@ const useFloorMaterial = (
       emissive: new Color(emissiveColor),
       emissiveIntensity: emissiveIntensity,
       blending: NormalBlending,
+      envMap: clouds,
+      envMapIntensity: 1.0,
     }
 
     // Criar o material baseado no tipo selecionado
@@ -577,7 +684,12 @@ const useFloorMaterial = (
         })
       case "physical":
       default:
-        return new MeshPhysicalMaterial(pbrProps)
+        return new MeshPhysicalMaterial({
+          ...pbrProps,
+          // Additional physical material properties if needed
+          clearcoat: 0.5,
+          clearcoatRoughness: 0.1,
+        })
     }
   }, [
     textures,
@@ -586,9 +698,56 @@ const useFloorMaterial = (
     roughness,
     emissiveIntensity,
     emissiveColor,
+    clouds, // Added clouds dependency
   ])
 }
 
+const useFloorHeartMaterial = (
+  metalness = 1,
+  roughness = 0.2,
+  emissiveIntensity = 1.5,
+  emissiveColor = "#fff"
+) => {
+  const textures = useTexture({
+    map: "/texture/floorColorBake.webp",
+    roughnessMap: "/texture/floorRoughness.webp",
+    metalnessMap: "/texture/floorMetallic.webp",
+    emissiveMap: "/texture/floorEmissive.webp",
+  })
+
+  const clouds = useTexture("/images/bg1.jpg")
+
+  useMemo(() => {
+    Object.values(textures).forEach(texture => {
+      if (texture) {
+        texture.flipY = true
+        texture.minFilter = texture.magFilter = NearestFilter
+      }
+    })
+
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [textures, clouds])
+
+  return useMemo(() => {
+    return new MeshStandardMaterial({
+      map: textures.map,
+      roughnessMap: textures.roughnessMap,
+      metalnessMap: textures.metalnessMap,
+      emissiveMap: textures.emissiveMap,
+      side: DoubleSide,
+      roughness: roughness,
+      metalness: metalness,
+      emissive: new Color(emissiveColor),
+      emissiveIntensity: emissiveIntensity,
+      transparent: false,
+      blending: NormalBlending,
+      envMap: clouds,
+      envMapIntensity: 1.0,
+    })
+  }, [textures, metalness, roughness, emissiveIntensity, emissiveColor, clouds])
+}
 //wings Material
 const useWingsMaterial = () => {
   const textures = useTexture({
@@ -758,11 +917,13 @@ const useHoofMaterial = () => {
 //atm Material
 const useAtmMaterial = () => {
   const textures = useTexture({
-    map: "/texture/atmColorB.webp",
+    map: "/texture/atmColor.webp",
     roughnessMap: "/texture/atmRoughness.webp",
     metalnessMap: "/texture/atmMetalness.webp",
     materialEmissive: "/texture/atmEmissive.webp",
   })
+
+  const clouds = useTexture("/images/bg1.jpg")
 
   useMemo(() => {
     Object.values(textures).forEach(texture => {
@@ -771,7 +932,11 @@ const useAtmMaterial = () => {
         texture.minFilter = texture.magFilter = NearestFilter
       }
     })
-  }, [textures])
+
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [textures, clouds])
 
   return useMemo(
     () =>
@@ -786,10 +951,12 @@ const useAtmMaterial = () => {
         blending: NormalBlending,
         metalness: 1,
         roughness: 0.6,
-        emissive: new Color(0xf6d8ff),
-        emissiveIntensity: 1.2,
+        emissive: new Color(0xc4627d),
+        emissiveIntensity: 3.5,
+        envMap: clouds,
+        envMapIntensity: 1.0,
       }),
-    [textures]
+    [textures, clouds] // Added clouds to dependencies
   )
 }
 
@@ -860,7 +1027,6 @@ const usePortalMaterial = () => {
 
 // Fontaine Water Material
 
-
 // Components
 
 const CastleModel = ({
@@ -887,15 +1053,20 @@ const CastleModel = ({
     castleRoughness,
     castleEmissiveIntensity
   )
-  const logoMaterial = useLogoMaterial()
-  const decorMaterial = useDecorMaterial()
-  const godsMaterial = useGodsMaterial()
+  const castleHeart = useCastleHeartMaterial()
+  const castleHeartMask = useCastleHeartMaskMaterial()
+  const castleLights = useCastleLightsMaterial()
   const floorMaterial = useFloorMaterial(
     floorMaterialType,
     floorMetalness,
     floorRoughness,
     floorEmissiveIntensity
   )
+  const floorHeart = useFloorHeartMaterial()
+  const logoMaterial = useLogoMaterial()
+  const decorMaterial = useDecorMaterial()
+  const godsMaterial = useGodsMaterial()
+
   const hoofMaterial = useHoofMaterial()
   const atmMaterial = useAtmMaterial()
   const scrollMaterial = useScrollMaterial()
@@ -921,9 +1092,8 @@ const CastleModel = ({
   )
 
   // Use the video texture hook for water
-  const { texture: waterTexture, playVideo: playWater } = useVideoTexture(
-    "/video/water.mp4"
-  )
+  const { texture: waterTexture, playVideo: playWater } =
+    useVideoTexture("/video/water.mp4")
   const waterMaterial = useMemo(
     () =>
       waterTexture
@@ -952,7 +1122,7 @@ const CastleModel = ({
       if (onPortalPlay) onPortalPlay()
       if (onWaterPlay) onWaterPlay()
     }
-  }, [hasInteracted,   onPortalPlay, ])
+  }, [hasInteracted, onPortalPlay])
 
   // Play videos when user has interacted
   useEffect(() => {
@@ -962,19 +1132,25 @@ const CastleModel = ({
       if (onPortalPlay) onPortalPlay()
       if (onWaterPlay) onWaterPlay()
     }
-  }, [hasInteracted,onPortalPlay, onWaterPlay])
+  }, [hasInteracted, onPortalPlay, onWaterPlay])
 
   const wingsMaterial = useWingsMaterial()
 
   return (
     <group dispose={null}>
       <mesh
-        geometry={nodes.Castle.geometry}
+        geometry={nodes.castle.geometry}
         material={material}
         layers-enable={1}
         castShadow={false}
         receiveShadow={false}
       />
+      <mesh geometry={nodes.castleHeart.geometry} material={castleHeart} />
+      <mesh
+        geometry={nodes.castleHeartMask.geometry}
+        material={castleHeartMask}
+      />
+      <mesh geometry={nodes.castleLights.geometry} material={castleLights} />
       <mesh geometry={nodes.wings.geometry} material={wingsMaterial} />
       <mesh geometry={nodes.gods.geometry} material={godsMaterial} />
       <mesh geometry={nodes.decor.geometry} material={decorMaterial} />
@@ -983,6 +1159,7 @@ const CastleModel = ({
         material={floorMaterial}
         layers-enable={1}
       />
+      <mesh geometry={nodes.floorHeart.geometry} material={floorHeart} />
       <mesh geometry={nodes.MirrorFrame.geometry} material={decorMaterial} />
       <mesh geometry={nodes.Mirror.geometry} material={mirror} />
       <mesh

@@ -15,7 +15,7 @@ export const EffectsTree = () => {
 
   const effectsTree = useMemo(() => {
     return (
-      <EffectComposer disableNormalPass>
+      <EffectComposer disableNormalPass multisampling={4}>
         {bloomConfig.enabled && (
           <Bloom
             {...bloomConfig}
