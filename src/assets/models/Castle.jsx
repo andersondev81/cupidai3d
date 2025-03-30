@@ -962,6 +962,9 @@ const CastleModel = ({
   scrollNavigationSource,
   setScrollIframeActive,
   setScrollNavigationSource,
+  atmNavigationSource,
+  setAtmNavigationSource,
+  setAtmiframeActive,
 }) => {
   const { nodes } = useGLTF("/models/Castle.glb");
   const material = useCastleMaterial(
@@ -986,6 +989,7 @@ const CastleModel = ({
   const mirror = useMirrorMaterial();
   const hallosMaterial = useHallosMaterial();
   const [previousCameraPosition, setPreviousCameraPosition] = useState(null);
+
   // ATM handlers
   const handleAtmClick = (e) => {
     e.stopPropagation();
@@ -993,6 +997,33 @@ const CastleModel = ({
 
     // Prevent navigation if ATM iframe is already active
     if (atmIframeActive) return;
+
+    // Store current camera position before navigating
+    if (controls && controls.current) {
+      try {
+        const position = controls.current.getPosition();
+        const target = controls.current.getTarget();
+
+        // Convert to arrays for consistent format
+        const posArray = Array.isArray(position) ? position :
+                        [position.x, position.y, position.z];
+        const targetArray = Array.isArray(target) ? target :
+                           [target.x, target.y, target.z];
+
+        // Store position in global variable
+        window.lastClickedPositionATM = {
+          position: posArray,
+          target: targetArray
+        };
+
+        console.log("Stored ATM camera position:", window.lastClickedPositionATM);
+      } catch (err) {
+        console.error("Failed to store camera position:", err);
+      }
+    }
+
+    // Set navigation source to direct
+    setAtmNavigationSource("direct");
 
     // Navigate to token section
     if (onCastleClick) {
@@ -1025,39 +1056,32 @@ const CastleModel = ({
   };
 
   // Scroll handlers
-
-  // In useEffect, expose the setter to window for Pole component:
-  useEffect(() => {
-    // Expose the setter function globally
-    window.setScrollNavigationSource = (source) => {
-      console.log(`Setting scroll navigation source to: ${source}`);
-      setScrollNavigationSource(source);
-    };
-
-    return () => {
-      delete window.setScrollNavigationSource;
-    };
-  }, []);
-
-  // Update the handleScrollClick function in CastleModel
   const handleScrollClick = (e) => {
     e.stopPropagation();
     console.log("Scroll clicked directly");
 
     // Store current camera position before navigating
     if (controls && controls.current) {
-      const position = controls.current.getPosition();
-      const target = controls.current.getTarget();
+      try {
+        const position = controls.current.getPosition();
+        const target = controls.current.getTarget();
 
-      // Store in the global variable for direct access
-      window.lastClickedPosition = {
-        position: Array.isArray(position)
-          ? position
-          : [position.x, position.y, position.z],
-        target: Array.isArray(target) ? target : [target.x, target.y, target.z],
-      };
+        // Convert to arrays for consistent format
+        const posArray = Array.isArray(position) ? position :
+                        [position.x, position.y, position.z];
+        const targetArray = Array.isArray(target) ? target :
+                           [target.x, target.y, target.z];
 
-      console.log("Stored position:", window.lastClickedPosition);
+        // Store in the global variable for direct access
+        window.lastClickedPosition = {
+          position: posArray,
+          target: targetArray
+        };
+
+        console.log("Stored position:", window.lastClickedPosition);
+      } catch (err) {
+        console.error("Failed to store camera position:", err);
+      }
     }
 
     // Set navigation source to direct
@@ -1145,16 +1169,6 @@ const CastleModel = ({
     [waterTexture]
   );
 
-  // Depois no useEffect para iniciar a reprodução:
-  useEffect(() => {
-    if (hasInteracted) {
-      playPortal();
-      playWater();
-      if (onPortalPlay) onPortalPlay();
-      if (onWaterPlay) onWaterPlay();
-    }
-  }, [hasInteracted, onPortalPlay]);
-
   // Play videos when user has interacted
   useEffect(() => {
     if (hasInteracted) {
@@ -1166,6 +1180,29 @@ const CastleModel = ({
   }, [hasInteracted, onPortalPlay, onWaterPlay]);
 
   const wingsMaterial = useWingsMaterial();
+
+  // Function for smooth camera transitions
+  function smoothCameraReturn(position, target) {
+    if (!window.controls || !window.controls.current) {
+      console.error("No controls available for camera transition");
+      return;
+    }
+
+    console.log("Smooth transition to position:", position, "target:", target);
+
+    // Use the existing CameraControls that already handle animations
+    window.controls.current.enabled = true; // Important - enable controls first
+
+    // Let any active animations complete
+    setTimeout(() => {
+      // Use the exact same method used for section transitions
+      window.controls.current.setLookAt(
+        position[0], position[1], position[2],
+        target[0], target[1], target[2],
+        true // true enables animation
+      ).catch(err => console.error("Camera transition error:", err));
+    }, 50);
+  }
 
   return (
     <group dispose={null}>
@@ -1272,10 +1309,23 @@ const CastleModel = ({
       <AtmIframe
         position={[1.675, 1.185, 0.86]}
         rotation={[1.47, 0.194, -1.088]}
-        onReturnToMain={() => {
-          onCastleClick("nav");
+        onReturnToMain={(source) => {
+          // Close the iframe first for better visual feedback
+          setAtmiframeActive(false);
+
+          // Short delay to let the UI update first
+          setTimeout(() => {
+            if (source === "direct" && window.lastClickedPositionATM) {
+              const { position, target } = window.lastClickedPositionATM;
+              smoothCameraReturn(position, target);
+            } else {
+              // Normal pole navigation
+              onCastleClick("nav");
+            }
+          }, 100);
         }}
         isActive={atmIframeActive}
+        navigationSource={atmNavigationSource}
       />
 
       <MirrorIframe
@@ -1285,29 +1335,29 @@ const CastleModel = ({
         isActive={mirrorIframeActive}
       />
 
-      {/* Add the ScrollIframe component, but make sure it's always rendered */}
       <ScrollIframe
-  onReturnToMain={(source) => {
-    // Close the iframe first for better visual feedback
-    setScrollIframeActive(false);
+        onReturnToMain={(source) => {
+          // Close the iframe first for better visual feedback
+          setScrollIframeActive(false);
 
-    // Short delay to let the UI update first
-    setTimeout(() => {
-      if (source === "direct" && window.lastClickedPosition) {
-        const { position, target } = window.lastClickedPosition;
-        smoothCameraReturn(position, target);
-      } else {
-        // Normal pole navigation
-        onCastleClick("nav");
-      }
-    }, 100);
-  }}
-  isActive={scrollIframeActive}
-  navigationSource={scrollNavigationSource}
-/>
+          // Short delay to let the UI update first
+          setTimeout(() => {
+            if (source === "direct" && window.lastClickedPosition) {
+              const { position, target } = window.lastClickedPosition;
+              smoothCameraReturn(position, target);
+            } else {
+              // Normal pole navigation
+              onCastleClick("nav");
+            }
+          }, 100);
+        }}
+        isActive={scrollIframeActive}
+        navigationSource={scrollNavigationSource}
+      />
     </group>
   );
 };
+// Main Component
 // Main Component
 const Castle = ({ activeSection }) => {
   const controls = useRef();
@@ -1317,6 +1367,8 @@ const Castle = ({ activeSection }) => {
   const [cameraLocked, setCameraLocked] = useState(true);
   const [clipboardMessage, setClipboardMessage] = useState("");
   const [scrollNavigationSource, setScrollNavigationSource] = useState("pole");
+  const [atmNavigationSource, setAtmNavigationSource] = useState("pole");
+
   window.resetIframes = () => {
     setAtmiframeActive(false);
     setMirrorIframeActive(false);
@@ -1478,9 +1530,21 @@ const Castle = ({ activeSection }) => {
     }
   };
 
+  // Expose setters globally for navs
   useEffect(() => {
-    if (!controls.current) return;
+    // Expose scroll setter globally
+    window.setScrollNavigationSource = (source) => {
+      console.log(`Setting scroll navigation source to: ${source}`);
+      setScrollNavigationSource(source);
+    };
 
+    // Expose ATM setter globally
+    window.setAtmNavigationSource = (source) => {
+      console.log(`Setting ATM navigation source to: ${source}`);
+      setAtmNavigationSource(source);
+    };
+
+    if (!controls.current) return;
     window.controls = controls;
 
     // Initial configuration
@@ -1503,6 +1567,11 @@ const Castle = ({ activeSection }) => {
         playTransition("nav");
       }, TRANSITION_DELAY);
     }
+
+    return () => {
+      delete window.setScrollNavigationSource;
+      delete window.setAtmNavigationSource;
+    };
   }, []);
 
   useControls(
@@ -1644,6 +1713,7 @@ const Castle = ({ activeSection }) => {
       };
     }
   }, [clipboardMessage]);
+
   const materialControls = useControls(
     "Materials",
     {
@@ -1713,6 +1783,7 @@ const Castle = ({ activeSection }) => {
     },
     { collapsed: false }
   );
+
   return (
     <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
       <CameraControls
@@ -1743,9 +1814,12 @@ const Castle = ({ activeSection }) => {
           floorMetalness={materialControls.floorMetalness}
           floorRoughness={materialControls.floorRoughness}
           floorEmissiveIntensity={materialControls.floorEmissiveIntensity}
-          scrollNavigationSource={scrollNavigationSource} // Add this
-          setScrollNavigationSource={setScrollNavigationSource} // Add this
+          scrollNavigationSource={scrollNavigationSource}
+          setScrollNavigationSource={setScrollNavigationSource}
           setScrollIframeActive={setScrollIframeActive}
+          atmNavigationSource={atmNavigationSource}
+          setAtmNavigationSource={setAtmNavigationSource}
+          setAtmiframeActive={setAtmiframeActive}
         />
       </Suspense>
     </group>
@@ -1753,3 +1827,5 @@ const Castle = ({ activeSection }) => {
 };
 
 export default Castle;
+
+
