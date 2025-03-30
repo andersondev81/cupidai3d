@@ -14,6 +14,7 @@ export default function AtmIframe({
   isActive,
   cameraRef,
   onSectionChange,
+  navigationSource = "pole",  // Add this parameter
   ...props
 }) {
   const [showContent, setShowContent] = useState(false)
@@ -50,32 +51,23 @@ export default function AtmIframe({
 
   // Handle navigation back to main menu
   const handleHomeNavigation = () => {
-    // First hide buttons for visual feedback
-    setShowButtons(false)
+    // Hide buttons for visual feedback
+    setShowButtons(false);
 
     // Hide content after a short delay
     setTimeout(() => {
-      setShowContent(false)
+      setShowContent(false);
 
       // Additional delay to complete visual transitions
       setTimeout(() => {
-        // Camera transition
-        if (cameraRef?.goToHome) {
-          cameraRef.goToHome()
-        }
-
-        // Section change
-        if (onSectionChange) {
-          onSectionChange(0, "nav")
-        }
-
-        // Legacy callback for compatibility
+        // Call the callback with navigation source
         if (onReturnToMain) {
-          onReturnToMain()
+          onReturnToMain(navigationSource);
         }
-      }, ANIMATION_TIMING.TRANSITION_DELAY)
-    }, ANIMATION_TIMING.TRANSITION_DELAY)
+      }, ANIMATION_TIMING.TRANSITION_DELAY);
+    }, ANIMATION_TIMING.TRANSITION_DELAY);
   }
+
 
   // Styles
   const containerStyle = {

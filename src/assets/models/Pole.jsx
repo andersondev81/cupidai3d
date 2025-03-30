@@ -1,41 +1,37 @@
-import React, { useMemo, useEffect } from "react"
-import { useGLTF, useTexture } from "@react-three/drei"
-import { useLoader } from "@react-three/fiber"
+import { useGLTF, useTexture } from "@react-three/drei";
+import { useLoader } from "@react-three/fiber";
+import React, { useEffect, useMemo } from "react";
 
-import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader"
-import RotateAxis from "../../components/helpers/RotateAxis"
+import * as THREE from "three";
 import {
-  MeshBasicMaterial,
-  MeshPhysicalMaterial,
-  MeshStandardMaterial,
-  MeshLambertMaterial,
-  MeshPhongMaterial,
   DoubleSide,
-  NormalBlending,
-  NearestFilter,
   EquirectangularReflectionMapping,
-} from "three"
-import * as THREE from "three"
+  MeshPhysicalMaterial,
+  NearestFilter,
+  NormalBlending,
+} from "three";
+import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
+import RotateAxis from "../../components/helpers/RotateAxis";
 
 const usePoleMaterial = () => {
   // Carregar texturas do Pole
   const textures = useTexture({
     map: "/texture/PoleColorBAO.webp",
-  })
+  });
 
   // Carregar HDR específico para o Pole
-  const envMap = useLoader(RGBELoader, "/images/PanoramaV1.hdr")
-  envMap.mapping = EquirectangularReflectionMapping
+  const envMap = useLoader(RGBELoader, "/images/PanoramaV1.hdr");
+  envMap.mapping = EquirectangularReflectionMapping;
 
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = false
-        texture.minFilter = NearestFilter
-        texture.magFilter = NearestFilter
+        texture.flipY = false;
+        texture.minFilter = NearestFilter;
+        texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   const material = useMemo(
     () =>
@@ -52,17 +48,17 @@ const usePoleMaterial = () => {
         envMap: envMap,
       }),
     [textures, envMap]
-  )
+  );
 
   // Força atualização quando o HDR for carregado
   useEffect(() => {
     if (envMap) {
-      material.needsUpdate = true
+      material.needsUpdate = true;
     }
-  }, [envMap, material])
+  }, [envMap, material]);
 
-  return material
-}
+  return material;
+};
 
 // Added new material function for hearts
 const useHeartsMaterial = () => {
@@ -70,18 +66,18 @@ const useHeartsMaterial = () => {
   const textures = useTexture({
     map: "/texture/heartColor.webp",
     emissiveMap: "/texture/HeartPoleEmissive.webp",
-  })
+  });
 
   // Process all textures
   useMemo(() => {
-    Object.values(textures).forEach(texture => {
+    Object.values(textures).forEach((texture) => {
       if (texture) {
-        texture.flipY = false
-        texture.minFilter = NearestFilter
-        texture.magFilter = NearestFilter
+        texture.flipY = false;
+        texture.minFilter = NearestFilter;
+        texture.magFilter = NearestFilter;
       }
-    })
-  }, [textures])
+    });
+  }, [textures]);
 
   // Create and return material
   return useMemo(
@@ -96,46 +92,60 @@ const useHeartsMaterial = () => {
         roughness: 0.4,
       }),
     [textures]
-  )
-}
+  );
+};
 
 export function Pole({ onSectionChange, ...props }) {
-  const { nodes } = useGLTF("/models/Pole.glb")
-  const material = usePoleMaterial()
-  const materialHearts = useHeartsMaterial()
+  const { nodes } = useGLTF("/models/Pole.glb");
+  const material = usePoleMaterial();
+  const materialHearts = useHeartsMaterial();
 
-  const createClickHandler = (sectionIndex, sectionName) => e => {
-    e.stopPropagation()
-    console.log(`Pole: Clicked on section ${sectionName}`)
+  const createClickHandler = (sectionIndex, sectionName) => (e) => {
+    e.stopPropagation();
+    console.log(`Pole: Clicked on section ${sectionName}`);
 
-    if (onSectionChange && typeof onSectionChange === 'function') {
-      console.log(`Pole: Using onSectionChange callback for ${sectionName}`)
-      onSectionChange(sectionIndex, sectionName)
+    if (onSectionChange && typeof onSectionChange === "function") {
+      console.log(`Pole: Using onSectionChange callback for ${sectionName}`);
+      onSectionChange(sectionIndex, sectionName);
     }
 
     if (window.globalNavigation && window.globalNavigation.navigateTo) {
-      console.log(`Pole: Using global navigation for ${sectionName}`)
-      window.globalNavigation.navigateTo(sectionName)
+      console.log(`Pole: Using global navigation for ${sectionName}`);
+      window.globalNavigation.navigateTo(sectionName);
     }
 
-    console.log(`Pole: Navigation to ${sectionName} attempted. Check if camera moved.`)
-  }
+    console.log(
+      `Pole: Navigation to ${sectionName} attempted. Check if camera moved.`
+    );
+  };
 
   const pointerHandlers = {
-    onPointerEnter: e => {
-      e.stopPropagation()
-      document.body.style.cursor = "pointer"
+    onPointerEnter: (e) => {
+      e.stopPropagation();
+      document.body.style.cursor = "pointer";
     },
-    onPointerLeave: e => {
-      e.stopPropagation()
-      document.body.style.cursor = "default"
+    onPointerLeave: (e) => {
+      e.stopPropagation();
+      document.body.style.cursor = "default";
     },
-  }
+  };
+
+  useEffect(() => {
+    // Expose the setter function to the window for the Pole component to access
+    window.setScrollNavigationSource = (source) => {
+      setScrollNavigationSource(source);
+    };
+
+    return () => {
+      // Clean up on unmount
+      delete window.setScrollNavigationSource;
+    };
+  }, []);
 
   // Verificar se os nós existem antes de tentar acessar suas geometrias
   if (!nodes || !nodes.pole) {
-    console.warn("Pole nodes not loaded properly")
-    return null
+    console.warn("Pole nodes not loaded properly");
+    return null;
   }
 
   return (
@@ -156,7 +166,17 @@ export function Pole({ onSectionChange, ...props }) {
           <mesh
             geometry={nodes.roadmap.geometry}
             material={materialHearts}
-            onClick={createClickHandler(5, "roadmap")}
+            onClick={(e) => {
+              e.stopPropagation();
+
+              // When clicked from pole, set navigation source to "pole"
+              if (window.setScrollNavigationSource) {
+                window.setScrollNavigationSource("pole");
+              }
+
+              // Original click handler
+              createClickHandler(5, "roadmap")(e);
+            }}
             {...pointerHandlers}
           />
         )}
@@ -193,7 +213,7 @@ export function Pole({ onSectionChange, ...props }) {
         </group>
       </group>
     </group>
-  )
+  );
 }
 
-useGLTF.preload("/models/Pole.glb")
+useGLTF.preload("/models/Pole.glb");

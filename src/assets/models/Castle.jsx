@@ -22,6 +22,38 @@ import ScrollIframe from "../models/ScrolIframe";
 
 const SMALL_SCREEN_THRESHOLD = 768;
 const TRANSITION_DELAY = 100;
+window.lastClickedPosition = null;
+
+// Add this function at the top of your Castle.jsx file
+function smoothCameraReturn(position, target) {
+  if (!window.controls || !window.controls.current) {
+    console.error("No controls available for camera transition");
+    return;
+  }
+
+  console.log("Smooth transition to position:", position, "target:", target);
+
+  // Use the existing CameraControls that already handle animations
+  window.controls.current.enabled = true; // Important - enable controls first
+
+  // Let any active animations complete
+  setTimeout(() => {
+    // Use the exact same method used for section transitions
+    window.controls.current.setLookAt(
+      position[0], position[1], position[2],
+      target[0], target[1], target[2],
+      true // true enables animation
+    ).catch(err => console.error("Camera transition error:", err));
+  }, 50);
+}
+
+// Add this in the SceneController's useCameraAnimation function
+// At the beginning of the animate function:
+
+
+  // Rest of animation function continues...
+
+// Now in the ScrollIframe handler:
 
 // Adjust resource paths for deployment
 // const getAssetPath = path => {
@@ -898,342 +930,384 @@ const handleAtmClick = (e) => {
   }
 };
 
-  // Pointer event handlers for visual feedback
-  const handlePointerEnter = (e) => {
-    if (atmIframeActive) return // Skip if iframe is already active
-    e.stopPropagation()
-    document.body.style.cursor = "pointer"
-  }
+// Pointer event handlers for visual feedback
+const handlePointerEnter = (e) => {
+  if (atmIframeActive) return; // Skip if iframe is already active
+  e.stopPropagation();
+  document.body.style.cursor = "pointer";
+};
 
-  const handlePointerLeave = (e) => {
-    e.stopPropagation()
-    document.body.style.cursor = "default"
-  }
+const handlePointerLeave = (e) => {
+  e.stopPropagation();
+  document.body.style.cursor = "default";
+};
 
-  const CastleModel = ({
-    onCastleClick,
-    hasInteracted,
-    onPortalPlay,
-    onWaterPlay,
-    atmIframeActive,
-    mirrorIframeActive,
-    scrollIframeActive,
+const CastleModel = ({
+  controls,
+  onCastleClick,
+  hasInteracted,
+  onPortalPlay,
+  onWaterPlay,
+  atmIframeActive,
+  mirrorIframeActive,
+  scrollIframeActive,
+  castleMaterialType,
+  castleMetalness,
+  castleRoughness,
+  castleEmissiveIntensity,
+  floorMaterialType,
+  floorMetalness,
+  floorRoughness,
+  floorEmissiveIntensity,
+  scrollNavigationSource,
+  setScrollIframeActive,
+  setScrollNavigationSource,
+}) => {
+  const { nodes } = useGLTF("/models/Castle.glb");
+  const material = useCastleMaterial(
     castleMaterialType,
     castleMetalness,
     castleRoughness,
-    castleEmissiveIntensity,
+    castleEmissiveIntensity
+  );
+  const logoMaterial = useLogoMaterial();
+  const decorMaterial = useDecorMaterial();
+  const godsMaterial = useGodsMaterial();
+  const floorMaterial = useFloorMaterial(
     floorMaterialType,
     floorMetalness,
     floorRoughness,
-    floorEmissiveIntensity,
-  }) => {
-    const { nodes } = useGLTF("/models/Castle.glb");
-    const material = useCastleMaterial(
-      castleMaterialType,
-      castleMetalness,
-      castleRoughness,
-      castleEmissiveIntensity
-    );
-    const logoMaterial = useLogoMaterial();
-    const decorMaterial = useDecorMaterial();
-    const godsMaterial = useGodsMaterial();
-    const floorMaterial = useFloorMaterial(
-      floorMaterialType,
-      floorMetalness,
-      floorRoughness,
-      floorEmissiveIntensity
-    );
-    const hoofMaterial = useHoofMaterial();
-    const atmMaterial = useAtmMaterial();
-    const scrollMaterial = useScrollMaterial();
-    const portal = usePortalMaterial();
-    const mirror = useMirrorMaterial();
-    const hallosMaterial = useHallosMaterial();
+    floorEmissiveIntensity
+  );
+  const hoofMaterial = useHoofMaterial();
+  const atmMaterial = useAtmMaterial();
+  const scrollMaterial = useScrollMaterial();
+  const portal = usePortalMaterial();
+  const mirror = useMirrorMaterial();
+  const hallosMaterial = useHallosMaterial();
+  const [previousCameraPosition, setPreviousCameraPosition] = useState(null);
+  // ATM handlers
+  const handleAtmClick = (e) => {
+    e.stopPropagation();
+    console.log("ATM clicked - navigating to token section");
 
-    // ATM handlers
-    const handleAtmClick = (e) => {
-      e.stopPropagation();
-      console.log("ATM clicked - navigating to token section");
+    // Prevent navigation if ATM iframe is already active
+    if (atmIframeActive) return;
 
-      // Prevent navigation if ATM iframe is already active
-      if (atmIframeActive) return;
+    // Navigate to token section
+    if (onCastleClick) {
+      onCastleClick("token");
+    }
 
-      // Navigate to token section
-      if (onCastleClick) {
-        onCastleClick("token");
-      }
+    // Log for debugging
+    if (window.globalNavigation && window.globalNavigation.log) {
+      window.globalNavigation.log("ATM mesh clicked - navigation requested");
+    }
+  };
 
-      // Log for debugging
-      if (window.globalNavigation && window.globalNavigation.log) {
-        window.globalNavigation.log("ATM mesh clicked - navigation requested");
-      }
+  // Mirror handlers
+  const handleMirrorClick = (e) => {
+    e.stopPropagation();
+    console.log("Mirror clicked - navigating to aidatingcoach section");
+
+    // Prevent navigation if Mirror iframe is already active
+    if (mirrorIframeActive) return;
+
+    // Navigate to aidatingcoach section
+    if (onCastleClick) {
+      onCastleClick("aidatingcoach");
+    }
+
+    // Log for debugging
+    if (window.globalNavigation && window.globalNavigation.log) {
+      window.globalNavigation.log("Mirror mesh clicked - navigation requested");
+    }
+  };
+
+  // Scroll handlers
+
+  // In useEffect, expose the setter to window for Pole component:
+  useEffect(() => {
+    // Expose the setter function globally
+    window.setScrollNavigationSource = (source) => {
+      console.log(`Setting scroll navigation source to: ${source}`);
+      setScrollNavigationSource(source);
     };
 
-    // Mirror handlers
-    const handleMirrorClick = (e) => {
-      e.stopPropagation();
-      console.log("Mirror clicked - navigating to aidatingcoach section");
-
-      // Prevent navigation if Mirror iframe is already active
-      if (mirrorIframeActive) return;
-
-      // Navigate to aidatingcoach section
-      if (onCastleClick) {
-        onCastleClick("aidatingcoach");
-      }
-
-      // Log for debugging
-      if (window.globalNavigation && window.globalNavigation.log) {
-        window.globalNavigation.log("Mirror mesh clicked - navigation requested");
-      }
+    return () => {
+      delete window.setScrollNavigationSource;
     };
+  }, []);
 
-    // Scroll handlers
-    const handleScrollClick = (e) => {
-      e.stopPropagation();
-      console.log("Scroll clicked - navigating to roadmap section");
+  // Update the handleScrollClick function in CastleModel
+  const handleScrollClick = (e) => {
+    e.stopPropagation();
+    console.log("Scroll clicked directly");
 
-      // Prevent navigation if Scroll iframe is already active
-      if (scrollIframeActive) return;
+    // Store current camera position before navigating
+    if (controls && controls.current) {
+      const position = controls.current.getPosition();
+      const target = controls.current.getTarget();
 
-      // Navigate to roadmap section
-      if (onCastleClick) {
-        onCastleClick("roadmap");
-      }
+      // Store in the global variable for direct access
+      window.lastClickedPosition = {
+        position: Array.isArray(position)
+          ? position
+          : [position.x, position.y, position.z],
+        target: Array.isArray(target) ? target : [target.x, target.y, target.z],
+      };
 
-      // Log for debugging
-      if (window.globalNavigation && window.globalNavigation.log) {
-        window.globalNavigation.log("Scroll mesh clicked - navigation requested");
-      }
-    };
+      console.log("Stored position:", window.lastClickedPosition);
+    }
 
-    // ATM pointer events
-    const handleAtmPointerEnter = (e) => {
-      if (atmIframeActive) return;
-      e.stopPropagation();
-      document.body.style.cursor = "pointer";
-    };
+    // Set navigation source to direct
+    setScrollNavigationSource("direct");
 
-    const handleAtmPointerLeave = (e) => {
-      e.stopPropagation();
-      document.body.style.cursor = "default";
-    };
+    // Navigate to roadmap
+    if (onCastleClick) {
+      onCastleClick("roadmap");
+    }
+  };
 
-    // Mirror pointer events
-    const handleMirrorPointerEnter = (e) => {
-      if (mirrorIframeActive) return;
-      e.stopPropagation();
-      document.body.style.cursor = "pointer";
-    };
+  // ATM pointer events
+  const handleAtmPointerEnter = (e) => {
+    if (atmIframeActive) return;
+    e.stopPropagation();
+    document.body.style.cursor = "pointer";
+  };
 
-    const handleMirrorPointerLeave = (e) => {
-      e.stopPropagation();
-      document.body.style.cursor = "default";
-    };
+  const handleAtmPointerLeave = (e) => {
+    e.stopPropagation();
+    document.body.style.cursor = "default";
+  };
 
-    // Scroll pointer events
-    const handleScrollPointerEnter = (e) => {
-      if (scrollIframeActive) return;
-      e.stopPropagation();
-      document.body.style.cursor = "pointer";
-    };
+  // Mirror pointer events
+  const handleMirrorPointerEnter = (e) => {
+    if (mirrorIframeActive) return;
+    e.stopPropagation();
+    document.body.style.cursor = "pointer";
+  };
 
-    const handleScrollPointerLeave = (e) => {
-      e.stopPropagation();
-      document.body.style.cursor = "default";
-    };
+  const handleMirrorPointerLeave = (e) => {
+    e.stopPropagation();
+    document.body.style.cursor = "default";
+  };
 
-    // Use the video texture hook for portal
-    const { texture: portalTexture, playVideo: playPortal } =
-      useVideoTexture("/video/tunnel.mp4");
-    const portalMaterial = useMemo(
-      () =>
-        portalTexture
-          ? new MeshBasicMaterial({
-              map: portalTexture,
-              side: DoubleSide,
-            })
-          : new MeshBasicMaterial({
-              color: 0x000000,
-              side: DoubleSide,
-            }),
-      [portalTexture]
-    );
+  // Scroll pointer events
+  const handleScrollPointerEnter = (e) => {
+    if (scrollIframeActive) return;
+    e.stopPropagation();
+    document.body.style.cursor = "pointer";
+  };
 
-    // Use the video texture hook for water
-    const { texture: waterTexture, playVideo: playWater } = useVideoTexture(
-      "/video/water.mp4"
-    );
-    const waterMaterial = useMemo(
-      () =>
-        waterTexture
-          ? new MeshPhysicalMaterial({
-              map: waterTexture,
-              transparent: false,
-              roughness: 0.2,
-              metalness: 1,
-              side: DoubleSide,
-              emissive: new Color(0xffa6f3),
-              emissiveIntensity: 1,
-            })
-          : new MeshPhysicalMaterial({
-              emissive: new Color(0xffa6f3),
-              emissiveIntensity: 1,
-              side: DoubleSide,
-            }),
-      [waterTexture]
-    );
+  const handleScrollPointerLeave = (e) => {
+    e.stopPropagation();
+    document.body.style.cursor = "default";
+  };
 
-    // Depois no useEffect para iniciar a reprodução:
-    useEffect(() => {
-      if (hasInteracted) {
-        playPortal();
-        playWater();
-        if (onPortalPlay) onPortalPlay();
-        if (onWaterPlay) onWaterPlay();
-      }
-    }, [hasInteracted, onPortalPlay]);
+  // Use the video texture hook for portal
+  const { texture: portalTexture, playVideo: playPortal } =
+    useVideoTexture("/video/tunnel.mp4");
+  const portalMaterial = useMemo(
+    () =>
+      portalTexture
+        ? new MeshBasicMaterial({
+            map: portalTexture,
+            side: DoubleSide,
+          })
+        : new MeshBasicMaterial({
+            color: 0x000000,
+            side: DoubleSide,
+          }),
+    [portalTexture]
+  );
 
-    // Play videos when user has interacted
-    useEffect(() => {
-      if (hasInteracted) {
-        playPortal();
-        playWater();
-        if (onPortalPlay) onPortalPlay();
-        if (onWaterPlay) onWaterPlay();
-      }
-    }, [hasInteracted, onPortalPlay, onWaterPlay]);
+  // Use the video texture hook for water
+  const { texture: waterTexture, playVideo: playWater } =
+    useVideoTexture("/video/water.mp4");
+  const waterMaterial = useMemo(
+    () =>
+      waterTexture
+        ? new MeshPhysicalMaterial({
+            map: waterTexture,
+            transparent: false,
+            roughness: 0.2,
+            metalness: 1,
+            side: DoubleSide,
+            emissive: new Color(0xffa6f3),
+            emissiveIntensity: 1,
+          })
+        : new MeshPhysicalMaterial({
+            emissive: new Color(0xffa6f3),
+            emissiveIntensity: 1,
+            side: DoubleSide,
+          }),
+    [waterTexture]
+  );
 
-    const wingsMaterial = useWingsMaterial();
+  // Depois no useEffect para iniciar a reprodução:
+  useEffect(() => {
+    if (hasInteracted) {
+      playPortal();
+      playWater();
+      if (onPortalPlay) onPortalPlay();
+      if (onWaterPlay) onWaterPlay();
+    }
+  }, [hasInteracted, onPortalPlay]);
 
-    return (
-      <group dispose={null}>
-        <mesh
-          geometry={nodes.Castle.geometry}
-          material={material}
-          layers-enable={1}
-          castShadow={false}
-          receiveShadow={false}
-        />
-        <mesh geometry={nodes.wings.geometry} material={wingsMaterial} />
-        <mesh geometry={nodes.gods.geometry} material={godsMaterial} />
-        <mesh geometry={nodes.decor.geometry} material={decorMaterial} />
-        <mesh
-          geometry={nodes.floor.geometry}
-          material={floorMaterial}
-          layers-enable={1}
-        />
-        <mesh geometry={nodes.MirrorFrame.geometry} material={decorMaterial} />
-        <mesh
-          geometry={nodes.Mirror.geometry}
-          material={mirror}
-          onClick={handleMirrorClick}
-          onPointerEnter={handleMirrorPointerEnter}
-          onPointerLeave={handleMirrorPointerLeave}
-        />
-        <mesh
-          geometry={nodes.Hallos.geometry}
-          material={hallosMaterial}
-          layers-enable={2}
-        />
-        <mesh
-          geometry={nodes.hoofGlass.geometry}
-          material={hoofMaterial}
-          layers-enable={2}
-        />
-        <mesh
-          geometry={nodes.atm.geometry}
-          material={atmMaterial}
-          layers-enable={2}
-          castShadow={false}
-          receiveShadow={false}
-          onClick={handleAtmClick}
-          onPointerEnter={handleAtmPointerEnter}
-          onPointerLeave={handleAtmPointerLeave}
-        />
-        <group position={[-0.056, 1.247, -2.117]}>
-          <RotateAxis axis="y" speed={0.7} rotationType="euler">
-            <mesh
-              geometry={nodes.bow.geometry}
-              material={decorMaterial}
-              castShadow={false}
-              receiveShadow={false}
-            />
-          </RotateAxis>
-        </group>
-        <group>
-          <RotateAxis axis="y" speed={1} rotationType="euler">
-            <mesh
-              geometry={nodes.LogoCupid.geometry}
-              material={logoMaterial}
-              position={[0.001, 4.18, -0.006]}
-              layers-enable={2}
-              castShadow={false}
-              receiveShadow={false}
-            />
-          </RotateAxis>
-        </group>
-        <mesh
-          geometry={nodes.scroll.geometry}
-          material={scrollMaterial}
-          castShadow={false}
-          receiveShadow={false}
-          onClick={handleScrollClick}
-          onPointerEnter={handleScrollPointerEnter}
-          onPointerLeave={handleScrollPointerLeave}
-        />
-        <Select disabled>
+  // Play videos when user has interacted
+  useEffect(() => {
+    if (hasInteracted) {
+      playPortal();
+      playWater();
+      if (onPortalPlay) onPortalPlay();
+      if (onWaterPlay) onWaterPlay();
+    }
+  }, [hasInteracted, onPortalPlay, onWaterPlay]);
+
+  const wingsMaterial = useWingsMaterial();
+
+  return (
+    <group dispose={null}>
+      <mesh
+        geometry={nodes.Castle.geometry}
+        material={material}
+        layers-enable={1}
+        castShadow={false}
+        receiveShadow={false}
+      />
+      <mesh geometry={nodes.wings.geometry} material={wingsMaterial} />
+      <mesh geometry={nodes.gods.geometry} material={godsMaterial} />
+      <mesh geometry={nodes.decor.geometry} material={decorMaterial} />
+      <mesh
+        geometry={nodes.floor.geometry}
+        material={floorMaterial}
+        layers-enable={1}
+      />
+      <mesh geometry={nodes.MirrorFrame.geometry} material={decorMaterial} />
+      <mesh
+        geometry={nodes.Mirror.geometry}
+        material={mirror}
+        onClick={handleMirrorClick}
+        onPointerEnter={handleMirrorPointerEnter}
+        onPointerLeave={handleMirrorPointerLeave}
+      />
+      <mesh
+        geometry={nodes.Hallos.geometry}
+        material={hallosMaterial}
+        layers-enable={2}
+      />
+      <mesh
+        geometry={nodes.hoofGlass.geometry}
+        material={hoofMaterial}
+        layers-enable={2}
+      />
+      <mesh
+        geometry={nodes.atm.geometry}
+        material={atmMaterial}
+        layers-enable={2}
+        castShadow={false}
+        receiveShadow={false}
+        onClick={handleAtmClick}
+        onPointerEnter={handleAtmPointerEnter}
+        onPointerLeave={handleAtmPointerLeave}
+      />
+      <group position={[-0.056, 1.247, -2.117]}>
+        <RotateAxis axis="y" speed={0.7} rotationType="euler">
           <mesh
-            geometry={nodes.HeartVid.geometry}
-            material={portal}
-            layers-enable={1}
+            geometry={nodes.bow.geometry}
+            material={decorMaterial}
             castShadow={false}
             receiveShadow={false}
           />
-        </Select>
-        <mesh
-          geometry={nodes.water.geometry}
-          material={waterMaterial}
-          layers-enable={2}
-          castShadow={false}
-          receiveShadow={false}
-        />
-        <FountainParticles
-          count={80}
-          color="lightpink"
-          size={0.03}
-          speed={0.65}
-          spread={0.3}
-          layers-enable={2}
-          castShadow={false}
-          receiveShadow={false}
-        />
-        <AtmIframe
-          position={[1.675, 1.185, 0.86]}
-          rotation={[1.47, 0.194, -1.088]}
-          onReturnToMain={() => {
-            onCastleClick("nav");
-          }}
-          isActive={atmIframeActive}
-        />
-
-        <MirrorIframe
-          onReturnToMain={() => {
-            onCastleClick("nav");
-          }}
-          isActive={mirrorIframeActive}
-        />
-
-        {/* Add the ScrollIframe component, but make sure it's always rendered */}
-        <ScrollIframe
-          onReturnToMain={() => {
-            onCastleClick("nav");
-          }}
-          isActive={scrollIframeActive}
-        />
+        </RotateAxis>
       </group>
-    );
-  };
+      <group>
+        <RotateAxis axis="y" speed={1} rotationType="euler">
+          <mesh
+            geometry={nodes.LogoCupid.geometry}
+            material={logoMaterial}
+            position={[0.001, 4.18, -0.006]}
+            layers-enable={2}
+            castShadow={false}
+            receiveShadow={false}
+          />
+        </RotateAxis>
+      </group>
+      <mesh
+        geometry={nodes.scroll.geometry}
+        material={scrollMaterial}
+        castShadow={false}
+        receiveShadow={false}
+        onClick={handleScrollClick}
+        onPointerEnter={handleScrollPointerEnter}
+        onPointerLeave={handleScrollPointerLeave}
+      />
+      <Select disabled>
+        <mesh
+          geometry={nodes.HeartVid.geometry}
+          material={portal}
+          layers-enable={1}
+          castShadow={false}
+          receiveShadow={false}
+        />
+      </Select>
+      <mesh
+        geometry={nodes.water.geometry}
+        material={waterMaterial}
+        layers-enable={2}
+        castShadow={false}
+        receiveShadow={false}
+      />
+      <FountainParticles
+        count={80}
+        color="lightpink"
+        size={0.03}
+        speed={0.65}
+        spread={0.3}
+        layers-enable={2}
+        castShadow={false}
+        receiveShadow={false}
+      />
+      <AtmIframe
+        position={[1.675, 1.185, 0.86]}
+        rotation={[1.47, 0.194, -1.088]}
+        onReturnToMain={() => {
+          onCastleClick("nav");
+        }}
+        isActive={atmIframeActive}
+      />
+
+      <MirrorIframe
+        onReturnToMain={() => {
+          onCastleClick("nav");
+        }}
+        isActive={mirrorIframeActive}
+      />
+
+      {/* Add the ScrollIframe component, but make sure it's always rendered */}
+      <ScrollIframe
+  onReturnToMain={(source) => {
+    // Close the iframe first for better visual feedback
+    setScrollIframeActive(false);
+
+    // Short delay to let the UI update first
+    setTimeout(() => {
+      if (source === "direct" && window.lastClickedPosition) {
+        const { position, target } = window.lastClickedPosition;
+        smoothCameraReturn(position, target);
+      } else {
+        // Normal pole navigation
+        onCastleClick("nav");
+      }
+    }, 100);
+  }}
+  isActive={scrollIframeActive}
+  navigationSource={scrollNavigationSource}
+/>
+    </group>
+  );
+};
 // Main Component
 const Castle = ({ activeSection }) => {
   const controls = useRef();
@@ -1242,7 +1316,7 @@ const Castle = ({ activeSection }) => {
   const [scrollIframeActive, setScrollIframeActive] = useState(false);
   const [cameraLocked, setCameraLocked] = useState(true);
   const [clipboardMessage, setClipboardMessage] = useState("");
-
+  const [scrollNavigationSource, setScrollNavigationSource] = useState("pole");
   window.resetIframes = () => {
     setAtmiframeActive(false);
     setMirrorIframeActive(false);
@@ -1261,6 +1335,20 @@ const Castle = ({ activeSection }) => {
   };
 
   const playTransition = (sectionName) => {
+    window.globalNavigation.customGoTo = (position, target) => {
+      if (controls.current) {
+        controls.current.setLookAt(
+          position[0],
+          position[1],
+          position[2],
+          target[0],
+          target[1],
+          target[2],
+          true
+        );
+      }
+    };
+
     if (!controls.current) return;
 
     console.log(`Playing transition to section: ${sectionName}`);
@@ -1640,6 +1728,7 @@ const Castle = ({ activeSection }) => {
 
       <Suspense>
         <CastleModel
+          controls={controls}
           onCastleClick={playTransition}
           atmIframeActive={atmiframeActive}
           mirrorIframeActive={mirrorIframeActive}
@@ -1654,6 +1743,9 @@ const Castle = ({ activeSection }) => {
           floorMetalness={materialControls.floorMetalness}
           floorRoughness={materialControls.floorRoughness}
           floorEmissiveIntensity={materialControls.floorEmissiveIntensity}
+          scrollNavigationSource={scrollNavigationSource} // Add this
+          setScrollNavigationSource={setScrollNavigationSource} // Add this
+          setScrollIframeActive={setScrollIframeActive}
         />
       </Suspense>
     </group>

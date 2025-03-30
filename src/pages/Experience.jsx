@@ -25,6 +25,8 @@ import CloudsPole from "../assets/models/CloudsPole";
 import EnvMapLoader from "../components/helpers/EnvMapLoader";
 // import Modeload from "../components/helpers/Modeload";
 
+
+
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -140,6 +142,11 @@ const useCameraAnimation = (section, cameraRef) => {
     let animationFrameId;
 
     const animate = (currentTime) => {
+        // BLOCK ALL ANIMATIONS if global flag is set
+        if (window.blockAllCameraMovement) {
+          return;
+        }
+
       if (!animationRef.current.isActive) return;
 
       // Calcule delta de tempo para ter uma velocidade consistente
@@ -235,9 +242,14 @@ const useCameraAnimation = (section, cameraRef) => {
 
 // Scene Controller component with environment controls
 const SceneController = React.memo(({ section, cameraRef }) => {
+  const { camera } = useThree();
   useCameraAnimation(section, cameraRef);
   const { scene } = useThree();
-
+  useEffect(() => {
+    // Store camera globally
+    window.threeCamera = camera;
+    console.log("Camera captured globally", camera);
+  }, [camera]);
   // Modifique o bloco useControls por completo (aproximadamente linhas 230-254)
 
   const {
@@ -431,7 +443,11 @@ const SceneController = React.memo(({ section, cameraRef }) => {
 const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
   <>
     <EffectsTree />
-    <Castle activeSection={activeSection} scale={[2, 2, 2]} />
+    <Castle
+  activeSection={activeSection}
+  scale={[2, 2, 2]}
+  onCustomCamera={handleCustomCameraPosition}
+/>
     <Flowers />
     {/* <CloudsD /> */}
     {/* <CloudsPole /> */}
@@ -483,6 +499,15 @@ const SceneContent = React.memo(({ activeSection, onSectionChange }) => {
   );
 });
 
+const handleCustomCameraPosition = (position, target) => {
+  if (cameraRef.current && cameraRef.current.camera) {
+    cameraRef.current.camera.position.set(position[0], position[1], position[2]);
+    cameraRef.current.camera.lookAt(target[0], target[1], target[2]);
+    cameraRef.current.camera.updateProjectionMatrix();
+  }
+};
+
+
 // Main Experience Component
 const Experience = () => {
   const [isStarted, setIsStarted] = useState(false);
@@ -494,6 +519,15 @@ const Experience = () => {
     setCurrentSection(index);
     setActiveSection(sectionName);
   };
+
+  useEffect(() => {
+    window.customCameraNavigation = handleCustomCameraPosition;
+
+    return () => {
+      delete window.customCameraNavigation;
+    };
+  }, []);
+
 
   // ADD THIS: Make the section change handler globally available
   useEffect(() => {
@@ -514,7 +548,7 @@ const Experience = () => {
       window.onSectionChange = null;
     };
   }, []);
-  
+
 
   // const handleStart = () => {
   //   setIsStarted(true);
