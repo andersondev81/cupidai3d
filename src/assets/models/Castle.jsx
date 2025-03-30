@@ -704,17 +704,16 @@ const useCastleMaterial = (
   materialType = "standard",
   metalness = 1,
   roughness = 1.6,
-  emissiveIntensity = 2,
-  emissiveColor = "#f4f4f4"
+  emissiveIntensity = 0,
+  emissiveColor = "#000"
 ) => {
   const textures = useTexture({
-    map: "/texture/CastleBake.webp",
-    metalnessMap: "/texture/castleMetallic.webp",
-    roughnessMap: "/texture/castleRoughness.webp",
-    emissiveMap: "/texture/castleEmissive.webp",
+    map: "/texture/castle_Base_Color.webp",
+    metalnessMap: "/texture/castle_Metallic.webp",
+    roughnessMap: "/texture/castle_Roughness.webp",
   })
 
-  const clouds = useTexture("/images/venice_sunset_2k.png")
+  const clouds = useTexture("/images/bg1.jpg")
 
   useMemo(() => {
     Object.values(textures).forEach((texture) => {
@@ -781,17 +780,15 @@ const useCastleMaterial = (
 const useCastleHeartMaterial = (
   metalness = 1,
   roughness = 0,
-  emissiveIntensity = 5,
+  emissiveIntensity = 1,
   emissiveColor = "#f4f4f4"
 ) => {
   const textures = useTexture({
-    map: "/texture/CastleBake.webp",
-    metalnessMap: "/texture/castleMetallic.webp",
-    roughnessMap: "/texture/castleRoughness.webp",
-    emissiveMap: "/texture/castleEmissive.webp",
+    map: "/texture/castleHeart_Base_color.webp",
+    emissiveMap: "/texture/castleHeart_Emissive.webp",
   })
 
-  const clouds = useTexture("/images/clouds.jpg")
+  const clouds = useTexture("/images/bg1.jpg")
 
   useMemo(() => {
     Object.values(textures).forEach(texture => {
@@ -817,6 +814,7 @@ const useCastleHeartMaterial = (
       metalness: metalness,
       metalnessMap: textures.metalnessMap,
       emissiveMap: textures.emissiveMap,
+      emissivemapOpacity: 0.5,
       emissive: new Color(emissiveColor),
       emissiveIntensity: emissiveIntensity,
       blending: NormalBlending,
@@ -826,39 +824,25 @@ const useCastleHeartMaterial = (
   }, [textures, metalness, roughness, emissiveIntensity, emissiveColor, clouds])
 }
 
-const useCastleHeartMaskMaterial = (metalness = 1, roughness = 0) => {
-  const textures = useTexture({
-    map: "/texture/CastleBake.webp",
-    metalnessMap: "/texture/castleMetallic.webp",
-    roughnessMap: "/texture/castleRoughness.webp",
-  })
-
-  useMemo(() => {
-    Object.values(textures).forEach(texture => {
-      if (texture) {
-        texture.flipY = true
-        texture.minFilter = texture.magFilter = NearestFilter
-      }
-    })
-  }, [textures])
-
-  return useMemo(() => {
-    return new MeshStandardMaterial({
-      map: textures.map,
-      side: DoubleSide,
-      transparent: false,
-      alphaTest: 0.05,
-      roughnessMap: textures.roughnessMap,
-      roughness: roughness,
-      metalness: metalness,
-      metalnessMap: textures.metalnessMap,
-    })
-  }, [textures, metalness, roughness])
+const useCastleHeartMaskMaterial = () => {
+  return useMemo(
+    () =>
+      new MeshPhysicalMaterial({
+        color: new Color("#DABB46"),
+        transparent: false,
+        alphaTest: 0.05,
+        side: DoubleSide,
+        blending: NormalBlending,
+        roughness: 0,
+        metalness: 1,
+      }),
+    []
+  )
 }
 
 const useCastleLightsMaterial = () => {
   const { emissiveMap } = useTexture({
-    emissiveMap: "/texture/castleEmissive.webp",
+    emissiveMap: "/texture/castleLights_Emissive.webp",
   })
 
   return new MeshStandardMaterial({
@@ -868,22 +852,208 @@ const useCastleLightsMaterial = () => {
     side: DoubleSide,
   })
 }
+
+const usecastleGodsWallsMaterial = (
+  materialType = "standard",
+  metalness = 0,
+  roughness = 0.3
+) => {
+  const textures = useTexture({
+    map: "/texture/castleGodsWall_Base_color.webp",
+    roughnessMap: "/texture/castleGodsWall_Roughness.webp",
+  })
+
+  const clouds = useTexture("/images/bg1.jpg")
+
+  useMemo(() => {
+    Object.values(textures).forEach(texture => {
+      if (texture) {
+        texture.flipY = true
+        texture.minFilter = texture.magFilter = NearestFilter
+      }
+    })
+
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [textures, clouds])
+
+  return useMemo(() => {
+    // Propriedades base compartilhadas por todos os materiais
+    const commonProps = {
+      map: textures.map,
+      side: DoubleSide,
+      transparent: false,
+      alphaTest: 0.05,
+    }
+
+    // Propriedades específicas para materiais que suportam PBR
+    const pbrProps = {
+      ...commonProps,
+      roughnessMap: textures.roughnessMap,
+      roughness: roughness,
+      metalness: metalness,
+      blending: NormalBlending,
+      envMap: clouds,
+      envMapIntensity: 1.0,
+    }
+
+    // Criar o material baseado no tipo selecionado
+    switch (materialType) {
+      case "physical":
+        return new MeshPhysicalMaterial(pbrProps)
+      case "basic":
+        return new MeshBasicMaterial({
+          ...commonProps,
+          color: new Color(0xffffff),
+        })
+      case "standard":
+      default:
+        return new MeshStandardMaterial(pbrProps)
+    }
+  }, [textures, materialType, metalness, roughness, clouds])
+}
+
+const useCastleWallsMaterial = (
+  materialType = "standard",
+  metalness = 0,
+  roughness = 0.3
+) => {
+  const textures = useTexture({
+    map: "/texture/castleWalls_Base_color.webp",
+    roughnessMap: "/texture/castleWalls_Roughness.webp",
+  })
+
+  const clouds = useTexture("/images/bg1.jpg")
+
+  useMemo(() => {
+    Object.values(textures).forEach(texture => {
+      if (texture) {
+        texture.flipY = true
+        texture.minFilter = texture.magFilter = NearestFilter
+      }
+    })
+
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [textures, clouds])
+
+  return useMemo(() => {
+    // Propriedades base compartilhadas por todos os materiais
+    const commonProps = {
+      map: textures.map,
+      side: DoubleSide,
+      transparent: false,
+      alphaTest: 0.05,
+    }
+
+    // Propriedades específicas para materiais que suportam PBR
+    const pbrProps = {
+      ...commonProps,
+      roughnessMap: textures.roughnessMap,
+      roughness: roughness,
+      metalness: metalness,
+      blending: NormalBlending,
+      envMap: clouds,
+      envMapIntensity: 1.0,
+    }
+
+    // Criar o material baseado no tipo selecionado
+    switch (materialType) {
+      case "physical":
+        return new MeshPhysicalMaterial(pbrProps)
+      case "basic":
+        return new MeshBasicMaterial({
+          ...commonProps,
+          color: new Color(0xffffff),
+        })
+      case "standard":
+      default:
+        return new MeshStandardMaterial(pbrProps)
+    }
+  }, [textures, materialType, metalness, roughness, clouds])
+}
+
+const useCastlePilarsMaterial = (
+  materialType = "standard",
+  metalness = 0,
+  roughness = 1
+) => {
+  const textures = useTexture({
+    map: "/texture/castlePilars_Base_color.webp",
+    roughnessMap: "/texture/castlePilars_Roughness.webp",
+    metalnessMap: "/texture/castlePilars_Metallic.webp",
+    emissiveMap: "/texture/castlePilars_Emissive.webp",
+  })
+
+  const clouds = useTexture("/images/bg1.jpg")
+
+  useMemo(() => {
+    Object.values(textures).forEach(texture => {
+      if (texture) {
+        texture.flipY = true
+        texture.minFilter = texture.magFilter = NearestFilter
+      }
+    })
+
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [textures, clouds])
+
+  return useMemo(() => {
+    // Propriedades base compartilhadas por todos os materiais
+    const commonProps = {
+      map: textures.map,
+      side: DoubleSide,
+      transparent: false,
+      alphaTest: 0.05,
+    }
+
+    // Propriedades específicas para materiais que suportam PBR
+    const pbrProps = {
+      ...commonProps,
+      roughnessMap: textures.roughnessMap,
+      metalnessMap: textures.metalnessMap,
+      emissiveMap: textures.emissiveMap,
+      emissive: new Color(0xffffff), // Cor base para a emissão
+      emissiveIntensity: 2.0, // Intensidade da emissão
+      roughness: roughness,
+      metalness: metalness,
+      blending: NormalBlending,
+      envMap: clouds,
+      envMapIntensity: 1.0,
+    }
+
+    // Criar o material baseado no tipo selecionado
+    switch (materialType) {
+      case "physical":
+        return new MeshPhysicalMaterial(pbrProps)
+      case "basic":
+        return new MeshBasicMaterial({
+          ...commonProps,
+          color: new Color(0xffffff),
+        })
+      case "standard":
+      default:
+        return new MeshStandardMaterial(pbrProps)
+    }
+  }, [textures, materialType, metalness, roughness, clouds])
+}
 // Floor Material
 const useFloorMaterial = (
   materialType = "physical", // "standard", "physical", ou "basic"
-  metalness = 1,
-  roughness = 0.2,
-  emissiveIntensity = 20.2,
-  emissiveColor = "#fff"
+  metalness = 0,
+  roughness = 1
 ) => {
   const textures = useTexture({
-    map: "/texture/floorColorBake.webp",
-    roughnessMap: "/texture/floorRoughness.webp",
-    metalnessMap: "/texture/floorMetallic.webp",
-    materialEmissive: "/texture/floorEmissive.webp",
+    map: "/texture/floor_Base_colorAO.jpg",
+    roughnessMap: "/texture/floor_Roughness.webp",
+    metalnessMap: "/texture/floorHeart_Metallic.webp",
   })
 
-  const clouds = useTexture("/images/venice_sunset_2k.png")
+  const clouds = useTexture("/images/bg1.jpg")
 
   useMemo(() => {
     Object.values(textures).forEach((texture) => {
@@ -1064,14 +1234,7 @@ const useCastlePilarsMaterial = (
           clearcoatRoughness: 0.1,
         })
     }
-  }, [
-    textures,
-    metalness,
-    roughness,
-    emissiveIntensity,
-    emissiveColor,
-    clouds, // Added clouds dependency
-  ])
+  }, [textures, materialType, metalness, roughness, clouds])
 }
 
 const useFloorHeartMaterial = (
@@ -1081,10 +1244,10 @@ const useFloorHeartMaterial = (
   emissiveColor = "#fff"
 ) => {
   const textures = useTexture({
-    map: "/texture/floorColorBake.webp",
-    roughnessMap: "/texture/floorRoughness.webp",
-    metalnessMap: "/texture/floorMetallic.webp",
-    emissiveMap: "/texture/floorEmissive.webp",
+    map: "/texture/castleHeart_Base_colorAO.webp",
+    roughnessMap: "/texture/floorHeart_Roughness.webp",
+    metalnessMap: "/texture/floorHeart_Metallic.webp",
+    emissiveMap: "/texture/floorHeart_Emissive.webp",
   })
 
   const clouds = useTexture("/images/bg1.jpg")
@@ -1228,7 +1391,7 @@ const useHallosMaterial = () => {
 const useGodsMaterial = () => {
   const textures = useTexture({
     map: "/texture/godsColorAO.webp",
-  });
+  })
 
   useMemo(() => {
     Object.values(textures).forEach((texture) => {
@@ -1462,6 +1625,9 @@ const CastleModel = ({
   const castleHeart = useCastleHeartMaterial()
   const castleHeartMask = useCastleHeartMaskMaterial()
   const castleLights = useCastleLightsMaterial()
+  const castleGodsWalls = usecastleGodsWallsMaterial()
+  const castleWalls = useCastleWallsMaterial()
+  const castlePilars = useCastlePilarsMaterial()
   const floorMaterial = useFloorMaterial(
     floorMaterialType,
     floorMetalness,
@@ -1472,7 +1638,6 @@ const CastleModel = ({
   const logoMaterial = useLogoMaterial()
   const decorMaterial = useDecorMaterial()
   const godsMaterial = useGodsMaterial()
-
   const hoofMaterial = useHoofMaterial()
   const atmMaterial = useAtmMaterial()
   const scrollMaterial = useScrollMaterial()
@@ -1557,6 +1722,13 @@ const CastleModel = ({
         material={castleHeartMask}
       />
       <mesh geometry={nodes.castleLights.geometry} material={castleLights} />
+      <mesh
+        geometry={nodes.castleGodsWalls.geometry}
+        material={castleGodsWalls}
+      />
+
+      <mesh geometry={nodes.castleWalls.geometry} material={castleWalls} />
+      <mesh geometry={nodes.castlePilars.geometry} material={castlePilars} />
       <mesh geometry={nodes.wings.geometry} material={wingsMaterial} />
       <mesh geometry={nodes.gods.geometry} material={godsMaterial} />
       <mesh geometry={nodes.decor.geometry} material={decorMaterial} />
