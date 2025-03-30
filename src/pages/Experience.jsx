@@ -12,6 +12,8 @@ import { Pole } from "../assets/models/Pole"
 import { Stairs } from "../assets/models/Stairs"
 import { CAMERA_CONFIG } from "../components/cameraConfig"
 import { EffectsTree } from "../components/helpers/EffectsTree"
+import { CloudGroup } from "../assets/models/CloudsGroup"
+import CloudParticle from "../assets/models/CLoudParticle"
 
 // Iframes
 import AtmIframe from "../assets/models/AtmIframe"
@@ -434,7 +436,19 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
     <Castle activeSection={activeSection} scale={[2, 2, 2]} />
     <Flowers />
     {/* <CloudsD /> */}
-    <CloudsPole />
+    {/* <CloudsPole /> */}
+    {/* <CloudGroup
+      clouds={[{ position: [10, 5, 0] }, { position: [-5, 3, 15] }]}
+      commonProps={{ opacity: 0.7 }}
+    /> */}
+    {/* <CloudParticle
+      position={[2, 0, -5]}
+      count={500}
+      size={2}
+      opacity={0.7}
+      color="#e6f2ff"
+      noBloom={false}
+    /> */}
     <Orb />
     <Pole
       position={[-0.8, 0, 5.8]}
