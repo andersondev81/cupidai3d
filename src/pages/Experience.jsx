@@ -438,10 +438,42 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
     <Flowers />
     {/* <CloudsD /> */}
     {/* <CloudsPole /> */}
-    {/* <CloudGroup
-      clouds={[{ position: [10, 5, 0] }, { position: [-5, 3, 15] }]}
-      commonProps={{ opacity: 0.7 }}
-    /> */}
+    <CloudGroup
+      clouds={[
+        // line 1
+        { position: [1, 0.3, 4.2] },
+        { position: [0.8, 0.3, 3.4] },
+        { position: [1, 0.3, 3.2] },
+        { position: [1.7, 0.3, 3] },
+        { position: [2.4, 0.3, 2.5] },
+        { position: [2.7, 0.3, 1.8] },
+        { position: [2.7, 0.3, 0.9] },
+        { position: [2.7, 0.3, 0] },
+        { position: [2.7, 0.3, -0.9] },
+        { position: [2.7, 0.3, -1.8] },
+        { position: [2.2, 0.3, -2.5] },
+        { position: [1.4, 0.3, -3] },
+        { position: [0.5, 0.3, -3.2] },
+        { position: [0, 0.3, -3.2] },
+        // side
+        { position: [-1, 0.1, 4.2] },
+        { position: [-0.8, 0.2, 3.8] },
+        { position: [-1, 0.3, 3.2] },
+        { position: [-1.7, 0.3, 3] },
+        { position: [-2.4, 0.3, 2.5] },
+        { position: [-2.7, 0.3, 1.8] },
+        { position: [-2.7, 0.3, 0.9] },
+        { position: [-2.7, 0.3, 0] },
+        { position: [-2.7, 0.3, -0.9] },
+        { position: [-2.7, 0.3, -1.8] },
+        { position: [-2.2, 0.3, -2.5] },
+        { position: [-1.4, 0.3, -3] },
+        { position: [-0.5, 0.3, -3.2] },
+        { position: [-0, 0.3, -3.2] },
+        // line 2
+      ]}
+      commonProps={{ opacity: 1 }}
+    />
     {/* <CloudParticle
       position={[2, 0, -5]}
       count={500}

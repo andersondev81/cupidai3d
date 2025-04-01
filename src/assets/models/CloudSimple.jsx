@@ -20,14 +20,14 @@ import PropTypes from "prop-types"
  */
 export const CloudSimple = ({
   position = [0, 10, 0],
-  scale = 1,
-  opacity = 0.5,
-  speed = 0.1,
-  width = 6,
-  depth = 0.3,
+  scale = [0.2, 0.2, 0.2],
+  opacity = 1,
+  speed = 0,
+  width = 2,
+  depth = 0.2,
   height,
-  segments = 8,
-  color = "white",
+  segments = 7,
+  color = "#E8E8E8",
   fade = 0.1,
   ...rest
 }) => {
