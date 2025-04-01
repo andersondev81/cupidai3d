@@ -1,8 +1,7 @@
-import { CameraControls, useGLTF, useTexture } from "@react-three/drei";
-import { Select } from "@react-three/postprocessing";
-import { button, useControls } from "leva";
-import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import * as THREE from "three";
+import { CameraControls, useGLTF, useTexture } from "@react-three/drei"
+import { Select } from "@react-three/postprocessing"
+import { button, useControls } from "leva"
+import React, { Suspense, useEffect, useMemo, useRef, useState } from "react"
 import {
   Color,
   DoubleSide,
@@ -10,18 +9,22 @@ import {
   MeshBasicMaterial,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
+  MeshLambertMaterial,
+  MeshPhongMaterial,
   NearestFilter,
   NormalBlending,
+  RepeatWrapping,
   VideoTexture,
-} from "three";
-import FountainParticles from "../../components/FountainParticles";
-import RotateAxis from "../../components/helpers/RotateAxis";
-import AtmIframe from "../models/AtmIframe";
-import MirrorIframe from "../models/MirrorIframe";
-import ScrollIframe from "../models/ScrolIframe";
+} from "three"
+import * as THREE from "three"
+import FountainParticles from "../../components/FountainParticles"
+import RotateAxis from "../../components/helpers/RotateAxis"
+import AtmIframe from "../models/AtmIframe"
+import MirrorIframe from "../models/MirrorIframe"
+import ScrollIframe from "../models/ScrolIframe"
 
-const SMALL_SCREEN_THRESHOLD = 768;
-const TRANSITION_DELAY = 100;
+const SMALL_SCREEN_THRESHOLD = 768
+const TRANSITION_DELAY = 100
 window.lastClickedPosition = null;
 
 // Add this function at the top of your Castle.jsx file
@@ -52,13 +55,6 @@ function smoothCameraReturn(position, target) {
       .catch((err) => console.error("Camera transition error:", err));
   }, 50);
 }
-
-// Add this in the SceneController's useCameraAnimation function
-// At the beginning of the animate function:
-
-// Rest of animation function continues...
-
-// Now in the ScrollIframe handler:
 
 // Adjust resource paths for deployment
 // const getAssetPath = path => {
@@ -262,26 +258,25 @@ const NavigationSystem = {
 
 // Initialize the navigation system when the module loads
 NavigationSystem.init();
-
 window.globalNavigation = {
   navigateTo: null,
   lastSection: "nav",
   sectionIndices: {
-    nav: 0,
-    about: 1,
-    aidatingcoach: 2,
-    download: 3,
-    token: 4,
-    roadmap: 5,
+    "nav": 0,
+    "about": 1,
+    "aidatingcoach": 2,
+    "download": 3,
+    "token": 4,
+    "roadmap": 5
   },
-  reset: function () {
+  reset: function() {
     if (window.resetIframes) {
       window.resetIframes();
     }
   },
-  log: function (message) {
+  log: function(message) {
     console.log(`[Navigation] ${message}`);
-  },
+  }
 };
 
 const cameraConfig = {
@@ -403,7 +398,7 @@ const cameraConfig = {
       ],
     },
   },
-};
+}
 
 // Enhanced Audio Hook with iOS compatibility
 // const useMultiAudio = () => {
@@ -648,70 +643,75 @@ const cameraConfig = {
 // }
 
 // Localizar o hook useVideoTexture (por volta da linha 220-240)
-const useVideoTexture = (videoPath) => {
-  const [texture, setTexture] = useState(null);
-  const videoRef = useRef(null);
+const useVideoTexture = videoPath => {
+  const [texture, setTexture] = useState(null)
+  const videoRef = useRef(null)
 
   useEffect(() => {
-    const video = document.createElement("video");
-    video.src = videoPath;
-    video.loop = true;
-    video.muted = true;
-    video.playsInline = true;
+    const video = document.createElement("video")
+    video.src = videoPath
+    video.loop = true
+    video.muted = true
+    video.playsInline = true
     // Adicione essas duas linhas:
-    video.autoplay = true;
+    video.autoplay = true
     // video.play()
     // video.load()
 
-    videoRef.current = video;
+    videoRef.current = video
 
-    const videoTexture = new VideoTexture(video);
-    videoTexture.minFilter = LinearFilter;
-    videoTexture.magFilter = LinearFilter;
-    videoTexture.flipY = false;
+    const videoTexture = new VideoTexture(video)
+    videoTexture.minFilter = LinearFilter
+    videoTexture.magFilter = LinearFilter
+    videoTexture.flipY = false
 
-    setTexture(videoTexture);
+    setTexture(videoTexture)
 
     // Cleanup
     return () => {
-      video.pause();
-      video.src = "";
-    };
-  }, [videoPath]);
+      video.pause()
+      video.src = ""
+    }
+  }, [videoPath])
 
   const playVideo = () => {
     if (videoRef.current) {
-      videoRef.current.play().catch((err) => {
-        console.warn("Could not play video:", err);
-      });
+      videoRef.current.play().catch(err => {
+        console.warn("Could not play video:", err)
+      })
     }
-  };
+  }
 
-  return { texture, playVideo };
-};
-
+  return { texture, playVideo }
+}
+// Castle materials
 const useCastleMaterial = (
   materialType = "standard",
   metalness = 1,
   roughness = 1.6,
-  emissiveIntensity = 2,
-  emissiveColor = "#fff"
+  emissiveIntensity = 0,
+  emissiveColor = "#000"
 ) => {
   const textures = useTexture({
-    map: "/texture/castleColorAOT2.webp",
-    metalnessMap: "/texture/castleMetallic.webp",
-    roughnessMap: "/texture/castleRoughness.webp",
-    emissiveMap: "/texture/castleEmissive.png",
-  });
+    map: "/texture/castle_Base_Color.webp",
+    metalnessMap: "/texture/castle_Metallic.webp",
+    roughnessMap: "/texture/castle_Roughness.webp",
+  })
+
+  const clouds = useTexture("/images/bg1.jpg")
 
   useMemo(() => {
-    Object.values(textures).forEach((texture) => {
+    Object.values(textures).forEach(texture => {
       if (texture) {
-        texture.flipY = true;
-        texture.minFilter = texture.magFilter = NearestFilter;
+        texture.flipY = true
+        texture.minFilter = texture.magFilter = NearestFilter
       }
-    });
-  }, [textures]);
+    })
+
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [textures, clouds])
 
   return useMemo(() => {
     // Propriedades base compartilhadas por todos os materiais
@@ -720,7 +720,7 @@ const useCastleMaterial = (
       side: DoubleSide,
       transparent: false,
       alphaTest: 0.05,
-    };
+    }
 
     // Propriedades específicas para materiais que suportam PBR
     const pbrProps = {
@@ -732,20 +732,22 @@ const useCastleMaterial = (
       emissive: new Color(emissiveColor),
       emissiveIntensity: emissiveIntensity,
       blending: NormalBlending,
-    };
+      envMap: clouds,
+      envMapIntensity: 1.0,
+    }
 
     // Criar o material baseado no tipo selecionado
     switch (materialType) {
       case "physical":
-        return new MeshPhysicalMaterial(pbrProps);
+        return new MeshPhysicalMaterial(pbrProps)
       case "basic":
         return new MeshBasicMaterial({
           ...commonProps,
           color: new Color(0xffffff),
-        });
+        })
       case "standard":
       default:
-        return new MeshStandardMaterial(pbrProps);
+        return new MeshStandardMaterial(pbrProps)
     }
   }, [
     textures,
@@ -754,32 +756,110 @@ const useCastleMaterial = (
     roughness,
     emissiveIntensity,
     emissiveColor,
-  ]);
-};
+    clouds, // Adicionado clouds como dependência
+  ])
+}
 
-// Floor Material
-const useFloorMaterial = (
-  materialType = "physical", // "standard", "physical", ou "basic"
+const useCastleHeartMaterial = (
   metalness = 1,
-  roughness = 0.2,
-  emissiveIntensity = 8.2,
-  emissiveColor = "#00bdff"
+  roughness = 0,
+  emissiveIntensity = 1,
+  emissiveColor = "#f4f4f4"
 ) => {
   const textures = useTexture({
-    map: "/texture/floorColorBake.webp",
-    roughnessMap: "/texture/floorRoughness.webp",
-    metalnessMap: "/texture/floorMetallic .webp",
-    materialEmissive: "/texture/floorEmissive.webp",
-  });
+    map: "/texture/castleHeart_Base_color.webp",
+    emissiveMap: "/texture/castleHeart_Emissive.webp",
+  })
+
+  const clouds = useTexture("/images/bg1.jpg")
 
   useMemo(() => {
-    Object.values(textures).forEach((texture) => {
+    Object.values(textures).forEach(texture => {
       if (texture) {
-        texture.flipY = true;
-        texture.minFilter = texture.magFilter = NearestFilter;
+        texture.flipY = true
+        texture.minFilter = texture.magFilter = NearestFilter
       }
-    });
-  }, [textures]);
+    })
+
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [textures, clouds])
+
+  return useMemo(() => {
+    return new MeshStandardMaterial({
+      map: textures.map,
+      side: DoubleSide,
+      transparent: false,
+      alphaTest: 0.05,
+      roughnessMap: textures.roughnessMap,
+      roughness: roughness,
+      metalness: metalness,
+      metalnessMap: textures.metalnessMap,
+      emissiveMap: textures.emissiveMap,
+      emissivemapOpacity: 0.5,
+      emissive: new Color(emissiveColor),
+      emissiveIntensity: emissiveIntensity,
+      blending: NormalBlending,
+      envMap: clouds,
+      envMapIntensity: 1.0,
+    })
+  }, [textures, metalness, roughness, emissiveIntensity, emissiveColor, clouds])
+}
+
+const useCastleHeartMaskMaterial = () => {
+  return useMemo(
+    () =>
+      new MeshPhysicalMaterial({
+        color: new Color("#DABB46"),
+        transparent: false,
+        alphaTest: 0.05,
+        side: DoubleSide,
+        blending: NormalBlending,
+        roughness: 0,
+        metalness: 1,
+      }),
+    []
+  )
+}
+
+const useCastleLightsMaterial = () => {
+  const { emissiveMap } = useTexture({
+    emissiveMap: "/texture/castleLights_Emissive.webp",
+  })
+
+  return new MeshStandardMaterial({
+    emissive: new Color("#fff"),
+    emissiveIntensity: 2,
+    emissiveMap: emissiveMap,
+    side: DoubleSide,
+  })
+}
+
+const usecastleGodsWallsMaterial = (
+  materialType = "standard",
+  metalness = 0,
+  roughness = 0.3
+) => {
+  const textures = useTexture({
+    map: "/texture/castleGodsWall_Base_color.webp",
+    roughnessMap: "/texture/castleGodsWall_Roughness.webp",
+  })
+
+  const clouds = useTexture("/images/bg1.jpg")
+
+  useMemo(() => {
+    Object.values(textures).forEach(texture => {
+      if (texture) {
+        texture.flipY = true
+        texture.minFilter = texture.magFilter = NearestFilter
+      }
+    })
+
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [textures, clouds])
 
   return useMemo(() => {
     // Propriedades base compartilhadas por todos os materiais
@@ -787,7 +867,197 @@ const useFloorMaterial = (
       map: textures.map,
       side: DoubleSide,
       transparent: false,
-    };
+      alphaTest: 0.05,
+    }
+
+    // Propriedades específicas para materiais que suportam PBR
+    const pbrProps = {
+      ...commonProps,
+      roughnessMap: textures.roughnessMap,
+      roughness: roughness,
+      metalness: metalness,
+      blending: NormalBlending,
+      envMap: clouds,
+      envMapIntensity: 1.0,
+    }
+
+    // Criar o material baseado no tipo selecionado
+    switch (materialType) {
+      case "physical":
+        return new MeshPhysicalMaterial(pbrProps)
+      case "basic":
+        return new MeshBasicMaterial({
+          ...commonProps,
+          color: new Color(0xffffff),
+        })
+      case "standard":
+      default:
+        return new MeshStandardMaterial(pbrProps)
+    }
+  }, [textures, materialType, metalness, roughness, clouds])
+}
+
+const useCastleWallsMaterial = (
+  materialType = "standard",
+  metalness = 0,
+  roughness = 0.3
+) => {
+  const textures = useTexture({
+    map: "/texture/castleWalls_Base_color.webp",
+    roughnessMap: "/texture/castleWalls_Roughness.webp",
+  })
+
+  const clouds = useTexture("/images/bg1.jpg")
+
+  useMemo(() => {
+    Object.values(textures).forEach(texture => {
+      if (texture) {
+        texture.flipY = true
+        texture.minFilter = texture.magFilter = NearestFilter
+      }
+    })
+
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [textures, clouds])
+
+  return useMemo(() => {
+    // Propriedades base compartilhadas por todos os materiais
+    const commonProps = {
+      map: textures.map,
+      side: DoubleSide,
+      transparent: false,
+      alphaTest: 0.05,
+    }
+
+    // Propriedades específicas para materiais que suportam PBR
+    const pbrProps = {
+      ...commonProps,
+      roughnessMap: textures.roughnessMap,
+      roughness: roughness,
+      metalness: metalness,
+      blending: NormalBlending,
+      envMap: clouds,
+      envMapIntensity: 1.0,
+    }
+
+    // Criar o material baseado no tipo selecionado
+    switch (materialType) {
+      case "physical":
+        return new MeshPhysicalMaterial(pbrProps)
+      case "basic":
+        return new MeshBasicMaterial({
+          ...commonProps,
+          color: new Color(0xffffff),
+        })
+      case "standard":
+      default:
+        return new MeshStandardMaterial(pbrProps)
+    }
+  }, [textures, materialType, metalness, roughness, clouds])
+}
+
+const useCastlePilarsMaterial = (
+  materialType = "standard",
+  metalness = 0,
+  roughness = 1
+) => {
+  const textures = useTexture({
+    map: "/texture/castlePilars_Base_color.webp",
+    roughnessMap: "/texture/castlePilars_Roughness.webp",
+    metalnessMap: "/texture/castlePilars_Metallic.webp",
+    emissiveMap: "/texture/castlePilars_Emissive.webp",
+  })
+
+  const clouds = useTexture("/images/bg1.jpg")
+
+  useMemo(() => {
+    Object.values(textures).forEach(texture => {
+      if (texture) {
+        texture.flipY = true
+        texture.minFilter = texture.magFilter = NearestFilter
+      }
+    })
+
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [textures, clouds])
+
+  return useMemo(() => {
+    // Propriedades base compartilhadas por todos os materiais
+    const commonProps = {
+      map: textures.map,
+      side: DoubleSide,
+      transparent: false,
+      alphaTest: 0.05,
+    }
+
+    // Propriedades específicas para materiais que suportam PBR
+    const pbrProps = {
+      ...commonProps,
+      roughnessMap: textures.roughnessMap,
+      metalnessMap: textures.metalnessMap,
+      emissiveMap: textures.emissiveMap,
+      emissive: new Color(0xffffff), // Cor base para a emissão
+      emissiveIntensity: 2.0, // Intensidade da emissão
+      roughness: roughness,
+      metalness: metalness,
+      blending: NormalBlending,
+      envMap: clouds,
+      envMapIntensity: 1.0,
+    }
+
+    // Criar o material baseado no tipo selecionado
+    switch (materialType) {
+      case "physical":
+        return new MeshPhysicalMaterial(pbrProps)
+      case "basic":
+        return new MeshBasicMaterial({
+          ...commonProps,
+          color: new Color(0xffffff),
+        })
+      case "standard":
+      default:
+        return new MeshStandardMaterial(pbrProps)
+    }
+  }, [textures, materialType, metalness, roughness, clouds])
+}
+// Floor Material
+const useFloorMaterial = (
+  materialType = "physical", // "standard", "physical", ou "basic"
+  metalness = 0,
+  roughness = 1
+) => {
+  const textures = useTexture({
+    map: "/texture/floor_Base_colorAO.jpg",
+    roughnessMap: "/texture/floor_Roughness.webp",
+    metalnessMap: "/texture/floorHeart_Metallic.webp",
+  })
+
+  const clouds = useTexture("/images/bg1.jpg")
+
+  useMemo(() => {
+    Object.values(textures).forEach(texture => {
+      if (texture) {
+        texture.flipY = true
+        texture.minFilter = texture.magFilter = NearestFilter
+      }
+    })
+
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [textures, clouds])
+
+  return useMemo(() => {
+    // Propriedades base compartilhadas por todos os materiais
+    const commonProps = {
+      map: textures.map,
+      side: DoubleSide,
+      transparent: false,
+    }
 
     // Propriedades específicas para materiais que suportam PBR
     const pbrProps = {
@@ -796,49 +1066,92 @@ const useFloorMaterial = (
       metalnessMap: textures.metalnessMap,
       roughness: roughness,
       metalness: metalness,
-      emissiveMap: textures.materialEmissive,
-      emissive: new Color(emissiveColor),
-      emissiveIntensity: emissiveIntensity,
       blending: NormalBlending,
-    };
+      envMap: clouds,
+      envMapIntensity: 1.0,
+    }
 
     // Criar o material baseado no tipo selecionado
     switch (materialType) {
       case "standard":
-        return new MeshStandardMaterial(pbrProps);
+        return new MeshStandardMaterial(pbrProps)
       case "basic":
         return new MeshBasicMaterial({
           ...commonProps,
           color: new Color(0xffffff),
-        });
+        })
       case "physical":
       default:
-        return new MeshPhysicalMaterial(pbrProps);
+        return new MeshPhysicalMaterial({
+          ...pbrProps,
+          // Additional physical material properties if needed
+          clearcoat: 0.5,
+          clearcoatRoughness: 0.1,
+        })
     }
-  }, [
-    textures,
-    materialType,
-    metalness,
-    roughness,
-    emissiveIntensity,
-    emissiveColor,
-  ]);
-};
+  }, [textures, materialType, metalness, roughness, clouds])
+}
 
+const useFloorHeartMaterial = (
+  metalness = 1,
+  roughness = 0.2,
+  emissiveIntensity = 1.5,
+  emissiveColor = "#fff"
+) => {
+  const textures = useTexture({
+    map: "/texture/castleHeart_Base_colorAO.webp",
+    roughnessMap: "/texture/floorHeart_Roughness.webp",
+    metalnessMap: "/texture/floorHeart_Metallic.webp",
+    emissiveMap: "/texture/floorHeart_Emissive.webp",
+  })
+
+  const clouds = useTexture("/images/bg1.jpg")
+
+  useMemo(() => {
+    Object.values(textures).forEach(texture => {
+      if (texture) {
+        texture.flipY = true
+        texture.minFilter = texture.magFilter = NearestFilter
+      }
+    })
+
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [textures, clouds])
+
+  return useMemo(() => {
+    return new MeshStandardMaterial({
+      map: textures.map,
+      roughnessMap: textures.roughnessMap,
+      metalnessMap: textures.metalnessMap,
+      emissiveMap: textures.emissiveMap,
+      side: DoubleSide,
+      roughness: roughness,
+      metalness: metalness,
+      emissive: new Color(emissiveColor),
+      emissiveIntensity: emissiveIntensity,
+      transparent: false,
+      blending: NormalBlending,
+      envMap: clouds,
+      envMapIntensity: 1.0,
+    })
+  }, [textures, metalness, roughness, emissiveIntensity, emissiveColor, clouds])
+}
 //wings Material
 const useWingsMaterial = () => {
   const textures = useTexture({
     map: "/texture/WingsColorAO.webp",
-  });
+  })
 
   useMemo(() => {
-    Object.values(textures).forEach((texture) => {
+    Object.values(textures).forEach(texture => {
       if (texture) {
-        texture.flipY = true;
-        texture.minFilter = texture.magFilter = NearestFilter;
+        texture.flipY = true
+        texture.minFilter = texture.magFilter = NearestFilter
       }
-    });
-  }, [textures]);
+    })
+  }, [textures])
 
   return useMemo(
     () =>
@@ -849,8 +1162,8 @@ const useWingsMaterial = () => {
         side: DoubleSide,
       }),
     [textures]
-  );
-};
+  )
+}
 
 //Logo Material
 const useLogoMaterial = () => {
@@ -866,8 +1179,8 @@ const useLogoMaterial = () => {
         metalness: 1,
       }),
     []
-  );
-};
+  )
+}
 
 //Decor Material
 const useDecorMaterial = () => {
@@ -883,17 +1196,17 @@ const useDecorMaterial = () => {
         metalness: 1,
       }),
     []
-  );
-};
+  )
+}
 //MirrorMaterial
 const useMirrorMaterial = () => {
-  const clouds = useTexture("/images/clouds.jpg");
+  const clouds = useTexture("/images/clouds.jpg")
 
   useEffect(() => {
     if (clouds) {
-      clouds.mapping = THREE.EquirectangularReflectionMapping;
+      clouds.mapping = THREE.EquirectangularReflectionMapping
     }
-  }, [clouds]);
+  }, [clouds])
 
   return useMemo(
     () =>
@@ -909,8 +1222,8 @@ const useMirrorMaterial = () => {
         envMapIntensity: 1.0,
       }),
     [clouds]
-  );
-};
+  )
+}
 
 //Hallos Material
 const useHallosMaterial = () => {
@@ -926,24 +1239,24 @@ const useHallosMaterial = () => {
         metalness: 2,
       }),
     []
-  );
-};
+  )
+}
 
 // Gods Material
 const useGodsMaterial = () => {
   const textures = useTexture({
-    map: "/texture/godsColor.webp",
-  });
+    map: "/texture/godsColorAO.webp",
+  })
 
   useMemo(() => {
-    Object.values(textures).forEach((texture) => {
+    Object.values(textures).forEach(texture => {
       if (texture) {
-        texture.flipY = true;
-        texture.minFilter = texture.magFilter = NearestFilter;
-        texture.colorSpace = "srgb";
+        texture.flipY = true
+        texture.minFilter = texture.magFilter = NearestFilter
+        texture.colorSpace = "srgb"
       }
-    });
-  }, [textures]);
+    })
+  }, [textures])
 
   return useMemo(
     () =>
@@ -957,23 +1270,23 @@ const useGodsMaterial = () => {
         metalness: 1,
       }),
     [textures]
-  );
-};
+  )
+}
 // Hoof Material
 const useHoofMaterial = () => {
   const textures = useTexture({
     map: "/texture/hoofGlassColorBAO.webp",
     emissiveMap: "/texture/hoofGlassEmissiveV2.webp",
-  });
+  })
 
   useMemo(() => {
-    Object.values(textures).forEach((texture) => {
+    Object.values(textures).forEach(texture => {
       if (texture) {
-        texture.flipY = true;
-        texture.minFilter = texture.magFilter = NearestFilter;
+        texture.flipY = true
+        texture.minFilter = texture.magFilter = NearestFilter
       }
-    });
-  }, [textures]);
+    })
+  }, [textures])
 
   return useMemo(
     () =>
@@ -989,25 +1302,31 @@ const useHoofMaterial = () => {
         metalness: 1,
       }),
     [textures]
-  );
-};
+  )
+}
 //atm Material
 const useAtmMaterial = () => {
   const textures = useTexture({
-    map: "/texture/atmColorB.webp",
+    map: "/texture/atmColor.webp",
     roughnessMap: "/texture/atmRoughness.webp",
     metalnessMap: "/texture/atmMetalness.webp",
     materialEmissive: "/texture/atmEmissive.webp",
-  });
+  })
+
+  const clouds = useTexture("/images/bg1.jpg")
 
   useMemo(() => {
-    Object.values(textures).forEach((texture) => {
+    Object.values(textures).forEach(texture => {
       if (texture) {
-        texture.flipY = true;
-        texture.minFilter = texture.magFilter = NearestFilter;
+        texture.flipY = true
+        texture.minFilter = texture.magFilter = NearestFilter
       }
-    });
-  }, [textures]);
+    })
+
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [textures, clouds])
 
   return useMemo(
     () =>
@@ -1022,12 +1341,14 @@ const useAtmMaterial = () => {
         blending: NormalBlending,
         metalness: 1,
         roughness: 0.6,
-        emissive: new Color(0xf6d8ff),
-        emissiveIntensity: 1.2,
+        emissive: new Color(0xc4627d),
+        emissiveIntensity: 3.5,
+        envMap: clouds,
+        envMapIntensity: 1.0,
       }),
-    [textures]
-  );
-};
+    [textures, clouds] // Added clouds to dependencies
+  )
+}
 
 //Scroll Material
 const useScrollMaterial = () => {
@@ -1035,16 +1356,16 @@ const useScrollMaterial = () => {
   try {
     const textures = useTexture({
       map: "./texture/ScrollColor.webp",
-    });
+    })
 
     useMemo(() => {
-      Object.values(textures).forEach((texture) => {
+      Object.values(textures).forEach(texture => {
         if (texture) {
-          texture.flipY = true;
-          texture.minFilter = texture.magFilter = NearestFilter;
+          texture.flipY = true
+          texture.minFilter = texture.magFilter = NearestFilter
         }
-      });
-    }, [textures]);
+      })
+    }, [textures])
 
     return useMemo(
       () =>
@@ -1055,9 +1376,9 @@ const useScrollMaterial = () => {
           side: DoubleSide,
         }),
       [textures]
-    );
+    )
   } catch (error) {
-    console.warn("Failed to load ScrollColor texture, using fallback");
+    console.warn("Failed to load ScrollColor texture, using fallback")
     return useMemo(
       () =>
         new MeshStandardMaterial({
@@ -1067,32 +1388,32 @@ const useScrollMaterial = () => {
           side: DoubleSide,
         }),
       []
-    );
+    )
   }
-};
+}
 
 //Portal Material
 const usePortalMaterial = () => {
   return useMemo(() => {
-    const video = document.createElement("video");
-    video.src = "/video/tunnel.mp4";
-    video.loop = true;
-    video.muted = true;
-    video.playsInline = true;
-    video.autoplay = true;
-    video.play();
+    const video = document.createElement("video")
+    video.src = "/video/tunnel.mp4"
+    video.loop = true
+    video.muted = true
+    video.playsInline = true
+    video.autoplay = true
+    video.play()
 
-    const videoTexture = new VideoTexture(video);
-    videoTexture.minFilter = LinearFilter;
-    videoTexture.magFilter = LinearFilter;
-    videoTexture.flipY = true;
+    const videoTexture = new VideoTexture(video)
+    videoTexture.minFilter = LinearFilter
+    videoTexture.magFilter = LinearFilter
+    videoTexture.flipY = true
 
     return new MeshBasicMaterial({
       map: videoTexture,
       side: DoubleSide,
-    });
-  }, []);
-};
+    })
+  }, [])
+}
 
 // Fontaine Water Material
 
@@ -1149,28 +1470,35 @@ const CastleModel = ({
   setMirrorIframeActive,
   setScrollIframeActive
 }) => {
-  const { nodes } = useGLTF("/models/Castle.glb");
+  const { nodes } = useGLTF("/models/Castle.glb")
   const material = useCastleMaterial(
     castleMaterialType,
     castleMetalness,
     castleRoughness,
     castleEmissiveIntensity
-  );
-  const logoMaterial = useLogoMaterial();
-  const decorMaterial = useDecorMaterial();
-  const godsMaterial = useGodsMaterial();
+  )
+  const castleHeart = useCastleHeartMaterial()
+  const castleHeartMask = useCastleHeartMaskMaterial()
+  const castleLights = useCastleLightsMaterial()
+  const castleGodsWalls = usecastleGodsWallsMaterial()
+  const castleWalls = useCastleWallsMaterial()
+  const castlePilars = useCastlePilarsMaterial()
   const floorMaterial = useFloorMaterial(
     floorMaterialType,
     floorMetalness,
     floorRoughness,
     floorEmissiveIntensity
-  );
-  const hoofMaterial = useHoofMaterial();
-  const atmMaterial = useAtmMaterial();
-  const scrollMaterial = useScrollMaterial();
-  const portal = usePortalMaterial();
-  const mirror = useMirrorMaterial();
-  const hallosMaterial = useHallosMaterial();
+  )
+  const floorHeart = useFloorHeartMaterial()
+  const logoMaterial = useLogoMaterial()
+  const decorMaterial = useDecorMaterial()
+  const godsMaterial = useGodsMaterial()
+  const hoofMaterial = useHoofMaterial()
+  const atmMaterial = useAtmMaterial()
+  const scrollMaterial = useScrollMaterial()
+  const portal = usePortalMaterial()
+  const mirror = useMirrorMaterial()
+  const hallosMaterial = useHallosMaterial()
 
   // Create handlers for each interactive element
   const atmHandlers = NavigationSystem.createElementHandlers(
@@ -1219,7 +1547,7 @@ const CastleModel = ({
 
   // Use the video texture hook for portal
   const { texture: portalTexture, playVideo: playPortal } =
-    useVideoTexture("/video/tunnel.mp4");
+    useVideoTexture("/video/tunnel.mp4")
   const portalMaterial = useMemo(
     () =>
       portalTexture
@@ -1232,11 +1560,11 @@ const CastleModel = ({
             side: DoubleSide,
           }),
     [portalTexture]
-  );
+  )
 
   // Use the video texture hook for water
   const { texture: waterTexture, playVideo: playWater } =
-    useVideoTexture("/video/water.mp4");
+    useVideoTexture("/video/water.mp4")
   const waterMaterial = useMemo(
     () =>
       waterTexture
@@ -1255,29 +1583,52 @@ const CastleModel = ({
             side: DoubleSide,
           }),
     [waterTexture]
-  );
+  )
+
+  // Depois no useEffect para iniciar a reprodução:
+  useEffect(() => {
+    if (hasInteracted) {
+      playPortal()
+      playWater()
+      if (onPortalPlay) onPortalPlay()
+      if (onWaterPlay) onWaterPlay()
+    }
+  }, [hasInteracted, onPortalPlay])
 
   // Play videos when user has interacted
   useEffect(() => {
     if (hasInteracted) {
-      playPortal();
-      playWater();
-      if (onPortalPlay) onPortalPlay();
-      if (onWaterPlay) onWaterPlay();
+      playPortal()
+      playWater()
+      if (onPortalPlay) onPortalPlay()
+      if (onWaterPlay) onWaterPlay()
     }
-  }, [hasInteracted, onPortalPlay, onWaterPlay]);
+  }, [hasInteracted, onPortalPlay, onWaterPlay])
 
-  const wingsMaterial = useWingsMaterial();
+  const wingsMaterial = useWingsMaterial()
 
   return (
     <group dispose={null}>
       <mesh
-        geometry={nodes.Castle.geometry}
+        geometry={nodes.castle.geometry}
         material={material}
         layers-enable={1}
         castShadow={false}
         receiveShadow={false}
       />
+      <mesh geometry={nodes.castleHeart.geometry} material={castleHeart} />
+      <mesh
+        geometry={nodes.castleHeartMask.geometry}
+        material={castleHeartMask}
+      />
+      <mesh geometry={nodes.castleLights.geometry} material={castleLights} />
+      <mesh
+        geometry={nodes.castleGodsWalls.geometry}
+        material={castleGodsWalls}
+      />
+
+      <mesh geometry={nodes.castleWalls.geometry} material={castleWalls} />
+      <mesh geometry={nodes.castlePilars.geometry} material={castlePilars} />
       <mesh geometry={nodes.wings.geometry} material={wingsMaterial} />
       <mesh geometry={nodes.gods.geometry} material={godsMaterial} />
       <mesh geometry={nodes.decor.geometry} material={decorMaterial} />
@@ -1286,6 +1637,7 @@ const CastleModel = ({
         material={floorMaterial}
         layers-enable={1}
       />
+      <mesh geometry={nodes.floorHeart.geometry} material={floorHeart} />
       <mesh geometry={nodes.MirrorFrame.geometry} material={decorMaterial} />
       <mesh
         geometry={nodes.Mirror.geometry}
@@ -1345,7 +1697,7 @@ const CastleModel = ({
       <Select disabled>
         <mesh
           geometry={nodes.HeartVid.geometry}
-          material={portalMaterial}
+          material={portal}
           layers-enable={1}
           castShadow={false}
           receiveShadow={false}
@@ -1368,10 +1720,7 @@ const CastleModel = ({
         castShadow={false}
         receiveShadow={false}
       />
-     // Fix for the iframes in CastleModel component
-
-// For the AtmIframe component:
-<AtmIframe
+      <AtmIframe
   position={[1.675, 1.185, 0.86]}
   rotation={[1.47, 0.194, -1.088]}
   onReturnToMain={() => {
@@ -1396,7 +1745,6 @@ const CastleModel = ({
   isActive={atmIframeActive}
 />
 
-// For the MirrorIframe component:
 <MirrorIframe
   onReturnToMain={() => {
     // Close the iframe first
@@ -1419,8 +1767,8 @@ const CastleModel = ({
   isActive={mirrorIframeActive}
 />
 
-// For the ScrollIframe component:
-<ScrollIframe
+      {/* Add the ScrollIframe component, but make sure it's always rendered */}
+      <ScrollIframe
   onReturnToMain={() => {
     // Close the iframe first
     setScrollIframeActive(false);
@@ -1442,29 +1790,26 @@ const CastleModel = ({
   isActive={scrollIframeActive}
 />
     </group>
-  );
-};
-// Main Component
-// Main Component
-// Navigation system to handle all interactive elements
+  )
+}
 
-
+// Main Component
 const Castle = ({ activeSection }) => {
   const controls = useRef();
   const [atmiframeActive, setAtmiframeActive] = useState(false);
   const [mirrorIframeActive, setMirrorIframeActive] = useState(false);
   const [scrollIframeActive, setScrollIframeActive] = useState(false);
   const [cameraLocked, setCameraLocked] = useState(true);
-  const [clipboardMessage, setClipboardMessage] = useState("");
+  const [clipboardMessage, setClipboardMessage] = useState("")
 
-  // Reset function for iframes
+
   window.resetIframes = () => {
     setAtmiframeActive(false);
     setMirrorIframeActive(false);
     setScrollIframeActive(false);
   };
 
-  const getCameraPosition = (section) => {
+  const getCameraPosition = section => {
     const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD;
     const screenType = isSmallScreen ? "small" : "large";
 
@@ -1480,20 +1825,22 @@ const Castle = ({ activeSection }) => {
 
     console.log(`Playing transition to section: ${sectionName}`);
 
-    // Update iframe active states based on section
     if (sectionName === "roadmap") {
       setScrollIframeActive(true);
       setAtmiframeActive(false);
       setMirrorIframeActive(false);
-    } else if (sectionName === "token" || sectionName === "atm") {
+    }
+    else if (sectionName === "token" || sectionName === "atm") {
       setAtmiframeActive(true);
       setScrollIframeActive(false);
       setMirrorIframeActive(false);
-    } else if (sectionName === "aidatingcoach") {
+    }
+    else if (sectionName === "aidatingcoach") {
       setMirrorIframeActive(true);
       setScrollIframeActive(false);
       setAtmiframeActive(false);
-    } else {
+    }
+    else {
       setScrollIframeActive(false);
       setAtmiframeActive(false);
       setMirrorIframeActive(false);
@@ -1506,9 +1853,8 @@ const Castle = ({ activeSection }) => {
     );
 
     if (targetPosition) {
-      controls.current
-        .setLookAt(...targetPosition, true)
-        .catch((error) => {
+      controls.current.setLookAt(...targetPosition, true)
+        .catch(error => {
           console.error("Camera transition error:", error);
         })
         .finally(() => {
@@ -1518,7 +1864,7 @@ const Castle = ({ activeSection }) => {
     }
   };
 
-  // Make the transition function available globally
+
   window.globalNavigation.navigateTo = playTransition;
 
   const handleReturnToMain = () => {
@@ -1526,90 +1872,92 @@ const Castle = ({ activeSection }) => {
     playTransition("nav");
   };
 
+
+
   // Function to copy camera position to clipboard
   const copyPositionToClipboard = () => {
-    if (!controls.current) return;
+    if (!controls.current) return
 
     try {
       // Get position and target from controls
-      const position = controls.current.getPosition();
-      const target = controls.current.getTarget();
+      const position = controls.current.getPosition()
+      const target = controls.current.getTarget()
 
       // Handle different possible return formats
-      let posArray, targetArray;
+      let posArray, targetArray
 
       // Handle position - might be Vector3, array, or object with x,y,z
       if (Array.isArray(position)) {
-        posArray = position;
+        posArray = position
       } else if (typeof position.toArray === "function") {
-        posArray = position.toArray();
+        posArray = position.toArray()
       } else {
-        posArray = [position.x, position.y, position.z];
+        posArray = [position.x, position.y, position.z]
       }
 
       // Handle target - might be Vector3, array, or object with x,y,z
       if (Array.isArray(target)) {
-        targetArray = target;
+        targetArray = target
       } else if (typeof target.toArray === "function") {
-        targetArray = target.toArray();
+        targetArray = target.toArray()
       } else {
-        targetArray = [target.x, target.y, target.z];
+        targetArray = [target.x, target.y, target.z]
       }
 
       // Combine into the format needed for the camera config
-      const positionArray = [...posArray, ...targetArray];
+      const positionArray = [...posArray, ...targetArray]
 
       // Format the array for display and copy
       const formattedArray = positionArray
-        .map((val) => Number(val).toFixed(15))
-        .join(", ");
+        .map(val => Number(val).toFixed(15))
+        .join(", ")
 
       // Also create a formatted JS array for console
       const jsArrayFormat = `[\n  ${posArray
-        .map((val) => Number(val).toFixed(15))
+        .map(val => Number(val).toFixed(15))
         .join(",\n  ")},\n  ${targetArray
-        .map((val) => Number(val).toFixed(15))
-        .join(",\n  ")}\n]`;
+        .map(val => Number(val).toFixed(15))
+        .join(",\n  ")}\n]`
 
       // Copy to clipboard
       navigator.clipboard
         .writeText(formattedArray)
         .then(() => {
-          setClipboardMessage("Position copied to clipboard!");
+          setClipboardMessage("Position copied to clipboard!")
 
           // Clear message after 3 seconds
           setTimeout(() => {
-            setClipboardMessage("");
-          }, 3000);
+            setClipboardMessage("")
+          }, 3000)
         })
-        .catch((err) => {
-          console.error("Could not copy position to clipboard:", err);
-          setClipboardMessage("Failed to copy position.");
+        .catch(err => {
+          console.error("Could not copy position to clipboard:", err)
+          setClipboardMessage("Failed to copy position.")
 
           // Clear message after 3 seconds
           setTimeout(() => {
-            setClipboardMessage("");
-          }, 3000);
-        });
+            setClipboardMessage("")
+          }, 3000)
+        })
 
       // Log to console in different formats for reference
-      console.log("Camera raw position:", position);
-      console.log("Camera raw target:", target);
-      console.log("Camera position array:", positionArray);
-      console.log("Camera position formatted for config:", jsArrayFormat);
+      console.log("Camera raw position:", position)
+      console.log("Camera raw target:", target)
+      console.log("Camera position array:", positionArray)
+      console.log("Camera position formatted for config:", jsArrayFormat)
     } catch (error) {
-      console.error("Error getting camera position:", error);
-      setClipboardMessage("Error getting camera position");
+      console.error("Error getting camera position:", error)
+      setClipboardMessage("Error getting camera position")
 
       setTimeout(() => {
-        setClipboardMessage("");
-      }, 3000);
+        setClipboardMessage("")
+      }, 3000)
     }
-  };
+  }
 
-  // Make controls globally available
   useEffect(() => {
     if (!controls.current) return;
+
     window.controls = controls;
 
     // Initial configuration
@@ -1632,7 +1980,6 @@ const Castle = ({ activeSection }) => {
         playTransition("nav");
       }, TRANSITION_DELAY);
     }
-
     return () => {
       // Cleanup
       delete window.controls;
@@ -1645,61 +1992,61 @@ const Castle = ({ activeSection }) => {
       cameraLocked: {
         value: cameraLocked,
         label: "Lock Camera",
-        onChange: (locked) => {
-          setCameraLocked(locked);
+        onChange: locked => {
+          setCameraLocked(locked)
 
-          if (!controls.current) return;
+          if (!controls.current) return
 
           if (locked) {
             // Quando travada, aplicar restrições
-            controls.current.minPolarAngle = Math.PI * 0.4;
-            controls.current.maxPolarAngle = Math.PI * 0.5;
-            controls.current.minDistance = 5;
-            controls.current.maxDistance = 20;
-            controls.current.boundaryFriction = 1;
-            controls.current.boundaryEnclosesCamera = true;
-            controls.current.dollyToCursor = false;
-            controls.current.minY = 1;
-            controls.current.maxY = 15;
+            controls.current.minPolarAngle = Math.PI * 0.4
+            controls.current.maxPolarAngle = Math.PI * 0.5
+            controls.current.minDistance = 5
+            controls.current.maxDistance = 20
+            controls.current.boundaryFriction = 1
+            controls.current.boundaryEnclosesCamera = true
+            controls.current.dollyToCursor = false
+            controls.current.minY = 1
+            controls.current.maxY = 15
 
             // Retornar para a posição da seção atual
-            const targetPosition = getCameraPosition(activeSection || "nav");
+            const targetPosition = getCameraPosition(activeSection || "nav")
             if (targetPosition) {
-              controls.current.setLookAt(...targetPosition, true);
+              controls.current.setLookAt(...targetPosition, true)
             }
 
             // Desabilitar controle contínuo
-            controls.current.enabled = activeSection === "nav";
+            controls.current.enabled = activeSection === "nav"
           } else {
             // Quando destravada, remover todas as restrições
-            controls.current.minPolarAngle = 0;
-            controls.current.maxPolarAngle = Math.PI;
-            controls.current.minDistance = 0.1;
-            controls.current.maxDistance = 100;
-            controls.current.boundaryFriction = 0;
-            controls.current.boundaryEnclosesCamera = false;
-            controls.current.minY = null;
-            controls.current.maxY = null;
+            controls.current.minPolarAngle = 0
+            controls.current.maxPolarAngle = Math.PI
+            controls.current.minDistance = 0.1
+            controls.current.maxDistance = 100
+            controls.current.boundaryFriction = 0
+            controls.current.boundaryEnclosesCamera = false
+            controls.current.minY = null
+            controls.current.maxY = null
 
             // Habilitar controle contínuo
-            controls.current.enabled = true;
+            controls.current.enabled = true
           }
         },
       },
       getLookAt: button(() => {
-        copyPositionToClipboard();
+        copyPositionToClipboard()
       }),
       resetCamera: button(() => {
-        if (!controls.current) return;
+        if (!controls.current) return
 
-        const targetPosition = getCameraPosition(activeSection || "nav");
+        const targetPosition = getCameraPosition(activeSection || "nav")
         if (targetPosition) {
-          controls.current.setLookAt(...targetPosition, true);
+          controls.current.setLookAt(...targetPosition, true)
         }
       }),
     },
     { collapsed: false }
-  );
+  )
 
   useEffect(() => {
     if (!controls.current || !controls.current.mouseButtons) return;
@@ -1709,18 +2056,14 @@ const Castle = ({ activeSection }) => {
     controls.current.verticalDragToForward = false; // Disable zoom on vertical drag
 
     // Handle Ctrl+Click safely
-    const handleKeyDown = (event) => {
+    const handleKeyDown = event => {
       if (event.ctrlKey && controls.current && controls.current.mouseButtons) {
         controls.current.mouseButtons.left = 4; // Truck with Ctrl+MouseLeft
       }
     };
 
-    const handleKeyUp = (event) => {
-      if (
-        event.key === "Control" &&
-        controls.current &&
-        controls.current.mouseButtons
-      ) {
+    const handleKeyUp = event => {
+      if (event.key === "Control" && controls.current && controls.current.mouseButtons) {
         controls.current.mouseButtons.left = 1; // Back to ROTATE when Ctrl is released
       }
     };
@@ -1738,47 +2081,46 @@ const Castle = ({ activeSection }) => {
   useEffect(() => {
     if (clipboardMessage) {
       // Create and append notification element
-      const notification = document.createElement("div");
-      notification.style.position = "absolute";
-      notification.style.top = "10px";
-      notification.style.right = "10px";
-      notification.style.padding = "8px 12px";
-      notification.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
-      notification.style.color = "white";
-      notification.style.borderRadius = "4px";
-      notification.style.zIndex = "1000";
-      notification.style.fontFamily = "sans-serif";
-      notification.style.fontSize = "14px";
-      notification.style.transition = "opacity 0.3s ease";
-      notification.style.opacity = "0";
-      notification.textContent = clipboardMessage;
+      const notification = document.createElement("div")
+      notification.style.position = "absolute"
+      notification.style.top = "10px"
+      notification.style.right = "10px"
+      notification.style.padding = "8px 12px"
+      notification.style.backgroundColor = "rgba(0, 0, 0, 0.7)"
+      notification.style.color = "white"
+      notification.style.borderRadius = "4px"
+      notification.style.zIndex = "1000"
+      notification.style.fontFamily = "sans-serif"
+      notification.style.fontSize = "14px"
+      notification.style.transition = "opacity 0.3s ease"
+      notification.style.opacity = "0"
+      notification.textContent = clipboardMessage
 
-      document.body.appendChild(notification);
+      document.body.appendChild(notification)
 
       // Fade in
       setTimeout(() => {
-        notification.style.opacity = "1";
-      }, 10);
+        notification.style.opacity = "1"
+      }, 10)
 
       // Remove after timeout
       setTimeout(() => {
-        notification.style.opacity = "0";
+        notification.style.opacity = "0"
         setTimeout(() => {
           if (document.body.contains(notification)) {
-            document.body.removeChild(notification);
+            document.body.removeChild(notification)
           }
-        }, 300);
-      }, 3000);
+        }, 300)
+      }, 3000)
 
       // Cleanup on unmount
       return () => {
         if (document.body.contains(notification)) {
-          document.body.removeChild(notification);
+          document.body.removeChild(notification)
         }
-      };
+      }
     }
-  }, [clipboardMessage]);
-
+  }, [clipboardMessage])
   const materialControls = useControls(
     "Materials",
     {
@@ -1847,8 +2189,7 @@ const Castle = ({ activeSection }) => {
       },
     },
     { collapsed: false }
-  );
-
+  )
   return (
     <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
       <CameraControls
@@ -1864,7 +2205,7 @@ const Castle = ({ activeSection }) => {
 
       <Suspense>
         <CastleModel
-          controls={controls}
+               controls={controls}
           onCastleClick={playTransition}
           atmIframeActive={atmiframeActive}
           mirrorIframeActive={mirrorIframeActive}
@@ -1879,9 +2220,6 @@ const Castle = ({ activeSection }) => {
           floorMetalness={materialControls.floorMetalness}
           floorRoughness={materialControls.floorRoughness}
           floorEmissiveIntensity={materialControls.floorEmissiveIntensity}
-          setAtmiframeActive={setAtmiframeActive}
-          setMirrorIframeActive={setMirrorIframeActive}
-          setScrollIframeActive={setScrollIframeActive}
         />
       </Suspense>
     </group>
@@ -1889,3 +2227,4 @@ const Castle = ({ activeSection }) => {
 };
 
 export default Castle;
+

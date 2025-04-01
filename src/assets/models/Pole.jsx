@@ -6,18 +6,17 @@ import * as THREE from "three";
 import {
   DoubleSide,
   EquirectangularReflectionMapping,
-  MeshPhysicalMaterial,
-  NearestFilter,
-  NormalBlending,
-} from "three";
-import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
-import RotateAxis from "../../components/helpers/RotateAxis";
+} from "three"
+import * as THREE from "three"
+import { metalness, roughness } from "three/examples/jsm/nodes/Nodes.js"
 
 const usePoleMaterial = () => {
   // Carregar texturas do Pole
   const textures = useTexture({
-    map: "/texture/PoleColorBAO.webp",
-  });
+    map: "/texture/PoleColorAO.webp",
+    metalnessMap: "/texture/PoleMetallicA.webp",
+    roughnessMap: "/texture/Pole_Roughness.webp",
+  })
 
   // Carregar HDR específico para o Pole
   const envMap = useLoader(RGBELoader, "/images/PanoramaV1.hdr");
@@ -35,17 +34,19 @@ const usePoleMaterial = () => {
 
   const material = useMemo(
     () =>
-      new MeshPhysicalMaterial({
+      new MeshStandardMaterial({
         map: textures.map,
-
+        metalnessMap: textures.metalnessMap,
+        roughnessMap: textures.roughnessMap,
         emissiveMap: textures.emissiveMap,
         transparent: false,
         alphaTest: 0.5,
         side: DoubleSide,
         blending: NormalBlending,
-        roughness: 0.6,
-        metalness: 1.6,
+        roughness: 0,
+        metalness: 1.3,
         envMap: envMap,
+        envMapIntensity: 1.9,
       }),
     [textures, envMap]
   );
@@ -65,8 +66,8 @@ const useHeartsMaterial = () => {
   // Load heart textures
   const textures = useTexture({
     map: "/texture/heartColor.webp",
-    emissiveMap: "/texture/HeartPoleEmissive.webp",
-  });
+    emissiveMap: "/texture/Heart_EmissiveW.webp",
+  })
 
   // Process all textures
   useMemo(() => {
@@ -86,7 +87,7 @@ const useHeartsMaterial = () => {
         map: textures.map,
         emissiveMap: textures.emissiveMap,
         emissive: new THREE.Color(0x00bdff),
-        emissiveIntensity: 6,
+        emissiveIntensity: 2.5,
         side: DoubleSide,
         metalness: 1,
         roughness: 0.4,
