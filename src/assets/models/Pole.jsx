@@ -100,9 +100,23 @@ export function Pole({ onSectionChange, ...props }) {
   const material = usePoleMaterial();
   const materialHearts = useHeartsMaterial();
 
+  // Simplified click handler using the navigation system
   const createClickHandler = (sectionIndex, sectionName) => (e) => {
     e.stopPropagation();
     console.log(`Pole: Clicked on section ${sectionName}`);
+
+    // Tag this navigation as coming from the pole
+    if (window.navigationSystem) {
+      // Mark that we're not storing a direct position for this navigation
+      // We'll do this by clearing any existing position for this element
+      const elementId = sectionName === "aidatingcoach" ? "mirror" :
+                       sectionName === "token" ? "atm" :
+                       sectionName === "roadmap" ? "scroll" : null;
+
+      if (elementId && window.navigationSystem.clearPositionForElement) {
+        window.navigationSystem.clearPositionForElement(elementId);
+      }
+    }
 
     if (onSectionChange && typeof onSectionChange === "function") {
       console.log(`Pole: Using onSectionChange callback for ${sectionName}`);
@@ -130,18 +144,6 @@ export function Pole({ onSectionChange, ...props }) {
     },
   };
 
-  useEffect(() => {
-    // Expose the setter function to the window for the Pole component to access
-    window.setScrollNavigationSource = (source) => {
-      setScrollNavigationSource(source);
-    };
-
-    return () => {
-      // Clean up on unmount
-      delete window.setScrollNavigationSource;
-    };
-  }, []);
-
   // Verificar se os nós existem antes de tentar acessar suas geometrias
   if (!nodes || !nodes.pole) {
     console.warn("Pole nodes not loaded properly");
@@ -166,17 +168,7 @@ export function Pole({ onSectionChange, ...props }) {
           <mesh
             geometry={nodes.roadmap.geometry}
             material={materialHearts}
-            onClick={(e) => {
-              e.stopPropagation();
-
-              // When clicked from pole, set navigation source to "pole"
-              if (window.setScrollNavigationSource) {
-                window.setScrollNavigationSource("pole");
-              }
-
-              // Original click handler
-              createClickHandler(5, "roadmap")(e);
-            }}
+            onClick={createClickHandler(5, "roadmap")}
             {...pointerHandlers}
           />
         )}
@@ -190,7 +182,8 @@ export function Pole({ onSectionChange, ...props }) {
           />
         )}
 
-        {nodes.about && (
+
+{nodes.about && (
           <mesh
             geometry={nodes.about.geometry}
             material={materialHearts}

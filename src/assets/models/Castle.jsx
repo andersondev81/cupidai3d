@@ -39,19 +39,24 @@ function smoothCameraReturn(position, target) {
   // Let any active animations complete
   setTimeout(() => {
     // Use the exact same method used for section transitions
-    window.controls.current.setLookAt(
-      position[0], position[1], position[2],
-      target[0], target[1], target[2],
-      true // true enables animation
-    ).catch(err => console.error("Camera transition error:", err));
+    window.controls.current
+      .setLookAt(
+        position[0],
+        position[1],
+        position[2],
+        target[0],
+        target[1],
+        target[2],
+        true // true enables animation
+      )
+      .catch((err) => console.error("Camera transition error:", err));
   }, 50);
 }
 
 // Add this in the SceneController's useCameraAnimation function
 // At the beginning of the animate function:
 
-
-  // Rest of animation function continues...
+// Rest of animation function continues...
 
 // Now in the ScrollIframe handler:
 
@@ -77,6 +82,187 @@ function smoothCameraReturn(position, target) {
 //   fountain: getAssetPath("/assets/sounds/fountain.mp3"),
 // }
 // Camera Positions Configuration
+
+window.lastClickedPositions = {
+  mirror: null,
+  atm: null,
+  scroll: null,
+  orb: null
+};
+
+// Function for smooth camera return transitions globally accessible
+window.smoothCameraReturn = function(position, target) {
+  if (!window.controls || !window.controls.current) {
+    console.error("No controls available for camera transition");
+    return;
+  }
+
+  console.log("Smooth transition to position:", position, "target:", target);
+
+  // Use the existing CameraControls that already handle animations
+  window.controls.current.enabled = true; // Important - enable controls first
+
+  // Let any active animations complete
+  setTimeout(() => {
+    // Use the exact same method used for section transitions
+    window.controls.current.setLookAt(
+      position[0], position[1], position[2],
+      target[0], target[1], target[2],
+      true // true enables animation
+    ).catch(err => console.error("Camera transition error:", err));
+  }, 50);
+};
+
+// Estenda o sistema de navegação para lidar com o Orb também
+if (window.navigationSystem) {
+  const origClearPositions = window.navigationSystem.clearPositions;
+  window.navigationSystem.clearPositions = function() {
+    // Chame a função original
+    if (origClearPositions) origClearPositions();
+
+    // Limpe o array global também
+    window.lastClickedPositions = {
+      mirror: null,
+      atm: null,
+      scroll: null,
+      orb: null
+    };
+    console.log("Cleared all stored positions");
+  };
+
+  // Adicione função de limpeza para elementos individuais se ainda não existir
+  if (!window.navigationSystem.clearPositionForElement) {
+    window.navigationSystem.clearPositionForElement = function(elementId) {
+      if (window.lastClickedPositions && window.lastClickedPositions[elementId]) {
+        delete window.lastClickedPositions[elementId];
+        console.log(`Cleared position for ${elementId}`);
+      }
+    };
+  }
+}
+
+const NavigationSystem = {
+  // Store camera positions for each navigation element
+  positions: {},
+
+  // Initialize the system
+  init: () => {
+    window.navigationSystem = {
+      // Store position for any interactive element
+      storePosition: (elementId, position, target) => {
+        NavigationSystem.positions[elementId] = { position, target };
+        console.log(
+          `Stored camera position for ${elementId}:`,
+          NavigationSystem.positions[elementId]
+        );
+      },
+
+      // Retrieve position for any element
+      getPosition: (elementId) => {
+        return NavigationSystem.positions[elementId];
+      },
+
+      // Clear stored positions
+      clearPositions: () => {
+        NavigationSystem.positions = {};
+      },
+
+      // Handle return navigation
+      returnToPosition: (elementId, defaultAction) => {
+        const storedPosition = NavigationSystem.positions[elementId];
+
+        if (storedPosition) {
+          const { position, target } = storedPosition;
+          if (window.controls && window.controls.current) {
+            console.log(`Returning to stored position for ${elementId}`);
+            // Return camera to stored position
+            window.controls.current
+              .setLookAt(
+                position[0],
+                position[1],
+                position[2],
+                target[0],
+                target[1],
+                target[2],
+                true
+              )
+              .catch((err) => console.error("Camera transition error:", err));
+            return true;
+          }
+        }
+
+        // If no stored position or error, use default action
+        defaultAction();
+        return false;
+      },
+    };
+  },
+
+  // Create handlers for interactive elements
+  createElementHandlers: (elementId, navigateTo, setActive, isActive) => {
+    const handleElementClick = (e) => {
+      e.stopPropagation();
+      console.log(`${elementId} clicked - navigating to section`);
+
+      // Prevent navigation if already active
+      if (isActive) return;
+
+      // Store current camera position before navigating
+      if (window.controls && window.controls.current) {
+        try {
+          const position = window.controls.current.getPosition();
+          const target = window.controls.current.getTarget();
+
+          // Convert to arrays for consistent format
+          const posArray = Array.isArray(position)
+            ? position
+            : [position.x, position.y, position.z];
+          const targetArray = Array.isArray(target)
+            ? target
+            : [target.x, target.y, target.z];
+
+          // Store position
+          window.navigationSystem.storePosition(
+            elementId,
+            posArray,
+            targetArray
+          );
+        } catch (err) {
+          console.error(
+            `Failed to store camera position for ${elementId}:`,
+            err
+          );
+        }
+      }
+
+      // Navigate to target section
+      navigateTo();
+    };
+
+    const handleElementPointerEnter = (e) => {
+      if (isActive) return;
+      e.stopPropagation();
+      document.body.style.cursor = "pointer";
+    };
+
+    const handleElementPointerLeave = (e) => {
+      e.stopPropagation();
+      document.body.style.cursor = "default";
+    };
+
+    return {
+      handleClick: handleElementClick,
+      pointerHandlers: {
+        onPointerEnter: handleElementPointerEnter,
+        onPointerLeave: handleElementPointerLeave,
+      },
+    };
+  },
+};
+
+// Initialize the navigation system when the module loads
+NavigationSystem.init();
+
 window.globalNavigation = {
   navigateTo: null,
   lastSection: "nav",
@@ -959,12 +1145,9 @@ const CastleModel = ({
   floorMetalness,
   floorRoughness,
   floorEmissiveIntensity,
-  scrollNavigationSource,
-  setScrollIframeActive,
-  setScrollNavigationSource,
-  atmNavigationSource,
-  setAtmNavigationSource,
   setAtmiframeActive,
+  setMirrorIframeActive,
+  setScrollIframeActive
 }) => {
   const { nodes } = useGLTF("/models/Castle.glb");
   const material = useCastleMaterial(
@@ -988,146 +1171,51 @@ const CastleModel = ({
   const portal = usePortalMaterial();
   const mirror = useMirrorMaterial();
   const hallosMaterial = useHallosMaterial();
-  const [previousCameraPosition, setPreviousCameraPosition] = useState(null);
 
-  // ATM handlers
-  const handleAtmClick = (e) => {
-    e.stopPropagation();
-    console.log("ATM clicked - navigating to token section");
+  // Create handlers for each interactive element
+  const atmHandlers = NavigationSystem.createElementHandlers(
+    'atm',
+    () => onCastleClick("token"),
+    setAtmiframeActive,
+    atmIframeActive
+  );
 
-    // Prevent navigation if ATM iframe is already active
-    if (atmIframeActive) return;
+  const mirrorHandlers = NavigationSystem.createElementHandlers(
+    'mirror',
+    () => onCastleClick("aidatingcoach"),
+    setMirrorIframeActive,
+    mirrorIframeActive
+  );
 
-    // Store current camera position before navigating
-    if (controls && controls.current) {
-      try {
-        const position = controls.current.getPosition();
-        const target = controls.current.getTarget();
+  const scrollHandlers = NavigationSystem.createElementHandlers(
+    'scroll',
+    () => onCastleClick("roadmap"),
+    setScrollIframeActive,
+    scrollIframeActive
+  );
 
-        // Convert to arrays for consistent format
-        const posArray = Array.isArray(position) ? position :
-                        [position.x, position.y, position.z];
-        const targetArray = Array.isArray(target) ? target :
-                           [target.x, target.y, target.z];
-
-        // Store position in global variable
-        window.lastClickedPositionATM = {
-          position: posArray,
-          target: targetArray
-        };
-
-        console.log("Stored ATM camera position:", window.lastClickedPositionATM);
-      } catch (err) {
-        console.error("Failed to store camera position:", err);
-      }
+  // Function for smooth camera transitions
+  function smoothCameraReturn(position, target) {
+    if (!window.controls || !window.controls.current) {
+      console.error("No controls available for camera transition");
+      return;
     }
 
-    // Set navigation source to direct
-    setAtmNavigationSource("direct");
+    console.log("Smooth transition to position:", position, "target:", target);
 
-    // Navigate to token section
-    if (onCastleClick) {
-      onCastleClick("token");
-    }
+    // Use the existing CameraControls that already handle animations
+    window.controls.current.enabled = true; // Important - enable controls first
 
-    // Log for debugging
-    if (window.globalNavigation && window.globalNavigation.log) {
-      window.globalNavigation.log("ATM mesh clicked - navigation requested");
-    }
-  };
-
-  // Mirror handlers
-  const handleMirrorClick = (e) => {
-    e.stopPropagation();
-    console.log("Mirror clicked - navigating to aidatingcoach section");
-
-    // Prevent navigation if Mirror iframe is already active
-    if (mirrorIframeActive) return;
-
-    // Navigate to aidatingcoach section
-    if (onCastleClick) {
-      onCastleClick("aidatingcoach");
-    }
-
-    // Log for debugging
-    if (window.globalNavigation && window.globalNavigation.log) {
-      window.globalNavigation.log("Mirror mesh clicked - navigation requested");
-    }
-  };
-
-  // Scroll handlers
-  const handleScrollClick = (e) => {
-    e.stopPropagation();
-    console.log("Scroll clicked directly");
-
-    // Store current camera position before navigating
-    if (controls && controls.current) {
-      try {
-        const position = controls.current.getPosition();
-        const target = controls.current.getTarget();
-
-        // Convert to arrays for consistent format
-        const posArray = Array.isArray(position) ? position :
-                        [position.x, position.y, position.z];
-        const targetArray = Array.isArray(target) ? target :
-                           [target.x, target.y, target.z];
-
-        // Store in the global variable for direct access
-        window.lastClickedPosition = {
-          position: posArray,
-          target: targetArray
-        };
-
-        console.log("Stored position:", window.lastClickedPosition);
-      } catch (err) {
-        console.error("Failed to store camera position:", err);
-      }
-    }
-
-    // Set navigation source to direct
-    setScrollNavigationSource("direct");
-
-    // Navigate to roadmap
-    if (onCastleClick) {
-      onCastleClick("roadmap");
-    }
-  };
-
-  // ATM pointer events
-  const handleAtmPointerEnter = (e) => {
-    if (atmIframeActive) return;
-    e.stopPropagation();
-    document.body.style.cursor = "pointer";
-  };
-
-  const handleAtmPointerLeave = (e) => {
-    e.stopPropagation();
-    document.body.style.cursor = "default";
-  };
-
-  // Mirror pointer events
-  const handleMirrorPointerEnter = (e) => {
-    if (mirrorIframeActive) return;
-    e.stopPropagation();
-    document.body.style.cursor = "pointer";
-  };
-
-  const handleMirrorPointerLeave = (e) => {
-    e.stopPropagation();
-    document.body.style.cursor = "default";
-  };
-
-  // Scroll pointer events
-  const handleScrollPointerEnter = (e) => {
-    if (scrollIframeActive) return;
-    e.stopPropagation();
-    document.body.style.cursor = "pointer";
-  };
-
-  const handleScrollPointerLeave = (e) => {
-    e.stopPropagation();
-    document.body.style.cursor = "default";
-  };
+    // Let any active animations complete
+    setTimeout(() => {
+      // Use the exact same method used for section transitions
+      window.controls.current.setLookAt(
+        position[0], position[1], position[2],
+        target[0], target[1], target[2],
+        true // true enables animation
+      ).catch(err => console.error("Camera transition error:", err));
+    }, 50);
+  }
 
   // Use the video texture hook for portal
   const { texture: portalTexture, playVideo: playPortal } =
@@ -1181,29 +1269,6 @@ const CastleModel = ({
 
   const wingsMaterial = useWingsMaterial();
 
-  // Function for smooth camera transitions
-  function smoothCameraReturn(position, target) {
-    if (!window.controls || !window.controls.current) {
-      console.error("No controls available for camera transition");
-      return;
-    }
-
-    console.log("Smooth transition to position:", position, "target:", target);
-
-    // Use the existing CameraControls that already handle animations
-    window.controls.current.enabled = true; // Important - enable controls first
-
-    // Let any active animations complete
-    setTimeout(() => {
-      // Use the exact same method used for section transitions
-      window.controls.current.setLookAt(
-        position[0], position[1], position[2],
-        target[0], target[1], target[2],
-        true // true enables animation
-      ).catch(err => console.error("Camera transition error:", err));
-    }, 50);
-  }
-
   return (
     <group dispose={null}>
       <mesh
@@ -1225,9 +1290,8 @@ const CastleModel = ({
       <mesh
         geometry={nodes.Mirror.geometry}
         material={mirror}
-        onClick={handleMirrorClick}
-        onPointerEnter={handleMirrorPointerEnter}
-        onPointerLeave={handleMirrorPointerLeave}
+        onClick={mirrorHandlers.handleClick}
+        {...mirrorHandlers.pointerHandlers}
       />
       <mesh
         geometry={nodes.Hallos.geometry}
@@ -1245,9 +1309,8 @@ const CastleModel = ({
         layers-enable={2}
         castShadow={false}
         receiveShadow={false}
-        onClick={handleAtmClick}
-        onPointerEnter={handleAtmPointerEnter}
-        onPointerLeave={handleAtmPointerLeave}
+        onClick={atmHandlers.handleClick}
+        {...atmHandlers.pointerHandlers}
       />
       <group position={[-0.056, 1.247, -2.117]}>
         <RotateAxis axis="y" speed={0.7} rotationType="euler">
@@ -1276,14 +1339,13 @@ const CastleModel = ({
         material={scrollMaterial}
         castShadow={false}
         receiveShadow={false}
-        onClick={handleScrollClick}
-        onPointerEnter={handleScrollPointerEnter}
-        onPointerLeave={handleScrollPointerLeave}
+        onClick={scrollHandlers.handleClick}
+        {...scrollHandlers.pointerHandlers}
       />
       <Select disabled>
         <mesh
           geometry={nodes.HeartVid.geometry}
-          material={portal}
+          material={portalMaterial}
           layers-enable={1}
           castShadow={false}
           receiveShadow={false}
@@ -1306,59 +1368,87 @@ const CastleModel = ({
         castShadow={false}
         receiveShadow={false}
       />
-      <AtmIframe
-        position={[1.675, 1.185, 0.86]}
-        rotation={[1.47, 0.194, -1.088]}
-        onReturnToMain={(source) => {
-          // Close the iframe first for better visual feedback
-          setAtmiframeActive(false);
+     // Fix for the iframes in CastleModel component
 
-          // Short delay to let the UI update first
-          setTimeout(() => {
-            if (source === "direct" && window.lastClickedPositionATM) {
-              const { position, target } = window.lastClickedPositionATM;
-              smoothCameraReturn(position, target);
-            } else {
-              // Normal pole navigation
-              onCastleClick("nav");
-            }
-          }, 100);
-        }}
-        isActive={atmIframeActive}
-        navigationSource={atmNavigationSource}
-      />
+// For the AtmIframe component:
+<AtmIframe
+  position={[1.675, 1.185, 0.86]}
+  rotation={[1.47, 0.194, -1.088]}
+  onReturnToMain={() => {
+    // Close the iframe first for better visual feedback
+    setAtmiframeActive(false);
 
-      <MirrorIframe
-        onReturnToMain={() => {
-          onCastleClick("nav");
-        }}
-        isActive={mirrorIframeActive}
-      />
+    // Short delay to let the UI update first
+    setTimeout(() => {
+      // Check for stored position and use it if available
+      const storedPosition = window.navigationSystem.getPosition('atm');
+      if (storedPosition) {
+        const { position, target } = storedPosition;
+        smoothCameraReturn(position, target);
+        console.log("Returning to stored ATM position");
+      } else {
+        // Fallback to nav if no stored position
+        console.log("No stored position for ATM, going to nav");
+        onCastleClick("nav");
+      }
+    }, 100);
+  }}
+  isActive={atmIframeActive}
+/>
 
-      <ScrollIframe
-        onReturnToMain={(source) => {
-          // Close the iframe first for better visual feedback
-          setScrollIframeActive(false);
+// For the MirrorIframe component:
+<MirrorIframe
+  onReturnToMain={() => {
+    // Close the iframe first
+    setMirrorIframeActive(false);
 
-          // Short delay to let the UI update first
-          setTimeout(() => {
-            if (source === "direct" && window.lastClickedPosition) {
-              const { position, target } = window.lastClickedPosition;
-              smoothCameraReturn(position, target);
-            } else {
-              // Normal pole navigation
-              onCastleClick("nav");
-            }
-          }, 100);
-        }}
-        isActive={scrollIframeActive}
-        navigationSource={scrollNavigationSource}
-      />
+    // Return to stored position or nav
+    setTimeout(() => {
+      const storedPosition = window.navigationSystem.getPosition('mirror');
+      if (storedPosition) {
+        const { position, target } = storedPosition;
+        smoothCameraReturn(position, target);
+        console.log("Returning to stored Mirror position");
+      } else {
+        // Fallback to nav if no stored position
+        console.log("No stored position for Mirror, going to nav");
+        onCastleClick("nav");
+      }
+    }, 100);
+  }}
+  isActive={mirrorIframeActive}
+/>
+
+// For the ScrollIframe component:
+<ScrollIframe
+  onReturnToMain={() => {
+    // Close the iframe first
+    setScrollIframeActive(false);
+
+    // Return to stored position or nav
+    setTimeout(() => {
+      const storedPosition = window.navigationSystem.getPosition('scroll');
+      if (storedPosition) {
+        const { position, target } = storedPosition;
+        smoothCameraReturn(position, target);
+        console.log("Returning to stored Scroll position");
+      } else {
+        // Fallback to nav if no stored position
+        console.log("No stored position for Scroll, going to nav");
+        onCastleClick("nav");
+      }
+    }, 100);
+  }}
+  isActive={scrollIframeActive}
+/>
     </group>
   );
 };
 // Main Component
 // Main Component
+// Navigation system to handle all interactive elements
+
+
 const Castle = ({ activeSection }) => {
   const controls = useRef();
   const [atmiframeActive, setAtmiframeActive] = useState(false);
@@ -1366,9 +1456,8 @@ const Castle = ({ activeSection }) => {
   const [scrollIframeActive, setScrollIframeActive] = useState(false);
   const [cameraLocked, setCameraLocked] = useState(true);
   const [clipboardMessage, setClipboardMessage] = useState("");
-  const [scrollNavigationSource, setScrollNavigationSource] = useState("pole");
-  const [atmNavigationSource, setAtmNavigationSource] = useState("pole");
 
+  // Reset function for iframes
   window.resetIframes = () => {
     setAtmiframeActive(false);
     setMirrorIframeActive(false);
@@ -1387,24 +1476,11 @@ const Castle = ({ activeSection }) => {
   };
 
   const playTransition = (sectionName) => {
-    window.globalNavigation.customGoTo = (position, target) => {
-      if (controls.current) {
-        controls.current.setLookAt(
-          position[0],
-          position[1],
-          position[2],
-          target[0],
-          target[1],
-          target[2],
-          true
-        );
-      }
-    };
-
     if (!controls.current) return;
 
     console.log(`Playing transition to section: ${sectionName}`);
 
+    // Update iframe active states based on section
     if (sectionName === "roadmap") {
       setScrollIframeActive(true);
       setAtmiframeActive(false);
@@ -1442,6 +1518,7 @@ const Castle = ({ activeSection }) => {
     }
   };
 
+  // Make the transition function available globally
   window.globalNavigation.navigateTo = playTransition;
 
   const handleReturnToMain = () => {
@@ -1530,20 +1607,8 @@ const Castle = ({ activeSection }) => {
     }
   };
 
-  // Expose setters globally for navs
+  // Make controls globally available
   useEffect(() => {
-    // Expose scroll setter globally
-    window.setScrollNavigationSource = (source) => {
-      console.log(`Setting scroll navigation source to: ${source}`);
-      setScrollNavigationSource(source);
-    };
-
-    // Expose ATM setter globally
-    window.setAtmNavigationSource = (source) => {
-      console.log(`Setting ATM navigation source to: ${source}`);
-      setAtmNavigationSource(source);
-    };
-
     if (!controls.current) return;
     window.controls = controls;
 
@@ -1569,8 +1634,8 @@ const Castle = ({ activeSection }) => {
     }
 
     return () => {
-      delete window.setScrollNavigationSource;
-      delete window.setAtmNavigationSource;
+      // Cleanup
+      delete window.controls;
     };
   }, []);
 
@@ -1814,12 +1879,9 @@ const Castle = ({ activeSection }) => {
           floorMetalness={materialControls.floorMetalness}
           floorRoughness={materialControls.floorRoughness}
           floorEmissiveIntensity={materialControls.floorEmissiveIntensity}
-          scrollNavigationSource={scrollNavigationSource}
-          setScrollNavigationSource={setScrollNavigationSource}
-          setScrollIframeActive={setScrollIframeActive}
-          atmNavigationSource={atmNavigationSource}
-          setAtmNavigationSource={setAtmNavigationSource}
           setAtmiframeActive={setAtmiframeActive}
+          setMirrorIframeActive={setMirrorIframeActive}
+          setScrollIframeActive={setScrollIframeActive}
         />
       </Suspense>
     </group>
@@ -1827,5 +1889,3 @@ const Castle = ({ activeSection }) => {
 };
 
 export default Castle;
-
-
