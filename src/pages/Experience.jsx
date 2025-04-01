@@ -13,7 +13,7 @@ import { Stairs } from "../assets/models/Stairs"
 import { CAMERA_CONFIG } from "../components/cameraConfig"
 import { EffectsTree } from "../components/helpers/EffectsTree"
 import { CloudGroup } from "../assets/models/CloudsGroup"
-import CloudParticle from "../assets/models/CLoudParticle"
+import CloudParticle from "../assets/models/CloudParticle"
 
 // Iframes
 import AtmIframe from "../assets/models/AtmIframe"
