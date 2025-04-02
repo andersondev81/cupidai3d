@@ -14,6 +14,7 @@ export default function AtmIframe({
   isActive,
   cameraRef,
   onSectionChange,
+  navigationSource = "pole", // Add this parameter with default value
   ...props
 }) {
   const [showContent, setShowContent] = useState(false)
@@ -48,7 +49,7 @@ export default function AtmIframe({
     }
   }, [isActive])
 
-  // Handle navigation back to main menu
+  // Handle navigation back to main menu with navigation source
   const handleHomeNavigation = () => {
     // First hide buttons for visual feedback
     setShowButtons(false)
@@ -59,19 +60,19 @@ export default function AtmIframe({
 
       // Additional delay to complete visual transitions
       setTimeout(() => {
-        // Camera transition
-        if (cameraRef?.goToHome) {
-          cameraRef.goToHome()
-        }
-
-        // Section change
-        if (onSectionChange) {
-          onSectionChange(0, "nav")
-        }
-
-        // Legacy callback for compatibility
+        // Pass the navigation source to the callback
         if (onReturnToMain) {
-          onReturnToMain()
+          console.log(`ATM iframe returning with source: ${navigationSource}`)
+          onReturnToMain(navigationSource)
+        } else {
+          // Legacy fallbacks if onReturnToMain isn't available
+          if (cameraRef?.goToHome) {
+            cameraRef.goToHome()
+          }
+
+          if (onSectionChange) {
+            onSectionChange(0, "nav")
+          }
         }
       }, ANIMATION_TIMING.TRANSITION_DELAY)
     }, ANIMATION_TIMING.TRANSITION_DELAY)
@@ -125,7 +126,7 @@ export default function AtmIframe({
               <TokenPage />
             </div>
 
-            {/* Navigation buttons */}
+            {/* Navigation buttons - text changes based on navigation source */}
             {showButtons && (
               <div
                 className="flex flex-col items-center gap-6"
@@ -136,7 +137,7 @@ export default function AtmIframe({
                     onClick={handleHomeNavigation}
                     className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto flex items-center justify-center rounded-md px-6 py-3 transition-all"
                   >
-                    Main Menu
+                    {navigationSource === "direct" ? "Return to Castle" : "Main Menu"}
                   </button>
                 </div>
               </div>
