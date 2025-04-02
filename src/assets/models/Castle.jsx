@@ -462,7 +462,7 @@ const useCastleMaterial = (
   emissiveColor = "#000"
 ) => {
   const textures = useTexture({
-    map: "/texture/castle_Base_Color.webp",
+    map: "/texture/castle_Base_ColorAO.webp",
     metalnessMap: "/texture/castle_Metallic.webp",
     roughnessMap: "/texture/castle_Roughness.webp",
   })
@@ -530,14 +530,13 @@ const useCastleMaterial = (
 }
 
 const useCastleHeartMaterial = (
-  metalness = 1,
+  metalness = 1.4,
   roughness = 0,
-  emissiveIntensity = 1,
-  emissiveColor = "#f4f4f4"
+  emissiveIntensity = 0,
+  emissiveColor = "#0000000"
 ) => {
   const textures = useTexture({
-    map: "/texture/castleHeart_Base_color.webp",
-    emissiveMap: "/texture/castleHeart_Emissive.webp",
+    map: "/texture/castleHeart_Base_colorAO.webp",
   })
 
   const clouds = useTexture("/images/bg1.jpg")
@@ -566,12 +565,11 @@ const useCastleHeartMaterial = (
       metalness: metalness,
       metalnessMap: textures.metalnessMap,
       emissiveMap: textures.emissiveMap,
-      emissivemapOpacity: 0.5,
+
       emissive: new Color(emissiveColor),
       emissiveIntensity: emissiveIntensity,
       blending: NormalBlending,
       envMap: clouds,
-      envMapIntensity: 1.0,
     })
   }, [textures, metalness, roughness, emissiveIntensity, emissiveColor, clouds])
 }
