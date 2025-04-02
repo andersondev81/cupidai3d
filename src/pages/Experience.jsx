@@ -1,46 +1,44 @@
-import { Environment } from "@react-three/drei";
-import { Canvas, useThree } from "@react-three/fiber";
-import { useControls } from "leva";
-import { Perf } from "r3f-perf";
-import React, { Suspense, useEffect, useRef, useState } from "react";
-import * as THREE from "three";
-import Castle from "../assets/models/Castle";
-import { CastleUi } from "../assets/models/CastleUi";
-
-import { Flowers } from "../assets/models/Flowers";
-import { Pole } from "../assets/models/Pole";
-import { Stairs } from "../assets/models/Stairs";
-import { CAMERA_CONFIG } from "../components/cameraConfig";
-import { EffectsTree } from "../components/helpers/EffectsTree";
+import { Environment } from "@react-three/drei"
+import { Canvas, useThree } from "@react-three/fiber"
+import { useControls } from "leva"
+import { Perf } from "r3f-perf"
+import React, { Suspense, useEffect, useRef, useState } from "react"
+import * as THREE from "three"
+import Castle from "../assets/models/Castle"
+import { CastleUi } from "../assets/models/CastleUi"
+import { Flowers } from "../assets/models/Flowers"
+import { Pole } from "../assets/models/Pole"
+import { Stairs } from "../assets/models/Stairs"
+import { CAMERA_CONFIG } from "../components/cameraConfig"
+import { EffectsTree } from "../components/helpers/EffectsTree"
 import { CloudGroup } from "../assets/models/CloudsGroup"
 import CloudParticle from "../assets/models/CloudParticle"
-// Iframes
-import AtmIframe from "../assets/models/AtmIframe";
-import MirrorIframe from "../assets/models/MirrorIframe";
 
-import Orb from "../assets/models/Orb";
+// Iframes
+import AtmIframe from "../assets/models/AtmIframe"
+import MirrorIframe from "../assets/models/MirrorIframe"
+
+import Orb from "../assets/models/Orb"
 // import OldOrb from "../assets/models/OldOrb"
 
-import CloudsD from "../assets/models/CloudsD";
-import CloudsPole from "../assets/models/CloudsPole";
-import EnvMapLoader from "../components/helpers/EnvMapLoader";
-// import Modeload from "../components/helpers/Modeload";
-
-
+import CloudsD from "../assets/models/CloudsD"
+import CloudsPole from "../assets/models/CloudsPole"
+import EnvMapLoader from "../components/helpers/EnvMapLoader"
+import Modeload from "../components/helpers/Modeload"
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
   constructor(props) {
-    super(props);
-    this.state = { hasError: false, error: null };
+    super(props)
+    this.state = { hasError: false, error: null }
   }
 
   static getDerivedStateFromError(error) {
-    return { hasError: true, error };
+    return { hasError: true, error }
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error("3D Scene Error:", error, errorInfo);
+    console.error("3D Scene Error:", error, errorInfo)
   }
 
   render() {
@@ -57,9 +55,9 @@ class ErrorBoundary extends React.Component {
             </button>
           </div>
         </div>
-      );
+      )
     }
-    return this.props.children;
+    return this.props.children
   }
 }
 
@@ -72,7 +70,7 @@ const ENVIRONMENT_OPTIONS = {
   "Vino Sky V2": "/images/VinoSkyV2.hdr",
   "Vino Sky V3": "/images/clouds-vino.hdr",
   "Vino Sky V4": "/images/VinoSkyV4.hdr",
-};
+}
 
 // Environment presets
 const ENVIRONMENT_PRESETS = {
@@ -87,7 +85,7 @@ const ENVIRONMENT_PRESETS = {
   Studio: "studio",
   Sunset: "sunset",
   Warehouse: "warehouse",
-};
+}
 
 // Optimized Canvas configuration
 const CANVAS_CONFIG = {
@@ -106,11 +104,11 @@ const CANVAS_CONFIG = {
     position: [15.9, 6.8, -11.4],
   },
   shadows: false, // Disable shadows in the renderer
-};
+}
 
 const useCameraAnimation = (section, cameraRef) => {
-  const { camera } = useThree();
-  const [isStarted, setIsStarted] = useState(false);
+  const { camera } = useThree()
+  const [isStarted, setIsStarted] = useState(false)
   const animationRef = useRef({
     progress: 0,
     isActive: false,
@@ -118,16 +116,16 @@ const useCameraAnimation = (section, cameraRef) => {
     startRotation: new THREE.Euler(),
     startFov: 50,
     lastTime: 0,
-  });
+  })
 
   useEffect(() => {
-    if (!camera) return;
+    if (!camera) return
 
-    const sectionKey = section in CAMERA_CONFIG.sections ? section : "intro";
-    const config = CAMERA_CONFIG.sections[sectionKey];
+    const sectionKey = section in CAMERA_CONFIG.sections ? section : "intro"
+    const config = CAMERA_CONFIG.sections[sectionKey]
 
     // Use uma curva de easing mais suave para transições
-    const easing = (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
+    const easing = t => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t)
 
     // Armazene a posição e rotação inicial da câmera
     animationRef.current = {
@@ -138,9 +136,9 @@ const useCameraAnimation = (section, cameraRef) => {
       startFov: camera.fov,
       lastTime: performance.now(),
       config,
-    };
+    }
 
-    let animationFrameId;
+    let animationFrameId
 
     const animate = (currentTime) => {
         // BLOCK ALL ANIMATIONS if global flag is set
@@ -154,55 +152,55 @@ const useCameraAnimation = (section, cameraRef) => {
       const deltaTime = Math.min(
         (currentTime - animationRef.current.lastTime) / 1000,
         0.1
-      ); // Limita o delta para evitar saltos grandes
+      ) // Limita o delta para evitar saltos grandes
 
-      animationRef.current.lastTime = currentTime;
+      animationRef.current.lastTime = currentTime
 
       // Velocidade de transição ajustável - quanto menor, mais suave
-      const transitionSpeed = 1.5; // Ajuste este valor para mais lento (menor) ou mais rápido (maior)
+      const transitionSpeed = 1.5 // Ajuste este valor para mais lento (menor) ou mais rápido (maior)
 
-      animationRef.current.progress += deltaTime * transitionSpeed;
-      const t = Math.min(animationRef.current.progress, 1);
-      const { config, startPosition, startFov } = animationRef.current;
+      animationRef.current.progress += deltaTime * transitionSpeed
+      const t = Math.min(animationRef.current.progress, 1)
+      const { config, startPosition, startFov } = animationRef.current
 
       // Usa a função de easing para suavizar a transição
-      const curveValue = easing(t);
+      const curveValue = easing(t)
 
       // Calcule a posição de destino com interpolação suave
       const targetPosition = new THREE.Vector3().lerpVectors(
         startPosition,
         config.position,
         curveValue
-      );
+      )
 
       // Reduz o FOV máximo e usa um valor alvo mais baixo para evitar FOV alto
       // Limita o FOV entre 35 e 60 para uma visualização mais confortável
-      const configFov = config.fov || 50; // Usa 50 como padrão se config.fov não estiver definido
+      const configFov = config.fov || 50 // Usa 50 como padrão se config.fov não estiver definido
       const targetFov = THREE.MathUtils.clamp(
         THREE.MathUtils.lerp(startFov, Math.min(configFov, 55), curveValue),
         35, // valor mínimo de FOV
         60 // valor máximo de FOV (reduzido para evitar FOV alto)
-      );
+      )
 
       // Aplique as mudanças
-      camera.position.copy(targetPosition);
-      camera.fov = targetFov;
-      camera.updateProjectionMatrix();
+      camera.position.copy(targetPosition)
+      camera.fov = targetFov
+      camera.updateProjectionMatrix()
 
       // Continuar animação se não estiver completa
       if (t < 1) {
-        animationFrameId = requestAnimationFrame(animate);
+        animationFrameId = requestAnimationFrame(animate)
       } else {
-        animationRef.current.isActive = false;
-        animationRef.current.progress = 0;
+        animationRef.current.isActive = false
+        animationRef.current.progress = 0
 
         // Define o FOV final para um valor confortável
-        camera.fov = Math.min(configFov, 55);
-        camera.updateProjectionMatrix();
+        camera.fov = Math.min(configFov, 55)
+        camera.updateProjectionMatrix()
       }
-    };
+    }
 
-    animationFrameId = requestAnimationFrame(animate);
+    animationFrameId = requestAnimationFrame(animate)
 
     if (cameraRef) {
       cameraRef.current = {
@@ -221,25 +219,25 @@ const useCameraAnimation = (section, cameraRef) => {
               fov: 50, // FOV padrão para a posição inicial
               transition: { fovMultiplier: 0, zOffset: 0 },
             },
-          };
+          }
 
           // Inicie a animação
-          requestAnimationFrame(animate);
+          requestAnimationFrame(animate)
         },
-      };
+      }
     }
 
     return () => {
       if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
+        cancelAnimationFrame(animationFrameId)
       }
 
-      animationRef.current.isActive = false;
-    };
-  }, [section, camera, cameraRef]);
+      animationRef.current.isActive = false
+    }
+  }, [section, camera, cameraRef])
 
-  return isStarted;
-};
+  return isStarted
+}
 
 // Scene Controller component with environment controls
 const SceneController = React.memo(({ section, cameraRef }) => {
@@ -268,7 +266,7 @@ const SceneController = React.memo(({ section, cameraRef }) => {
     "Environment",
     {
       environment: {
-        value: "Vino Sky V1",
+        value: "Vino Sky V4",
         options: Object.keys(ENVIRONMENT_OPTIONS),
         label: "HDR File",
       },
@@ -330,7 +328,7 @@ const SceneController = React.memo(({ section, cameraRef }) => {
       },
     },
     { collapsed: false }
-  );
+  )
 
   // const {
   //   lightEnabled,
@@ -387,14 +385,14 @@ const SceneController = React.memo(({ section, cameraRef }) => {
   //   { collapsed: false }
   // );
 
-  const environmentFile = ENVIRONMENT_OPTIONS[environment];
-  const presetValue = ENVIRONMENT_PRESETS[preset];
+  const environmentFile = ENVIRONMENT_OPTIONS[environment]
+  const presetValue = ENVIRONMENT_PRESETS[preset]
 
   useEffect(() => {
     if (!showBackground) {
-      scene.background = null;
+      scene.background = null
     }
-  }, [showBackground, scene]);
+  }, [showBackground, scene])
 
   return (
     <>
@@ -435,10 +433,10 @@ const SceneController = React.memo(({ section, cameraRef }) => {
       )} */}
       <EnvMapLoader />
 
-      {process.env.NODE_ENV !== "development" && <Perf position="top-left" />}
+      {process.env.NODE_ENV !== "production" && <Perf position="top-left" />}
     </>
-  );
-});
+  )
+})
 
 // Split the scene content into smaller components for better performance
 const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
@@ -446,49 +444,92 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
     <EffectsTree />
     <Castle
   activeSection={activeSection}
-  scale={[2, 2, 2]}
+  scale={[2, 1.6, 2]}
   onCustomCamera={handleCustomCameraPosition}
 />
     <Flowers />
     {/* <CloudsD /> */}
     {/* <CloudsPole /> */}
-    <CloudGroup
-  clouds={[
-    // line 1
-    { position: [1, -0.3, 4.2] },
-    { position: [0.8, -0.3, 3.4] },
-    { position: [1, -0.3, 3.2] },
-    { position: [1.7, -0.3, 3] },
-    { position: [2.4, -0.3, 2.5] },
-    { position: [2.7, -0.3, 1.8] },
-    { position: [2.7, -0.3, 0.9] },
-    { position: [2.7, -0.3, 0] },
-    { position: [2.7, -0.3, -0.9] },
-    { position: [2.7, -0.3, -1.8] },
-    { position: [2.2, -0.3, -2.5] },
-    { position: [1.4, -0.3, -3] },
-    { position: [0.5, -0.3, -3.2] },
-    { position: [0, -0.3, -3.2] },
-    // side
-    { position: [-1, -0.5, 4.2] },
-    { position: [-0.8, -0.4, 3.8] },
-    { position: [-1, -0.3, 3.2] },
-    { position: [-1.7, -0.3, 3] },
-    { position: [-2.4, -0.3, 2.5] },
-    { position: [-2.7, -0.3, 1.8] },
-    { position: [-2.7, -0.3, 0.9] },
-    { position: [-2.7, -0.3, 0] },
-    { position: [-2.7, -0.3, -0.9] },
-    { position: [-2.7, -0.3, -1.8] },
-    { position: [-2.2, -0.3, -2.5] },
-    { position: [-1.4, -0.3, -3] },
-    { position: [-0.5, -0.3, -3.2] },
-    { position: [-0, -0.3, -3.2] },
-    // line 2
-  ]}
-  commonProps={{ opacity: 1 }}
-/>
-     {/* <CloudParticle
+    {/* <CloudGroup
+      clouds={[
+        // line 1
+        {
+          position: [1.2, -0.04, 4.2],
+          color: "#e6f2ff",
+        },
+        {
+          position: [0.8, -0.1, 3.2],
+          color: "#ffe7ef",
+        },
+        // { position: [1, 0.3, 3.2] },
+        // { position: [1.7, 0.3, 3] },
+        // { position: [2.4, 0.3, 2.5] },
+        // { position: [2.7, 0.3, 1.8] },
+        // { position: [2.7, 0.3, 0.9] },
+        // { position: [2.7, 0.3, 0] },
+        // { position: [2.7, 0.3, -0.9] },
+        // { position: [2.7, 0.3, -1.8] },
+        // { position: [2.2, 0.3, -2.5] },
+        // { position: [1.4, 0.3, -3] },
+        // { position: [0.5, 0.3, -3.2] },
+        // { position: [0, 0.3, -3.2] },
+        //side
+        // { position: [-1, 0.1, 4.2] },
+        // { position: [-0.8, 0.2, 3.8] },
+        // { position: [-1, 0.3, 3.2] },
+        // { position: [-1.7, 0.3, 3] },
+        // { position: [-2.4, 0.3, 2.5] },
+        // { position: [-2.7, 0.3, 1.8] },
+        // { position: [-2.7, 0.3, 0.9] },
+        // { position: [-2.7, 0.3, 0] },
+        // { position: [-2.7, 0.3, -0.9] },
+        // { position: [-2.7, 0.3, -1.8] },
+        // { position: [-2.2, 0.3, -2.5] },
+        // { position: [-1.4, 0.3, -3] },
+        // { position: [-0.5, 0.3, -3.2] },
+        // { position: [-0, 0.3, -3.2] },
+        // line 2
+      ]}
+    /> */}
+    {/* <CloudGroup
+      commonProps={{
+        concentration: 1,
+        sizeAttenuation: true,
+      }}
+      clouds={[
+        // line 1
+        {
+          position: [1.2, -0.3, 4.2],
+          color: "#adbac8",
+        },
+        {
+          position: [1.2, -0.3, 3],
+          color: "#d5cbcd",
+        },
+        { position: [2.2, -0.3, 2.2], color: "#ffd6ff" },
+        { position: [2.4, -0.3, 1], color: "#FDE7FF" },
+        { position: [2.5, -0.3, -0.5], color: "#caf0f8" },
+        { position: [2.4, -0.3, -2], color: "#e6f2ff" },
+        { position: [2, -0.3, -3], color: "#fae0e4" },
+        { position: [0.8, -0.3, -3], color: "#e6f2ff" },
+        // line
+        {
+          position: [-1.2, -0.3, 4.2],
+          color: "#e6f2ff",
+        },
+        {
+          position: [-1.2, -0.3, 3],
+          color: "#fae0e4",
+        },
+        { position: [-2.5, -0.3, 2.2], color: "#ffd6ff" },
+        { position: [-2.4, -0.3, 1], color: "#FDE7FF" },
+        { position: [-2.5, -0.3, -0.5], color: "#caf0f8" },
+        { position: [-2.4, -0.3, -2], color: "#e6f2ff" },
+        { position: [-2, -0.3, -3], color: "#fae0e4" },
+        { position: [-0.8, -0.3, -3], color: "#e6f2ff" },
+      ]}
+    /> */}
+    {/* <CloudParticle
       position={[2, 0, -5]}
       count={500}
       size={2}
@@ -503,33 +544,33 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
       onSectionChange={onSectionChange}
     />
   </>
-));
+))
 
 const SecondaryContent = React.memo(() => (
   <>
     {/* <CloudsD /> */}
     <Stairs />
   </>
-));
+))
 
 const TertiaryContent = React.memo(() => (
   <>
     <MirrorIframe />
   </>
-));
+))
 
 const SceneContent = React.memo(({ activeSection, onSectionChange }) => {
-  const [loadingStage, setLoadingStage] = useState(0);
+  const [loadingStage, setLoadingStage] = useState(0)
 
   useEffect(() => {
-    const primaryTimer = setTimeout(() => setLoadingStage(1), 100);
-    const secondaryTimer = setTimeout(() => setLoadingStage(2), 1000);
+    const primaryTimer = setTimeout(() => setLoadingStage(1), 100)
+    const secondaryTimer = setTimeout(() => setLoadingStage(2), 1000)
 
     return () => {
-      clearTimeout(primaryTimer);
-      clearTimeout(secondaryTimer);
-    };
-  }, []);
+      clearTimeout(primaryTimer)
+      clearTimeout(secondaryTimer)
+    }
+  }, [])
 
   return (
     <>
@@ -561,9 +602,9 @@ const Experience = () => {
   const cameraRef = useRef(null);
 
   const handleSectionChange = (index, sectionName) => {
-    setCurrentSection(index);
-    setActiveSection(sectionName);
-  };
+    setCurrentSection(index)
+    setActiveSection(sectionName)
+  }
 
   useEffect(() => {
     window.customCameraNavigation = handleCustomCameraPosition;
@@ -641,7 +682,7 @@ const Experience = () => {
         </div>
       </ErrorBoundary>
     </div>
-  );
-};
+  )
+}
 
 export default Experience;

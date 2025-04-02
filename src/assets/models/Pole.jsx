@@ -13,13 +13,18 @@ import {
 
   NormalBlending,
   NearestFilter,
-} from "three";
+
+} from "three"
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
+import { metalness, roughness } from "three/examples/jsm/nodes/Nodes.js"
 import RotateAxis from "../../components/helpers/RotateAxis";
 
 const usePoleMaterial = () => {
   // Carregar texturas do Pole
   const textures = useTexture({
+    map: "/texture/PoleColorAO.webp",
+    metalnessMap: "/texture/PoleMetallicA.webp",
+    roughnessMap: "/texture/Pole_Roughness.webp",
     map: "/texture/PoleColorAO.webp",
     metalnessMap: "/texture/PoleMetallicA.webp",
     roughnessMap: "/texture/Pole_Roughness.webp",
@@ -45,6 +50,8 @@ const usePoleMaterial = () => {
         map: textures.map,
         metalnessMap: textures.metalnessMap,
         roughnessMap: textures.roughnessMap,
+        metalnessMap: textures.metalnessMap,
+        roughnessMap: textures.roughnessMap,
         emissiveMap: textures.emissiveMap,
         transparent: false,
         alphaTest: 0.5,
@@ -52,7 +59,10 @@ const usePoleMaterial = () => {
         blending: NormalBlending,
         roughness: 0,
         metalness: 1.3,
+        roughness: 0,
+        metalness: 1.3,
         envMap: envMap,
+        envMapIntensity: 1.9,
         envMapIntensity: 1.9,
       }),
     [textures, envMap]
@@ -72,6 +82,7 @@ const useHeartsMaterial = () => {
   // Load heart textures
   const textures = useTexture({
     map: "/texture/heartColor.webp",
+    emissiveMap: "/texture/Heart_EmissiveW.webp",
     emissiveMap: "/texture/Heart_EmissiveW.webp",
   })
 
@@ -93,6 +104,7 @@ const useHeartsMaterial = () => {
         map: textures.map,
         emissiveMap: textures.emissiveMap,
         emissive: new THREE.Color(0x00bdff),
+        emissiveIntensity: 2.5,
         emissiveIntensity: 2.5,
         side: DoubleSide,
         metalness: 1,
