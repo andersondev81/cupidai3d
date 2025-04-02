@@ -477,7 +477,7 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
         // line 2
       ]}
     /> */}
-    <CloudGroup
+    {/* <CloudGroup
       commonProps={{
         concentration: 1,
         sizeAttenuation: true,
@@ -514,7 +514,7 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
         { position: [-2, -0.3, -3], color: "#fae0e4" },
         { position: [-0.8, -0.3, -3], color: "#e6f2ff" },
       ]}
-    />
+    /> */}
     {/* <CloudParticle
       position={[2, 0, -5]}
       count={500}
