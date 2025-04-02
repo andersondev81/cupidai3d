@@ -6,7 +6,6 @@ import React, { Suspense, useEffect, useRef, useState } from "react"
 import * as THREE from "three"
 import Castle from "../assets/models/Castle"
 import { CastleUi } from "../assets/models/CastleUi"
-
 import { Flowers } from "../assets/models/Flowers"
 import { Pole } from "../assets/models/Pole"
 import { Stairs } from "../assets/models/Stairs"
@@ -267,7 +266,7 @@ const SceneController = React.memo(({ section, cameraRef }) => {
     "Environment",
     {
       environment: {
-        value: "Vino Sky V1",
+        value: "Vino Sky V4",
         options: Object.keys(ENVIRONMENT_OPTIONS),
         label: "HDR File",
       },
@@ -434,7 +433,7 @@ const SceneController = React.memo(({ section, cameraRef }) => {
       )} */}
       <EnvMapLoader />
 
-      {process.env.NODE_ENV !== "development" && <Perf position="top-left" />}
+      {process.env.NODE_ENV !== "production" && <Perf position="top-left" />}
     </>
   )
 })
@@ -445,49 +444,92 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
     <EffectsTree />
     <Castle
   activeSection={activeSection}
-  scale={[2, 2, 2]}
+  scale={[2, 1.6, 2]}
   onCustomCamera={handleCustomCameraPosition}
 />
     <Flowers />
     {/* <CloudsD /> */}
     {/* <CloudsPole /> */}
+    {/* <CloudGroup
+      clouds={[
+        // line 1
+        {
+          position: [1.2, -0.04, 4.2],
+          color: "#e6f2ff",
+        },
+        {
+          position: [0.8, -0.1, 3.2],
+          color: "#ffe7ef",
+        },
+        // { position: [1, 0.3, 3.2] },
+        // { position: [1.7, 0.3, 3] },
+        // { position: [2.4, 0.3, 2.5] },
+        // { position: [2.7, 0.3, 1.8] },
+        // { position: [2.7, 0.3, 0.9] },
+        // { position: [2.7, 0.3, 0] },
+        // { position: [2.7, 0.3, -0.9] },
+        // { position: [2.7, 0.3, -1.8] },
+        // { position: [2.2, 0.3, -2.5] },
+        // { position: [1.4, 0.3, -3] },
+        // { position: [0.5, 0.3, -3.2] },
+        // { position: [0, 0.3, -3.2] },
+        //side
+        // { position: [-1, 0.1, 4.2] },
+        // { position: [-0.8, 0.2, 3.8] },
+        // { position: [-1, 0.3, 3.2] },
+        // { position: [-1.7, 0.3, 3] },
+        // { position: [-2.4, 0.3, 2.5] },
+        // { position: [-2.7, 0.3, 1.8] },
+        // { position: [-2.7, 0.3, 0.9] },
+        // { position: [-2.7, 0.3, 0] },
+        // { position: [-2.7, 0.3, -0.9] },
+        // { position: [-2.7, 0.3, -1.8] },
+        // { position: [-2.2, 0.3, -2.5] },
+        // { position: [-1.4, 0.3, -3] },
+        // { position: [-0.5, 0.3, -3.2] },
+        // { position: [-0, 0.3, -3.2] },
+        // line 2
+      ]}
+    /> */}
     <CloudGroup
-  clouds={[
-    // line 1
-    { position: [1, -0.3, 4.2] },
-    { position: [0.8, -0.3, 3.4] },
-    { position: [1, -0.3, 3.2] },
-    { position: [1.7, -0.3, 3] },
-    { position: [2.4, -0.3, 2.5] },
-    { position: [2.7, -0.3, 1.8] },
-    { position: [2.7, -0.3, 0.9] },
-    { position: [2.7, -0.3, 0] },
-    { position: [2.7, -0.3, -0.9] },
-    { position: [2.7, -0.3, -1.8] },
-    { position: [2.2, -0.3, -2.5] },
-    { position: [1.4, -0.3, -3] },
-    { position: [0.5, -0.3, -3.2] },
-    { position: [0, -0.3, -3.2] },
-    // side
-    { position: [-1, -0.5, 4.2] },
-    { position: [-0.8, -0.4, 3.8] },
-    { position: [-1, -0.3, 3.2] },
-    { position: [-1.7, -0.3, 3] },
-    { position: [-2.4, -0.3, 2.5] },
-    { position: [-2.7, -0.3, 1.8] },
-    { position: [-2.7, -0.3, 0.9] },
-    { position: [-2.7, -0.3, 0] },
-    { position: [-2.7, -0.3, -0.9] },
-    { position: [-2.7, -0.3, -1.8] },
-    { position: [-2.2, -0.3, -2.5] },
-    { position: [-1.4, -0.3, -3] },
-    { position: [-0.5, -0.3, -3.2] },
-    { position: [-0, -0.3, -3.2] },
-    // line 2
-  ]}
-  commonProps={{ opacity: 1 }}
-/>
-     {/* <CloudParticle
+      commonProps={{
+        concentration: 1,
+        sizeAttenuation: true,
+      }}
+      clouds={[
+        // line 1
+        {
+          position: [1.2, -0.3, 4.2],
+          color: "#adbac8",
+        },
+        {
+          position: [1.2, -0.3, 3],
+          color: "#d5cbcd",
+        },
+        { position: [2.2, -0.3, 2.2], color: "#ffd6ff" },
+        { position: [2.4, -0.3, 1], color: "#FDE7FF" },
+        { position: [2.5, -0.3, -0.5], color: "#caf0f8" },
+        { position: [2.4, -0.3, -2], color: "#e6f2ff" },
+        { position: [2, -0.3, -3], color: "#fae0e4" },
+        { position: [0.8, -0.3, -3], color: "#e6f2ff" },
+        // line
+        {
+          position: [-1.2, -0.3, 4.2],
+          color: "#e6f2ff",
+        },
+        {
+          position: [-1.2, -0.3, 3],
+          color: "#fae0e4",
+        },
+        { position: [-2.5, -0.3, 2.2], color: "#ffd6ff" },
+        { position: [-2.4, -0.3, 1], color: "#FDE7FF" },
+        { position: [-2.5, -0.3, -0.5], color: "#caf0f8" },
+        { position: [-2.4, -0.3, -2], color: "#e6f2ff" },
+        { position: [-2, -0.3, -3], color: "#fae0e4" },
+        { position: [-0.8, -0.3, -3], color: "#e6f2ff" },
+      ]}
+    />
+    {/* <CloudParticle
       position={[2, 0, -5]}
       count={500}
       size={2}
