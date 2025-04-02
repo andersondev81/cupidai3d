@@ -1,3 +1,4 @@
+// First update ScrolIframe.jsx
 import { Html, useGLTF } from "@react-three/drei";
 import React, { useEffect, useState } from "react";
 import * as THREE from "three";
@@ -6,6 +7,7 @@ import RoadmapPage from "../../components/iframes/Roadmap";
 export default function ScrollIframe({
   onReturnToMain,
   isActive = false,
+  navigationSource = "pole", // Default is "pole"
   ...props
 }) {
   const { nodes } = useGLTF("/models/scrollframe.glb");
@@ -13,44 +15,12 @@ export default function ScrollIframe({
   const [showButtons, setShowButtons] = useState(false);
   const [checkerTexture, setCheckerTexture] = useState(null);
 
-  // // Load texture
-  // useEffect(() => {
-  //   const textureLoader = new THREE.TextureLoader();
-  //   textureLoader.load(
-  //     (loadedTexture) => {
-  //       loadedTexture.wrapS = THREE.RepeatWrapping;
-  //       loadedTexture.wrapT = THREE.RepeatWrapping;
-  //       loadedTexture.repeat.set(1, 1);
-  //       setCheckerTexture(loadedTexture);
-  //     },
-  //     undefined,
-  //     (error) => console.error("Error loading texture:", error)
-  //   );
-  // }, []);
-
-  // Creating material with texture
-  const scrollMaterial = React.useMemo(() => {
-    if (nodes.scroolIframe?.material) {
-      // Clone original material to preserve other properties
-      const newMaterial = nodes.scroolIframe.material.clone();
-      // Configure material with texture when available
-      if (checkerTexture) {
-        newMaterial.map = checkerTexture;
-        newMaterial.needsUpdate = true;
-      }
-      // Make material double-sided
-      newMaterial.side = THREE.DoubleSide;
-      return newMaterial;
+  // Debug log to verify navigation source
+  useEffect(() => {
+    if (isActive) {
+      console.log(`ScrollIframe activated with navigation source: ${navigationSource}`);
     }
-
-    // Fallback to basic material
-    return new THREE.MeshStandardMaterial({
-      map: checkerTexture,
-      side: THREE.DoubleSide,
-      roughness: 0.7,
-      metalness: 0.0,
-    });
-  }, [nodes, checkerTexture]);
+  }, [isActive, navigationSource]);
 
   // Monitor changes in isActive state
   useEffect(() => {
@@ -77,50 +47,26 @@ export default function ScrollIframe({
     }
   }, [isActive]);
 
-  // MEGA WORKAROUND: Use multiple approaches to handle the return to main
+  // Simplified back navigation handler
   const handleBackToMain = (e) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
 
-    console.log("ScrollIframe: Back button clicked");
+    console.log(`ScrollIframe: Back button clicked (source: ${navigationSource})`);
 
-    // Hide UI immediately for visual feedback
+    // Hide UI for visual feedback
     setShowButtons(false);
     setShowContent(false);
 
-    // 1. Try the callback approach first
-    if (onReturnToMain && typeof onReturnToMain === 'function') {
-      console.log("Method 1: Using callback");
-      onReturnToMain();
-    }
-
-    // 2. Try the global navigation object as backup
-    if (window.globalNavigation && window.globalNavigation.navigateTo) {
-      console.log("Method 2: Using global navigation");
-      window.globalNavigation.navigateTo("nav");
-    }
-
-    // 3. Try to reset all iframes
-    if (window.globalNavigation && window.globalNavigation.reset) {
-      console.log("Method 3: Using global reset");
-      window.globalNavigation.reset();
-    }
-
-    // 4. Force a small delay and try again
+    // Call the callback with the navigation source
     setTimeout(() => {
-      console.log("Method 4: Delayed callback");
-      if (onReturnToMain && typeof onReturnToMain === 'function') {
-        onReturnToMain();
+      if (onReturnToMain) {
+        console.log(`Returning with navigation source: ${navigationSource}`);
+        onReturnToMain(navigationSource);
       }
-
-      // 5. Add a final attempt with global navigation
-      if (window.globalNavigation && window.globalNavigation.navigateTo) {
-        console.log("Method 5: Delayed global navigation");
-        window.globalNavigation.navigateTo("nav");
-      }
-    }, 100);
+    }, 300);
   };
 
   return (
@@ -129,8 +75,6 @@ export default function ScrollIframe({
       rotation={[-3.142, 1.051, -1.568]}
       {...props}
     >
-
-
       {/* HTML content - only shown when isActive is true */}
       {showContent && (
         <Html
@@ -145,7 +89,7 @@ export default function ScrollIframe({
           <div
             style={{
               width: "900px",
-              height: "1160px", // Fixed height for the viewport
+              height: "1160px",
               overflow: "hidden",
               position: "relative",
               transition: "opacity 0.3s ease",
@@ -182,7 +126,7 @@ export default function ScrollIframe({
               <div style={{ height: "100px" }}></div>
             </div>
 
-            {/* Multiple Back Buttons for redundancy */}
+            {/* Button with text that changes based on source */}
             {showButtons && (
               <div
                 style={{
@@ -194,7 +138,6 @@ export default function ScrollIframe({
                   zIndex: 10,
                 }}
               >
-                {/* Main button */}
                 <button
                   onClick={handleBackToMain}
                   style={{
@@ -219,26 +162,7 @@ export default function ScrollIframe({
                     e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
                   }}
                 >
-                  Return to Cupid's Church
-                </button>
-
-                {/* Hidden backup button that uses direct window navigation */}
-                <button
-                  onClick={() => {
-                    console.log("Using direct global navigation");
-                    if (window.globalNavigation && window.globalNavigation.navigateTo) {
-                      window.globalNavigation.navigateTo("nav");
-                    }
-                  }}
-                  style={{
-                    position: "fixed",
-                    top: "-9999px", // Hide it off-screen
-                    left: "-9999px",
-                    opacity: 0,
-                    pointerEvents: "none",
-                  }}
-                >
-                  Emergency Return
+                  {navigationSource === "direct" ? "Return to Castle" : "Return to Cupid's Church"}
                 </button>
               </div>
             )}

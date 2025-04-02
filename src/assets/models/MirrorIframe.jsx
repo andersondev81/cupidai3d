@@ -2,7 +2,6 @@ import { Html } from "@react-three/drei";
 import React, { useEffect, useState } from "react";
 import MirrorPage from "../../components/iframes/Mirror";
 
-
 const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
   const [showContent, setShowContent] = useState(false);
   const [showButtons, setShowButtons] = useState(false);
