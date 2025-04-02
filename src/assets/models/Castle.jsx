@@ -1102,138 +1102,9 @@ const useFloorMaterial = (
   }, [textures, materialType, metalness, roughness, clouds]);
 };
 
-const useCastleWallsMaterial = (
-  materialType = "standard",
-  metalness = 0,
-  roughness = 0.3
-) => {
-  const textures = useTexture({
-    map: "/texture/castleWalls_Base_color.webp",
-    roughnessMap: "/texture/castleWalls_Roughness.webp",
-  });
 
-  const clouds = useTexture("/images/bg1.jpg");
 
-  useMemo(() => {
-    Object.values(textures).forEach((texture) => {
-      if (texture) {
-        texture.flipY = true;
-        texture.minFilter = texture.magFilter = NearestFilter;
-      }
-    });
 
-    if (clouds) {
-      clouds.mapping = THREE.EquirectangularReflectionMapping;
-    }
-  }, [textures, clouds]);
-
-  return useMemo(() => {
-    // Propriedades base compartilhadas por todos os materiais
-    const commonProps = {
-      map: textures.map,
-      side: DoubleSide,
-      transparent: false,
-      alphaTest: 0.05,
-    };
-
-    // Propriedades específicas para materiais que suportam PBR
-    const pbrProps = {
-      ...commonProps,
-      roughnessMap: textures.roughnessMap,
-      roughness: roughness,
-      metalness: metalness,
-      blending: NormalBlending,
-      envMap: clouds,
-      envMapIntensity: 1.0,
-    };
-
-    // Criar o material baseado no tipo selecionado
-    switch (materialType) {
-      case "physical":
-        return new MeshPhysicalMaterial(pbrProps);
-      case "basic":
-        return new MeshBasicMaterial({
-          ...commonProps,
-          color: new Color(0xffffff),
-        });
-      case "standard":
-      default:
-        return new MeshStandardMaterial(pbrProps);
-    }
-  }, [textures, materialType, metalness, roughness, clouds]);
-};
-
-const useCastlePilarsMaterial = (
-  materialType = "standard",
-  metalness = 0,
-  roughness = 1
-) => {
-  const textures = useTexture({
-    map: "/texture/castlePilars_Base_color.webp",
-    roughnessMap: "/texture/castlePilars_Roughness.webp",
-    metalnessMap: "/texture/castlePilars_Metallic.webp",
-    emissiveMap: "/texture/castlePilars_Emissive.webp",
-  });
-
-  const clouds = useTexture("/images/bg1.jpg");
-
-  useMemo(() => {
-    Object.values(textures).forEach((texture) => {
-      if (texture) {
-        texture.flipY = true;
-        texture.minFilter = texture.magFilter = NearestFilter;
-      }
-    });
-
-    if (clouds) {
-      clouds.mapping = THREE.EquirectangularReflectionMapping;
-    }
-  }, [textures, clouds]);
-
-  return useMemo(() => {
-    // Propriedades base compartilhadas por todos os materiais
-    const commonProps = {
-      map: textures.map,
-      side: DoubleSide,
-      transparent: false,
-      alphaTest: 0.05,
-    };
-
-    // Propriedades específicas para materiais que suportam PBR
-    const pbrProps = {
-      ...commonProps,
-      roughnessMap: textures.roughnessMap,
-      metalnessMap: textures.metalnessMap,
-      emissiveMap: textures.emissiveMap,
-      emissive: new Color(0xffffff), // Cor base para a emissão
-      emissiveIntensity: 2.0, // Intensidade da emissão
-      roughness: roughness,
-      metalness: metalness,
-      blending: NormalBlending,
-      envMap: clouds,
-      envMapIntensity: 1.0,
-    }
-
-    // Criar o material baseado no tipo selecionado
-    switch (materialType) {
-      case "standard":
-        return new MeshStandardMaterial(pbrProps);
-      case "basic":
-        return new MeshBasicMaterial({
-          ...commonProps,
-          color: new Color(0xffffff),
-        });
-      case "physical":
-      default:
-        return new MeshPhysicalMaterial({
-          ...pbrProps,
-          // Additional physical material properties if needed
-          clearcoat: 0.5,
-          clearcoatRoughness: 0.1,
-        })
-    }
-  }, [textures, materialType, metalness, roughness, clouds])
-}
 
 const useFloorHeartMaterial = (
   metalness = 1,
@@ -1658,6 +1529,27 @@ const CastleModel = ({
             side: DoubleSide,
           }),
     [portalTexture]
+  );
+
+  const mirrorHandlers = NavigationSystem.createElementHandlers(
+    "mirror",
+    () => onCastleClick("aidatingcoach"),
+    setMirrorIframeActive,
+    mirrorIframeActive
+  );
+
+  const atmHandlers = NavigationSystem.createElementHandlers(
+    "atm",
+    () => onCastleClick("token"),
+    setAtmiframeActive,
+    atmIframeActive
+  );
+
+  const scrollHandlers = NavigationSystem.createElementHandlers(
+    "scroll",
+    () => onCastleClick("roadmap"),
+    setScrollIframeActive,
+    scrollIframeActive
   );
 
   // Use the video texture hook for water

@@ -13,10 +13,11 @@ import {
 
   NormalBlending,
   NearestFilter,
-  EquirectangularReflectionMapping,
+
 } from "three"
-import * as THREE from "three"
+import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
 import { metalness, roughness } from "three/examples/jsm/nodes/Nodes.js"
+import RotateAxis from "../../components/helpers/RotateAxis";
 
 const usePoleMaterial = () => {
   // Carregar texturas do Pole
@@ -45,7 +46,6 @@ const usePoleMaterial = () => {
 
   const material = useMemo(
     () =>
-      new MeshStandardMaterial({
       new MeshStandardMaterial({
         map: textures.map,
         metalnessMap: textures.metalnessMap,
