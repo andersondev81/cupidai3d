@@ -172,6 +172,47 @@ const OrbMesh = React.memo(({ isZoomed, setIsZoomed, onSectionChange, ...props }
         // Se chegou aqui, era um clique simples
         console.log("Orb single click - navigating to about section")
 
+        // CRITICAL FIX: Check the source of current navigation
+        // If we're already clicking from the pole, we need to maintain that source
+        let navigationSource = 'direct'
+
+        // Check if the orb already has a navigation source (e.g., from pole)
+        if (window.navigationSystem && window.navigationSystem.getNavigationSource) {
+          const currentSource = window.navigationSystem.getNavigationSource('orb')
+          if (currentSource === 'pole') {
+            navigationSource = 'pole'
+            console.log("Preserving pole as navigation source for orb")
+          }
+        }
+
+        // Store position ONLY for direct navigation, not when coming from pole
+        if (navigationSource === 'direct' && window.controls && window.controls.current) {
+          try {
+            const position = window.controls.current.getPosition()
+            const target = window.controls.current.getTarget()
+
+            // Convert to arrays
+            const posArray = Array.isArray(position) ? position :
+                             [position.x, position.y, position.z]
+            const targetArray = Array.isArray(target) ? target :
+                               [target.x, target.y, target.z]
+
+            // Store position for return
+            if (window.navigationSystem && window.navigationSystem.storePosition) {
+              window.navigationSystem.storePosition('orb', posArray, targetArray)
+              console.log("Stored direct camera position for orb")
+            }
+          } catch (err) {
+            console.error("Failed to store camera position:", err)
+          }
+        }
+
+        // Set navigation source - this is critical for the return journey
+        if (window.navigationSystem && window.navigationSystem.setNavigationSource) {
+          window.navigationSystem.setNavigationSource('orb', navigationSource)
+          console.log(`Set orb navigation source to: ${navigationSource}`)
+        }
+
         // Dispatch a custom event to ensure AboutOverlay is shown
         window.dispatchEvent(
           new CustomEvent('orbNavigation', {
@@ -179,17 +220,12 @@ const OrbMesh = React.memo(({ isZoomed, setIsZoomed, onSectionChange, ...props }
           })
         );
 
-        // Estamos assumindo que seção "about" é a seção 1
+        // Navigate to about section
         if (onSectionChange) {
           onSectionChange(1, "about")
-
-          // Também armazenamos a fonte de navegação como 'direct' se tivermos NavigationSystem
-          if (window.navigationSystem && window.navigationSystem.setNavigationSource) {
-            window.navigationSystem.setNavigationSource('orb', 'direct')
-          }
         }
 
-        // Também tentamos o globalNavigation como fallback
+        // Also try globalNavigation as fallback
         if (window.globalNavigation && window.globalNavigation.navigateTo) {
           window.globalNavigation.navigateTo("about")
         }
@@ -198,7 +234,6 @@ const OrbMesh = React.memo(({ isZoomed, setIsZoomed, onSectionChange, ...props }
       }, DOUBLE_CLICK_DELAY)
     }
   }
-
 
   // Evento de hover
   const handlePointerEnter = (e) => {
