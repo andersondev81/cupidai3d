@@ -1,70 +1,58 @@
-// First update ScrolIframe.jsx
 import { Html, useGLTF } from "@react-three/drei";
 import React, { useEffect, useState } from "react";
-import * as THREE from "three";
 import RoadmapPage from "../../components/iframes/Roadmap";
 
 export default function ScrollIframe({
   onReturnToMain,
   isActive = false,
-  navigationSource = "pole", // Default is "pole"
   ...props
 }) {
   const { nodes } = useGLTF("/models/scrollframe.glb");
   const [showContent, setShowContent] = useState(false);
   const [showButtons, setShowButtons] = useState(false);
-  const [checkerTexture, setCheckerTexture] = useState(null);
-
-  // Debug log to verify navigation source
-  useEffect(() => {
-    if (isActive) {
-      console.log(`ScrollIframe activated with navigation source: ${navigationSource}`);
-    }
-  }, [isActive, navigationSource]);
 
   // Monitor changes in isActive state
   useEffect(() => {
-    console.log(`ScrollIframe: isActive changed to ${isActive}`);
-
     if (isActive) {
       // When component becomes active, show content with a small delay
-      console.log("ScrollIframe: Activating content");
       const timer = setTimeout(() => {
         setShowContent(true);
         // Show buttons after a delay to ensure content has loaded
         setTimeout(() => {
           setShowButtons(true);
-          console.log("ScrollIframe: Buttons activated");
         }, 500);
       }, 300);
 
       return () => clearTimeout(timer);
     } else {
       // When component becomes inactive, hide content
-      console.log("ScrollIframe: Deactivating content");
       setShowButtons(false);
       setShowContent(false);
     }
   }, [isActive]);
 
-  // Simplified back navigation handler
+  // Check navigation source when handling return
   const handleBackToMain = (e) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
 
-    console.log(`ScrollIframe: Back button clicked (source: ${navigationSource})`);
-
     // Hide UI for visual feedback
     setShowButtons(false);
     setShowContent(false);
 
-    // Call the callback with the navigation source
+    // Get the navigation source from the system
+    const source = window.navigationSystem &&
+                  window.navigationSystem.getNavigationSource ?
+                  window.navigationSystem.getNavigationSource('scroll') : 'direct';
+
+    console.log(`ScrollIframe: Returning with source: ${source}`);
+
+    // Short delay to let the UI update first
     setTimeout(() => {
       if (onReturnToMain) {
-        console.log(`Returning with navigation source: ${navigationSource}`);
-        onReturnToMain(navigationSource);
+        onReturnToMain(source);
       }
     }, 300);
   };
@@ -126,7 +114,7 @@ export default function ScrollIframe({
               <div style={{ height: "100px" }}></div>
             </div>
 
-            {/* Button with text that changes based on source */}
+            {/* Button with text that changes based on navigation source */}
             {showButtons && (
               <div
                 style={{
@@ -162,7 +150,11 @@ export default function ScrollIframe({
                     e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
                   }}
                 >
-                  {navigationSource === "direct" ? "Return to Castle" : "Return to Cupid's Church"}
+                  {window.navigationSystem &&
+                   window.navigationSystem.getNavigationSource &&
+                   window.navigationSystem.getNavigationSource('scroll') === 'pole'
+                    ? "Return to Cupid's Church"
+                    : "Return to Castle"}
                 </button>
               </div>
             )}
