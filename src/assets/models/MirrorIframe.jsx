@@ -32,11 +32,18 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
     setShowContent(false);
     setShowButtons(false);
 
+    // Get the navigation source from the system
+    const source = window.navigationSystem &&
+                  window.navigationSystem.getNavigationSource ?
+                  window.navigationSystem.getNavigationSource('mirror') : 'direct';
+
+    console.log(`MirrorIframe: Returning with source: ${source}`);
+
     // Wait a bit to ensure the fade-out animation is visible
     setTimeout(() => {
       // Call the callback function provided by parent component
       if (onReturnToMain) {
-        onReturnToMain();
+        onReturnToMain(source);
       }
     }, 300);
   };
@@ -75,7 +82,7 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
                 height: "100%",
                 border: "none",
                 padding: "20px",
-                fontSize: "30px", // Aumentado de 18px para 26px
+                fontSize: "30px",
                 lineHeight: "1.7",
                 letterSpacing: "0.01em"
               }}>
@@ -92,7 +99,11 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
                   onClick={handleBackToMain}
                   className="px-8 py-4 bg-pink-500 text-white rounded-full font-bold text-lg hover:bg-pink-600 transition-all duration-300 shadow-lg hover:shadow-pink-300"
                 >
-                  Return to Cupid's Church
+                  {window.navigationSystem &&
+                   window.navigationSystem.getNavigationSource &&
+                   window.navigationSystem.getNavigationSource('mirror') === 'pole'
+                    ? "Return to Cupid's Church"
+                    : "Return to Castle"}
                 </button>
               </div>
             )}

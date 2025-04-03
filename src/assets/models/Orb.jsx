@@ -31,7 +31,6 @@ const BLOOM_LAYER = new Layers()
 BLOOM_LAYER.set(1) // Usando a camada 1 para os elementos com emissive map
 
 // Versão modificada da RotateAxis que mantém a velocidade original
-// Removendo a funcionalidade de desaceleração conforme solicitado
 const SlowableRotateAxis = React.memo(({ axis, speed, rotationType, isSlowed, children }) => {
   const ref = useRef()
 
@@ -39,7 +38,6 @@ const SlowableRotateAxis = React.memo(({ axis, speed, rotationType, isSlowed, ch
     if (!ref.current) return
 
     // Velocidade constante, independente do estado de zoom
-    // Não desacelera mais a animação da orb
     const effectiveSpeed = speed
 
     if (rotationType === "euler") {
@@ -52,11 +50,16 @@ const SlowableRotateAxis = React.memo(({ axis, speed, rotationType, isSlowed, ch
   return <group ref={ref}>{children}</group>
 })
 
-const OrbMesh = React.memo(({ isZoomed, setIsZoomed, ...props }) => {
+const OrbMesh = React.memo(({ isZoomed, setIsZoomed, onSectionChange, ...props }) => {
   const { nodes } = useGLTF("/models/Orbit.glb")
   const materialsRef = useRef([])
   const emissiveGroupRef = useRef()
   const groupRef = useRef()
+
+  // Para detectar clique duplo
+  const clickTimerRef = useRef(null)
+  const lastClickTimeRef = useRef(0)
+  const DOUBLE_CLICK_DELAY = 300 // ms
 
   // Carrega e configura texturas uma única vez
   const textures = useTexture({
@@ -135,13 +138,101 @@ const OrbMesh = React.memo(({ isZoomed, setIsZoomed, ...props }) => {
           material.dispose()
         }
       })
+
+      // Limpa também o timer do clique duplo
+      if (clickTimerRef.current) {
+        clearTimeout(clickTimerRef.current)
+      }
     }
   }, [])
 
-  // Evento de clique para ativar o zoom
+  // Evento de clique modificado para suportar clique simples e duplo
   const handleClick = (e) => {
     e.stopPropagation()
-    setIsZoomed(!isZoomed)
+
+    const now = Date.now()
+    const timeDiff = now - lastClickTimeRef.current
+
+    // Limpa qualquer timer pendente
+    if (clickTimerRef.current) {
+      clearTimeout(clickTimerRef.current)
+      clickTimerRef.current = null
+    }
+
+    if (timeDiff < DOUBLE_CLICK_DELAY) {
+      // É um clique duplo
+      console.log("Orb double click - zooming")
+      setIsZoomed(!isZoomed)
+      lastClickTimeRef.current = 0 // Reseta o tempo para evitar detecção acidental
+    } else {
+      // Pode ser um clique simples - aguarda para ver se haverá outro
+      lastClickTimeRef.current = now
+
+      clickTimerRef.current = setTimeout(() => {
+        // Se chegou aqui, era um clique simples
+        console.log("Orb single click - navigating to about section")
+
+        // CRITICAL FIX: Check the source of current navigation
+        // If we're already clicking from the pole, we need to maintain that source
+        let navigationSource = 'direct'
+
+        // Check if the orb already has a navigation source (e.g., from pole)
+        if (window.navigationSystem && window.navigationSystem.getNavigationSource) {
+          const currentSource = window.navigationSystem.getNavigationSource('orb')
+          if (currentSource === 'pole') {
+            navigationSource = 'pole'
+            console.log("Preserving pole as navigation source for orb")
+          }
+        }
+
+        // Store position ONLY for direct navigation, not when coming from pole
+        if (navigationSource === 'direct' && window.controls && window.controls.current) {
+          try {
+            const position = window.controls.current.getPosition()
+            const target = window.controls.current.getTarget()
+
+            // Convert to arrays
+            const posArray = Array.isArray(position) ? position :
+                             [position.x, position.y, position.z]
+            const targetArray = Array.isArray(target) ? target :
+                               [target.x, target.y, target.z]
+
+            // Store position for return
+            if (window.navigationSystem && window.navigationSystem.storePosition) {
+              window.navigationSystem.storePosition('orb', posArray, targetArray)
+              console.log("Stored direct camera position for orb")
+            }
+          } catch (err) {
+            console.error("Failed to store camera position:", err)
+          }
+        }
+
+        // Set navigation source - this is critical for the return journey
+        if (window.navigationSystem && window.navigationSystem.setNavigationSource) {
+          window.navigationSystem.setNavigationSource('orb', navigationSource)
+          console.log(`Set orb navigation source to: ${navigationSource}`)
+        }
+
+        // Dispatch a custom event to ensure AboutOverlay is shown
+        window.dispatchEvent(
+          new CustomEvent('orbNavigation', {
+            detail: { section: 'about' }
+          })
+        );
+
+        // Navigate to about section
+        if (onSectionChange) {
+          onSectionChange(1, "about")
+        }
+
+        // Also try globalNavigation as fallback
+        if (window.globalNavigation && window.globalNavigation.navigateTo) {
+          window.globalNavigation.navigateTo("about")
+        }
+
+        clickTimerRef.current = null
+      }, DOUBLE_CLICK_DELAY)
+    }
   }
 
   // Evento de hover
@@ -237,7 +328,7 @@ const OrbMesh = React.memo(({ isZoomed, setIsZoomed, ...props }) => {
 })
 
 // Componente principal
-const Orb = () => {
+const Orb = ({ onSectionChange }) => {
   const [isZoomed, setIsZoomed] = useState(false)
   const sceneRef = useRef()
   const floatGroupRef = useRef()
@@ -285,7 +376,11 @@ const Orb = () => {
             rotationIntensity={0}
             floatingRange={[-0.1, 0.1]}
           >
-            <OrbMesh isZoomed={isZoomed} setIsZoomed={setIsZoomed} />
+            <OrbMesh
+              isZoomed={isZoomed}
+              setIsZoomed={setIsZoomed}
+              onSectionChange={onSectionChange}
+            />
           </Float>
         </group>
       </group>

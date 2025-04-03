@@ -153,6 +153,8 @@ if (window.navigationSystem) {
 const NavigationSystem = {
   // Store camera positions for each navigation element
   positions: {},
+  // NEW: Track navigation sources
+  navigationSources: {},
 
   // Initialize the system
   init: () => {
@@ -166,6 +168,17 @@ const NavigationSystem = {
         );
       },
 
+      // NEW: Track navigation source
+      setNavigationSource: (elementId, source) => {
+        NavigationSystem.navigationSources[elementId] = source;
+        console.log(`Set navigation source for ${elementId} to ${source}`);
+      },
+
+      // NEW: Get navigation source
+      getNavigationSource: (elementId) => {
+        return NavigationSystem.navigationSources[elementId] || 'direct';
+      },
+
       // Retrieve position for any element
       getPosition: (elementId) => {
         return NavigationSystem.positions[elementId];
@@ -174,13 +187,41 @@ const NavigationSystem = {
       // Clear stored positions
       clearPositions: () => {
         NavigationSystem.positions = {};
+        // NEW: Also clear navigation sources
+        NavigationSystem.navigationSources = {};
+      },
+
+      // Clear position for a specific element
+      clearPositionForElement: (elementId) => {
+        if (NavigationSystem.positions[elementId]) {
+          delete NavigationSystem.positions[elementId];
+          console.log(`Cleared position for ${elementId}`);
+        }
+        // NEW: Also clear navigation source
+        if (NavigationSystem.navigationSources[elementId]) {
+          delete NavigationSystem.navigationSources[elementId];
+          console.log(`Cleared navigation source for ${elementId}`);
+        }
       },
 
       // Handle return navigation
       returnToPosition: (elementId, defaultAction) => {
         const storedPosition = NavigationSystem.positions[elementId];
+        const source = NavigationSystem.navigationSources[elementId] || 'direct';
 
-        if (storedPosition) {
+        console.log(`Return navigation for ${elementId}, source: ${source}`);
+
+        // If source is pole, we should return to the pole section
+        if (source === 'pole') {
+          console.log('Source is pole, returning to nav section');
+          if (window.globalNavigation && window.globalNavigation.navigateTo) {
+            window.globalNavigation.navigateTo('nav');
+            return true;
+          }
+        }
+
+        // Otherwise return to the stored camera position
+        if (storedPosition && source === 'direct') {
           const { position, target } = storedPosition;
           if (window.controls && window.controls.current) {
             console.log(`Returning to stored position for ${elementId}`);
@@ -236,6 +277,9 @@ const NavigationSystem = {
             posArray,
             targetArray
           );
+
+          // NEW: Set navigation source to 'direct' for direct clicks
+          window.navigationSystem.setNavigationSource(elementId, 'direct');
         } catch (err) {
           console.error(
             `Failed to store camera position for ${elementId}:`,
@@ -268,6 +312,7 @@ const NavigationSystem = {
     };
   },
 };
+
 
 // Initialize the navigation system when the module loads
 NavigationSystem.init();
@@ -1713,75 +1758,93 @@ const CastleModel = ({
       // Fix for the iframes in CastleModel component // For the AtmIframe
       component:
       <AtmIframe
-        position={[1.675, 1.185, 0.86]}
-        rotation={[1.47, 0.194, -1.088]}
-        onReturnToMain={() => {
-          // Close the iframe first for better visual feedback
-          setAtmiframeActive(false);
+  position={[1.675, 1.185, 0.86]}
+  rotation={[1.47, 0.194, -1.088]}
+  onReturnToMain={(source) => {
+    // Close the iframe first for better visual feedback
+    setAtmiframeActive(false);
 
-          // Short delay to let the UI update first
-          setTimeout(() => {
-            // Check for stored position and use it if available
-            const storedPosition = window.navigationSystem.getPosition("atm");
-            if (storedPosition) {
-              const { position, target } = storedPosition;
-              smoothCameraReturn(position, target);
-              console.log("Returning to stored ATM position");
-            } else {
-              // Fallback to nav if no stored position
-              console.log("No stored position for ATM, going to nav");
-              onCastleClick("nav");
-            }
-          }, 100);
-        }}
-        isActive={atmIframeActive}
-      />
-      // For the MirrorIframe component:
-      <MirrorIframe
-        onReturnToMain={() => {
-          // Close the iframe first
-          setMirrorIframeActive(false);
+    // Short delay to let the UI update first
+    setTimeout(() => {
+      if (source === 'pole') {
+        // If coming from pole, go back to nav section
+        console.log("ATM: Source is pole, returning to nav");
+        onCastleClick("nav");
+      } else {
+        // Check for stored position and use it if available
+        const storedPosition = window.navigationSystem.getPosition("atm");
+        if (storedPosition) {
+          const { position, target } = storedPosition;
+          smoothCameraReturn(position, target);
+          console.log("Returning to stored ATM position");
+        } else {
+          // Fallback to nav if no stored position
+          console.log("No stored position for ATM, going to nav");
+          onCastleClick("nav");
+        }
+      }
+    }, 100);
+  }}
+  isActive={atmIframeActive}
+/>
 
-          // Return to stored position or nav
-          setTimeout(() => {
-            const storedPosition =
-              window.navigationSystem.getPosition("mirror");
-            if (storedPosition) {
-              const { position, target } = storedPosition;
-              smoothCameraReturn(position, target);
-              console.log("Returning to stored Mirror position");
-            } else {
-              // Fallback to nav if no stored position
-              console.log("No stored position for Mirror, going to nav");
-              onCastleClick("nav");
-            }
-          }, 100);
-        }}
-        isActive={mirrorIframeActive}
-      />
-      // For the ScrollIframe component:
-      <ScrollIframe
-        onReturnToMain={() => {
-          // Close the iframe first
-          setScrollIframeActive(false);
+// For the MirrorIframe component:
+<MirrorIframe
+  onReturnToMain={(source) => {
+    // Close the iframe first
+    setMirrorIframeActive(false);
 
-          // Return to stored position or nav
-          setTimeout(() => {
-            const storedPosition =
-              window.navigationSystem.getPosition("scroll");
-            if (storedPosition) {
-              const { position, target } = storedPosition;
-              smoothCameraReturn(position, target);
-              console.log("Returning to stored Scroll position");
-            } else {
-              // Fallback to nav if no stored position
-              console.log("No stored position for Scroll, going to nav");
-              onCastleClick("nav");
-            }
-          }, 100);
-        }}
-        isActive={scrollIframeActive}
-      />
+    // Return to stored position or nav
+    setTimeout(() => {
+      if (source === 'pole') {
+        // If coming from pole, go back to nav section
+        console.log("Mirror: Source is pole, returning to nav");
+        onCastleClick("nav");
+      } else {
+        const storedPosition = window.navigationSystem.getPosition("mirror");
+        if (storedPosition) {
+          const { position, target } = storedPosition;
+          smoothCameraReturn(position, target);
+          console.log("Returning to stored Mirror position");
+        } else {
+          // Fallback to nav if no stored position
+          console.log("No stored position for Mirror, going to nav");
+          onCastleClick("nav");
+        }
+      }
+    }, 100);
+  }}
+  isActive={mirrorIframeActive}
+/>
+
+// For the ScrollIframe component:
+<ScrollIframe
+  onReturnToMain={(source) => {
+    // Close the iframe first
+    setScrollIframeActive(false);
+
+    // Return to stored position or nav
+    setTimeout(() => {
+      if (source === 'pole') {
+        // If coming from pole, go back to nav section
+        console.log("Scroll: Source is pole, returning to nav");
+        onCastleClick("nav");
+      } else {
+        const storedPosition = window.navigationSystem.getPosition("scroll");
+        if (storedPosition) {
+          const { position, target } = storedPosition;
+          smoothCameraReturn(position, target);
+          console.log("Returning to stored Scroll position");
+        } else {
+          // Fallback to nav if no stored position
+          console.log("No stored position for Scroll, going to nav");
+          onCastleClick("nav");
+        }
+      }
+    }, 100);
+  }}
+  isActive={scrollIframeActive}
+/>
     </group>
   );
 };

@@ -120,37 +120,48 @@ export function Pole({ onSectionChange, ...props }) {
   const materialHearts = useHeartsMaterial();
 
   // Simplified click handler using the navigation system
-  const createClickHandler = (sectionIndex, sectionName) => (e) => {
-    e.stopPropagation();
-    console.log(`Pole: Clicked on section ${sectionName}`);
+ // Update the handleElementClick function in Pole.jsx
 
-    // Tag this navigation as coming from the pole
-    if (window.navigationSystem) {
-      // Mark that we're not storing a direct position for this navigation
-      // We'll do this by clearing any existing position for this element
-      const elementId = sectionName === "aidatingcoach" ? "mirror" :
-                       sectionName === "token" ? "atm" :
-                       sectionName === "roadmap" ? "scroll" : null;
+// Find this code block in the createClickHandler function:
+const createClickHandler = (sectionIndex, sectionName) => (e) => {
+  e.stopPropagation();
+  console.log(`Pole: Clicked on section ${sectionName}`);
 
-      if (elementId && window.navigationSystem.clearPositionForElement) {
+  // Tag this navigation as coming from the pole
+  if (window.navigationSystem) {
+    // Get the corresponding element ID for this section
+    const elementId = sectionName === "aidatingcoach" ? "mirror" :
+                     sectionName === "token" ? "atm" :
+                     sectionName === "roadmap" ? "scroll" : null;
+
+    if (elementId) {
+      // NEW: Set navigation source to 'pole'
+      if (window.navigationSystem.setNavigationSource) {
+        window.navigationSystem.setNavigationSource(elementId, 'pole');
+        console.log(`Pole: Set navigation source for ${elementId} to 'pole'`);
+      }
+
+      // Clear any stored position to ensure we don't return to a specific camera position
+      if (window.navigationSystem.clearPositionForElement) {
         window.navigationSystem.clearPositionForElement(elementId);
       }
     }
+  }
 
-    if (onSectionChange && typeof onSectionChange === "function") {
-      console.log(`Pole: Using onSectionChange callback for ${sectionName}`);
-      onSectionChange(sectionIndex, sectionName);
-    }
+  if (onSectionChange && typeof onSectionChange === "function") {
+    console.log(`Pole: Using onSectionChange callback for ${sectionName}`);
+    onSectionChange(sectionIndex, sectionName);
+  }
 
-    if (window.globalNavigation && window.globalNavigation.navigateTo) {
-      console.log(`Pole: Using global navigation for ${sectionName}`);
-      window.globalNavigation.navigateTo(sectionName);
-    }
+  if (window.globalNavigation && window.globalNavigation.navigateTo) {
+    console.log(`Pole: Using global navigation for ${sectionName}`);
+    window.globalNavigation.navigateTo(sectionName);
+  }
 
-    console.log(
-      `Pole: Navigation to ${sectionName} attempted. Check if camera moved.`
-    );
-  };
+  console.log(
+    `Pole: Navigation to ${sectionName} attempted. Check if camera moved.`
+  );
+};
 
   const pointerHandlers = {
     onPointerEnter: (e) => {

@@ -36,32 +36,51 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
 
   const currentSectionKey = sections[section];
 
-  // Show overlay only after the camera animation has completed
+  // Debug logging
   useEffect(() => {
-    // if is about setShowAboutOverlay to true
-    // if is download setShowDownloadOverlay to true
-    if (currentSectionKey === "about" ) {
-      // Use a longer delay to ensure camera animation is complete before showing overlay
-      // Camera transitions typically take around 1-1.5 seconds
+    console.log(`CastleUI: Current section changed to ${currentSectionKey}`);
+  }, [currentSectionKey]);
+
+  // Show overlay after camera animation is complete
+  useEffect(() => {
+    if (currentSectionKey === "about") {
+      console.log("About section active, preparing to show overlay");
+      // Make sure we're waiting enough time for the animation
       const timer = setTimeout(() => {
+        console.log("Showing AboutOverlay now");
         setShowAboutOverlay(true);
-      }, 1500); // 1.5 seconds delay to ensure animation is complete
+      }, 1200); // Reduced slightly from 1500ms
       return () => clearTimeout(timer);
     }
-    if (currentSectionKey === "download" ) {
-      // Use a longer delay to ensure camera animation is complete before showing overlay
-      // Camera transitions typically take around 1-1.5 seconds
+    else if (currentSectionKey === "download") {
+      console.log("Download section active, preparing to show overlay");
       const timer = setTimeout(() => {
         setShowDownloadOverlay(true);
-      }, 1500); // 1.5 seconds delay to ensure animation is complete
+      }, 1200);
       return () => clearTimeout(timer);
     }
     else {
-      // Hide overlay immediately when leaving the about section
+      // Hide overlays when not in those sections
       setShowAboutOverlay(false);
       setShowDownloadOverlay(false);
     }
   }, [currentSectionKey]);
+
+  // Global event listener for orb navigation
+  useEffect(() => {
+    const handleOrbNavigation = (event) => {
+      if (event.detail && event.detail.section === "about") {
+        console.log("Detected orb navigation to about section");
+        // Force section change if needed
+        if (currentSectionKey !== "about") {
+          onSectionChange(1, "about");
+        }
+      }
+    };
+
+    window.addEventListener('orbNavigation', handleOrbNavigation);
+    return () => window.removeEventListener('orbNavigation', handleOrbNavigation);
+  }, [currentSectionKey, onSectionChange]);
 
   const handleHomeNavigation = () => {
     if (cameraRef) {
@@ -152,55 +171,22 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
       {/* Seção AI Dating Coach */}
       <Section isActive={currentSectionKey === "aidatingcoach"}>
         <div className="flex flex-col items-center gap-6">
-          {/* <h1 className="text-4xl font-bold text-stone-100">AI Dating Coach</h1> */}
           <div className="flex gap-4">
-            {/* <NavigationButton
-              onClick={handleHomeNavigation}
-              className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
-            >
-              Back to Main
-            </NavigationButton> */}
+            {/* Navigation buttons removed as per original */}
           </div>
         </div>
       </Section>
 
       {/* Seção Download */}
       <Section isActive={currentSectionKey === "download"}>
-        {/* <div className="flex flex-col items-center gap-6">
-          <h1 className="text-4xl font-bold text-stone-100">
-            Download the App
-          </h1>
-          <div className="flex gap-4">
-            <NavigationButton
-              className="bg-green-500 hover:bg-green-600 text-white pointer-events-auto"
-            >
-              iOS Version
-            </NavigationButton>
-            <NavigationButton
-              className="bg-green-500 hover:bg-green-600 text-white pointer-events-auto"
-            >
-              Android Version
-            </NavigationButton>
-            <NavigationButton
-              onClick={handleHomeNavigation}
-              className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
-            >
-              Back
-            </NavigationButton>
-          </div>
-        </div> */}
+        {/* Content removed as per original */}
       </Section>
 
       {/* Seção Token */}
       <Section isActive={currentSectionKey === "token"}>
-      <div className="flex flex-col items-center gap-6">
+        <div className="flex flex-col items-center gap-6">
           <div className="flex gap-4">
-            {/* <NavigationButton
-              onClick={handleHomeNavigation}
-              className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
-            >
-              Back
-            </NavigationButton> */}
+            {/* Navigation buttons removed as per original */}
           </div>
         </div>
       </Section>
@@ -208,15 +194,7 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
       {/* Seção Roadmap */}
       <Section isActive={currentSectionKey === "roadmap"}>
         <div className="flex flex-col items-center gap-6">
-
-          {/* <div className="flex gap-4">
-            <NavigationButton
-              onClick={handleHomeNavigation}
-              className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto"
-            >
-              Main Menu
-            </NavigationButton>
-          </div> */}
+          {/* Content removed as per original */}
         </div>
       </Section>
 

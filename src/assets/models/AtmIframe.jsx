@@ -1,91 +1,65 @@
-import { Html } from "@react-three/drei"
-import React, { useEffect, useRef, useState } from "react"
-import TokenPage from "../../components/iframes/Token"
+import { Html } from "@react-three/drei";
+import React, { useEffect, useRef, useState } from "react";
+import TokenPage from "../../components/iframes/Token";
 
-// Animation timing constants
-const ANIMATION_TIMING = {
-  CONTENT_DELAY: 300,
-  BUTTONS_DELAY: 500,
-  TRANSITION_DELAY: 100,
-}
+const AtmIframe = ({ onReturnToMain, isActive, ...props }) => {
+  const [showContent, setShowContent] = useState(false);
+  const [showButtons, setShowButtons] = useState(false);
+  const containerRef = useRef(null);
 
-export default function AtmIframe({
-  onReturnToMain,
-  isActive,
-  cameraRef,
-  onSectionChange,
-  navigationSource = "pole", // Add this parameter with default value
-  ...props
-}) {
-  const [showContent, setShowContent] = useState(false)
-  const [showButtons, setShowButtons] = useState(false)
-  const containerRef = useRef(null)
-
-  // Handle component activation/deactivation
+  // Monitor changes in isActive state
   useEffect(() => {
-    let contentTimer = null
-    let buttonsTimer = null
-
     if (isActive) {
-      // When component becomes active, show content with a delay
-      contentTimer = setTimeout(() => {
-        setShowContent(true)
+      // When component becomes active, show content with a small delay
+      const timer = setTimeout(() => {
+        setShowContent(true);
+        // Show buttons after a delay to ensure content has loaded
+        setTimeout(() => {
+          setShowButtons(true);
+        }, 500);
+      }, 300);
 
-        // Show buttons after content has loaded
-        buttonsTimer = setTimeout(() => {
-          setShowButtons(true)
-        }, ANIMATION_TIMING.BUTTONS_DELAY)
-      }, ANIMATION_TIMING.CONTENT_DELAY)
+      return () => clearTimeout(timer);
     } else {
-      // When component becomes inactive, hide buttons and content
-      setShowButtons(false)
-      setShowContent(false)
+      // When component becomes inactive, hide content
+      setShowContent(false);
+      setShowButtons(false);
     }
-
-    // Cleanup timers on unmount or state change
-    return () => {
-      clearTimeout(contentTimer)
-      clearTimeout(buttonsTimer)
-    }
-  }, [isActive])
+  }, [isActive]);
 
   // Handle navigation back to main menu with navigation source
   const handleHomeNavigation = () => {
     // First hide buttons for visual feedback
-    setShowButtons(false)
+    setShowButtons(false);
 
     // Hide content after a short delay
     setTimeout(() => {
-      setShowContent(false)
+      setShowContent(false);
+
+      // Get the navigation source
+      const source = window.navigationSystem &&
+                    window.navigationSystem.getNavigationSource ?
+                    window.navigationSystem.getNavigationSource('atm') : 'direct';
+
+      console.log(`ATM iframe returning with source: ${source}`);
 
       // Additional delay to complete visual transitions
       setTimeout(() => {
-        // Pass the navigation source to the callback
+        // Call the callback function provided by parent component
         if (onReturnToMain) {
-          console.log(`ATM iframe returning with source: ${navigationSource}`)
-          onReturnToMain(navigationSource)
-        } else {
-          // Legacy fallbacks if onReturnToMain isn't available
-          if (cameraRef?.goToHome) {
-            cameraRef.goToHome()
-          }
-
-          if (onSectionChange) {
-            onSectionChange(0, "nav")
-          }
+          onReturnToMain(source);
         }
-      }, ANIMATION_TIMING.TRANSITION_DELAY)
-    }, ANIMATION_TIMING.TRANSITION_DELAY)
-  }
+      }, 100);
+    }, 100);
+  };
 
-  // Styles
   const containerStyle = {
     width: "100%",
     height: "100%",
     position: "relative",
     pointerEvents: showContent ? "auto" : "none",
     backgroundColor: "transparent",
-  }
+  };
 
   const contentStyle = {
     width: "100%",
@@ -94,7 +68,7 @@ export default function AtmIframe({
     borderRadius: "8px",
     overflow: "hidden",
     backgroundColor: "transparent",
-  }
+  };
 
   const buttonContainerStyle = {
     position: "absolute",
@@ -103,10 +77,15 @@ export default function AtmIframe({
     display: "flex",
     justifyContent: "center",
     zIndex: 1000,
-  }
+  };
 
   return (
-    <group {...props} dispose={null}>
+    <group
+      position={[1.675, 1.185, 0.86]}
+      rotation={[1.47, 0.194, -1.088]}
+      {...props}
+    >
+      {/* HTML content - only shown when isActive is true */}
       {showContent && (
         <Html
           ref={containerRef}
@@ -126,7 +105,7 @@ export default function AtmIframe({
               <TokenPage />
             </div>
 
-            {/* Navigation buttons - text changes based on navigation source */}
+            {/* Navigation buttons - exact styling from original */}
             {showButtons && (
               <div
                 className="flex flex-col items-center gap-6"
@@ -137,7 +116,11 @@ export default function AtmIframe({
                     onClick={handleHomeNavigation}
                     className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto flex items-center justify-center rounded-md px-6 py-3 transition-all"
                   >
-                    {navigationSource === "direct" ? "Return to Castle" : "Main Menu"}
+                    {window.navigationSystem &&
+                     window.navigationSystem.getNavigationSource &&
+                     window.navigationSystem.getNavigationSource('atm') === 'pole'
+                      ? "Return to Cupid's Church"
+                      : "Return to Castle"}
                   </button>
                 </div>
               </div>
@@ -146,5 +129,7 @@ export default function AtmIframe({
         </Html>
       )}
     </group>
-  )
-}
+  );
+};
+
+export default AtmIframe;
