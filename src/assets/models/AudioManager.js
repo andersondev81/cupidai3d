@@ -2,7 +2,6 @@
 // Um sistema completo para gerenciar áudio na aplicação Cupid's Church
 
 // Importar THREE.js se estiver disponível no contexto do navegador
-import * as THREE from 'three';
 
 // Classe para representar posições 3D sem depender diretamente do THREE.js
 class Position {
@@ -31,7 +30,7 @@ class AudioManager {
       orb: new Position(1.76, 1.155, -0.883),
       fountain: new Position(0, 0.8, 2.406),
       portal: new Position(0, 1.247, -2.117),
-      heart: new Position(0, 4.18, -0.006)
+      heart: new Position(0, 4.18, -0.006),
     };
 
     // Configurar categorias de sons
@@ -52,81 +51,132 @@ class AudioManager {
     // Definir categorias para os sons
     this.soundCategories = {
       // Sons de ambiente que sempre podem tocar em paralelo
-      ambient: ['ambient', 'water', 'fountain', 'heartbeat', 'portal', 'orb'],
+      ambient: ["ambient", "water", "fountain", "heartbeat", "portal", "orb"],
 
       // Sons de transição que não são em loop
-      transition: ['transition', 'click', 'hover'],
+      transition: ["transition", "click", "hover"],
 
       // Sons de seções que devem ser exclusivos (apenas um toca por vez)
-      section: ['nav', 'about', 'aidatingcoach', 'download', 'token', 'roadmap'],
+      section: [
+        "nav",
+        "about",
+        "aidatingcoach",
+        "download",
+        "token",
+        "roadmap",
+      ],
 
       // Sons de elementos específicos que pertencem a seções
       sectionElements: {
         nav: [],
         about: [],
-        aidatingcoach: ['mirror'],
+        aidatingcoach: ["mirror"],
         download: [],
-        token: ['atm', 'coins'],
-        roadmap: ['scroll', 'paper']
-      }
+        token: ["atm", "coins"],
+        roadmap: ["scroll", "paper"],
+      },
     };
 
     // Mapear sons para suas categorias para facilitar a busca
     this.soundToCategory = {};
 
     // Categorizar sons ambientes
-    this.soundCategories.ambient.forEach(sound => {
-      this.soundToCategory[sound] = 'ambient';
+    this.soundCategories.ambient.forEach((sound) => {
+      this.soundToCategory[sound] = "ambient";
     });
 
     // Categorizar sons de transição
-    this.soundCategories.transition.forEach(sound => {
-      this.soundToCategory[sound] = 'transition';
+    this.soundCategories.transition.forEach((sound) => {
+      this.soundToCategory[sound] = "transition";
     });
 
     // Categorizar sons de seções
-    this.soundCategories.section.forEach(sound => {
-      this.soundToCategory[sound] = 'section';
+    this.soundCategories.section.forEach((sound) => {
+      this.soundToCategory[sound] = "section";
     });
 
     // Categorizar sons de elementos específicos
-    Object.entries(this.soundCategories.sectionElements).forEach(([section, elements]) => {
-      elements.forEach(sound => {
-        this.soundToCategory[sound] = 'sectionElement';
-        this.soundToCategory[`${sound}_section`] = section; // Armazenar a seção pai
-      });
-    });
+    Object.entries(this.soundCategories.sectionElements).forEach(
+      ([section, elements]) => {
+        elements.forEach((sound) => {
+          this.soundToCategory[sound] = "sectionElement";
+          this.soundToCategory[`${sound}_section`] = section; // Armazenar a seção pai
+        });
+      }
+    );
   }
 
   // Configurar os sons para diferentes transições e elementos
   setupSounds() {
     // Sons de transição para diferentes seções
-    this.registerSound('transition', '/public/sounds/camerawoosh.MP3', { loop: false, volume: 0.1 });
+    this.registerSound("transition", "/public/sounds/camerawoosh.MP3", {
+      loop: false,
+      volume: 0.1,
+    });
     // this.registerSound('nav', '../sounds/camerawoosh.MP3');
-    this.registerSound('about', '/sounds/nav.mp3');
-    this.registerSound('aidatingcoach', '/public/sounds/daingcoachmirror.MP3', { loop: true, volume: 0.1 });
-    this.registerSound('download', '/sounds/download.mp3');
-    this.registerSound('token', '/public/sounds/atmambiance.mp3', { loop: true, volume: 0.1 });
-    this.registerSound('roadmap', '/public/sounds/roadmapscroll.mp3', { loop: true, volume: 0.1 });
+    this.registerSound("about", "/sounds/nav.mp3");
+    this.registerSound("aidatingcoach", "/public/sounds/daingcoachmirror.MP3", {
+      loop: true,
+      volume: 0.1,
+    });
+    this.registerSound("download", "/sounds/download.mp3");
+    this.registerSound("token", "/public/sounds/atmambiance.mp3", {
+      loop: true,
+      volume: 0.1,
+    });
+    this.registerSound("roadmap", "/public/sounds/roadmapscroll.mp3", {
+      loop: true,
+      volume: 0.1,
+    });
 
     // Sons para interações
-    this.registerSound('click', '/sounds/click.mp3');
-    this.registerSound('hover', '/sounds/hover.mp3');
+    this.registerSound("click", "/sounds/click.mp3");
+    this.registerSound("hover", "/sounds/hover.mp3");
 
     // Sons ambiente
-    this.registerSound('ambient', '/sounds/ambient.mp3', { loop: true, volume: 0.2 });
-    this.registerSound('orb', '/public/sounds/orb.mp3', { loop: true, volume: 0.3 });
-    this.registerSound('water', '/sounds/water.mp3', { loop: true, volume: 0.3 });
-    this.registerSound('fountain', '/public/sounds/fountain.mp3', { loop: true, volume: 0.3 });
-    this.registerSound('portal', '/sounds/portal.mp3', { loop: true, volume: 0.3 });
-    this.registerSound('heartbeat', '/sounds/heartbeat.mp3', { loop: true, volume: 0.2 });
+    this.registerSound("ambient", "/sounds/ambient.mp3", {
+      loop: true,
+      volume: 0.2,
+    });
+    this.registerSound("orb", "/public/sounds/orb.mp3", {
+      loop: true,
+      volume: 0.3,
+    });
+    this.registerSound("water", "/sounds/water.mp3", {
+      loop: true,
+      volume: 0.3,
+    });
+    this.registerSound("fountain", "/public/sounds/fountain.mp3", {
+      loop: true,
+      volume: 0.3,
+    });
+    this.registerSound("portal", "/sounds/portal.mp3", {
+      loop: true,
+      volume: 0.3,
+    });
+    this.registerSound("heartbeat", "/sounds/heartbeat.mp3", {
+      loop: true,
+      volume: 0.2,
+    });
 
     // Sons de elementos específicos
-    this.registerSound('mirror', '/sounds/mirror.mp3', { loop: true, volume: 0.4 });
-    this.registerSound('atm', '/sounds/atm.mp3', { loop: true, volume: 0.4 });
-    this.registerSound('coins', '/sounds/coins.mp3', { loop: true, volume: 0.3 });
-    this.registerSound('scroll', '/sounds/scroll.mp3', { loop: true, volume: 0.4 });
-    this.registerSound('paper', '/sounds/paper.mp3', { loop: true, volume: 0.3 });
+    this.registerSound("mirror", "/sounds/mirror.mp3", {
+      loop: true,
+      volume: 0.4,
+    });
+    this.registerSound("atm", "/sounds/atm.mp3", { loop: true, volume: 0.4 });
+    this.registerSound("coins", "/sounds/coins.mp3", {
+      loop: true,
+      volume: 0.3,
+    });
+    this.registerSound("scroll", "/sounds/scroll.mp3", {
+      loop: true,
+      volume: 0.4,
+    });
+    this.registerSound("paper", "/sounds/paper.mp3", {
+      loop: true,
+      volume: 0.3,
+    });
   }
 
   // Verificar se o navegador permite reprodução automática de áudio
@@ -143,9 +193,11 @@ class AudioManager {
           this.canAutoplay = true;
           audio.pause();
         })
-        .catch(error => {
+        .catch((error) => {
           this.canAutoplay = false;
-          console.log('Reprodução automática de áudio não permitida pelo navegador');
+          console.log(
+            "Reprodução automática de áudio não permitida pelo navegador"
+          );
         });
     }
   }
@@ -157,23 +209,28 @@ class AudioManager {
     audio.volume = options.volume || this.volume;
 
     // Configurar loop explicitamente - por padrão, todos (exceto transição) em loop
-    const shouldLoop = id === 'transition' || id === 'click' || id === 'hover'
-      ? false
-      : (options.loop !== undefined ? options.loop : true);
+    const shouldLoop =
+      id === "transition" || id === "click" || id === "hover"
+        ? false
+        : options.loop !== undefined
+        ? options.loop
+        : true;
 
     audio.loop = shouldLoop;
 
-    console.log(`Registrando som: ${id}, loop: ${audio.loop}, volume: ${audio.volume}`);
+    console.log(
+      `Registrando som: ${id}, loop: ${audio.loop}, volume: ${audio.volume}`
+    );
 
     this.sounds[id] = {
       audio: audio,
       volume: options.volume || this.volume,
       isPlaying: false,
-      loop: shouldLoop
+      loop: shouldLoop,
     };
 
     // Configurar o evento de fim da reprodução
-    audio.addEventListener('ended', () => {
+    audio.addEventListener("ended", () => {
       // Se não for loop, marcar como não tocando mais
       if (!shouldLoop) {
         this.sounds[id].isPlaying = false;
@@ -208,7 +265,7 @@ class AudioManager {
     // Usar Promise para compatibilidade com diferentes navegadores
     const playPromise = sound.audio.play();
     if (playPromise !== undefined) {
-      playPromise.catch(error => {
+      playPromise.catch((error) => {
         sound.isPlaying = false;
         console.error(`Erro ao reproduzir o som ${id}:`, error);
       });
@@ -245,7 +302,8 @@ class AudioManager {
     if (this.isMuted || !this.sounds[id]) return;
 
     const sound = this.sounds[id];
-    if (sound.isPlaying) { // Se ainda está marcado como "tocando", é porque foi pausado
+    if (sound.isPlaying) {
+      // Se ainda está marcado como "tocando", é porque foi pausado
       // Iniciar com volume zero para fade-in suave
       sound.audio.volume = 0;
 
@@ -262,7 +320,10 @@ class AudioManager {
             let currentStep = 0;
             const fadeInterval = setInterval(() => {
               currentStep++;
-              const newVolume = Math.min(sound.volume, currentStep * volumeIncrement);
+              const newVolume = Math.min(
+                sound.volume,
+                currentStep * volumeIncrement
+              );
               sound.audio.volume = newVolume;
 
               if (currentStep >= fadeSteps) {
@@ -273,7 +334,7 @@ class AudioManager {
 
             console.log(`Som ${id} retomado com fade-in`);
           })
-          .catch(error => {
+          .catch((error) => {
             console.error(`Erro ao retomar o som ${id}:`, error);
           });
       }
@@ -296,7 +357,10 @@ class AudioManager {
     let currentStep = 0;
     const fadeInterval = setInterval(() => {
       currentStep++;
-      const newVolume = Math.max(0, originalVolume - currentStep * volumeDecrement);
+      const newVolume = Math.max(
+        0,
+        originalVolume - currentStep * volumeDecrement
+      );
       sound.audio.volume = newVolume;
 
       if (currentStep >= fadeSteps) {
@@ -337,12 +401,15 @@ class AudioManager {
         const fadeSteps = 20;
         const targetVolume = this.sounds[toId].volume;
         const volumeIncrement = targetVolume / fadeSteps;
-        const stepDuration = (duration / 2) / fadeSteps;
+        const stepDuration = duration / 2 / fadeSteps;
 
         let currentStep = 0;
         const fadeInterval = setInterval(() => {
           currentStep++;
-          const newVolume = Math.min(targetVolume, currentStep * volumeIncrement);
+          const newVolume = Math.min(
+            targetVolume,
+            currentStep * volumeIncrement
+          );
           if (this.sounds[toId] && this.sounds[toId].audio) {
             this.sounds[toId].audio.volume = newVolume;
           }
@@ -361,7 +428,7 @@ class AudioManager {
   // Reproduzir som de transição para uma seção específica
   playTransitionSound(sectionName) {
     // Primeiro reproduz o som genérico de transição
-    this.play('transition');
+    this.play("transition");
 
     // Depois reproduz o som específico da seção, se existir
     if (this.sounds[sectionName]) {
@@ -373,22 +440,22 @@ class AudioManager {
 
   // Reproduz som de clique (para botões e interações)
   playClickSound() {
-    this.play('click');
+    this.play("click");
   }
 
   // Reproduz som de hover (para feedbacks ao passar mouse sobre elementos interativos)
   playHoverSound() {
-    this.play('hover');
+    this.play("hover");
   }
 
   // Iniciar áudio ambiente
   startAmbient() {
-    this.play('ambient');
+    this.play("ambient");
   }
 
   // Parar áudio ambiente
   stopAmbient() {
-    this.stop('ambient');
+    this.stop("ambient");
   }
 
   // Ativar/desativar mudo
@@ -396,7 +463,7 @@ class AudioManager {
     this.isMuted = !this.isMuted;
 
     // Aplicar estado de mudo a todos os sons
-    Object.keys(this.sounds).forEach(id => {
+    Object.keys(this.sounds).forEach((id) => {
       this.sounds[id].audio.muted = this.isMuted;
     });
 
@@ -405,9 +472,14 @@ class AudioManager {
 
   // Método para pausar todos os sons exceto os ambientes
   pauseAllExceptAmbient() {
-    const ambientSounds = this.soundCategories.ambient || ['ambient', 'water', 'fountain', 'orb'];
+    const ambientSounds = this.soundCategories.ambient || [
+      "ambient",
+      "water",
+      "fountain",
+      "orb",
+    ];
 
-    Object.keys(this.sounds).forEach(id => {
+    Object.keys(this.sounds).forEach((id) => {
       // Não pausa sons ambientes
       if (!ambientSounds.includes(id)) {
         this.pause(id);
@@ -417,7 +489,7 @@ class AudioManager {
 
   // Método para pausar todos os sons exceto os de uma categoria específica
   pauseAllExcept(category) {
-    Object.keys(this.sounds).forEach(id => {
+    Object.keys(this.sounds).forEach((id) => {
       if (this.soundToCategory[id] !== category) {
         this.pause(id);
       }
@@ -432,29 +504,29 @@ class AudioManager {
     }
 
     // Parar sons específicos associados à seção
-    switch(sectionName) {
-      case 'nav':
+    switch (sectionName) {
+      case "nav":
         // Sons associados à seção principal
         break;
-      case 'about':
+      case "about":
         // Sons associados à seção about
         break;
-      case 'aidatingcoach':
+      case "aidatingcoach":
         // Sons associados à seção do espelho
-        this.stop('mirror');
+        this.stop("mirror");
         break;
-      case 'download':
+      case "download":
         // Sons associados à seção de download
         break;
-      case 'token':
+      case "token":
         // Sons associados à seção do ATM
-        this.stop('coins');
-        this.stop('atm');
+        this.stop("coins");
+        this.stop("atm");
         break;
-      case 'roadmap':
+      case "roadmap":
         // Sons associados à seção do pergaminho
-        this.stop('scroll');
-        this.stop('paper');
+        this.stop("scroll");
+        this.stop("paper");
         break;
     }
   }
@@ -462,28 +534,37 @@ class AudioManager {
   // Para todos os sons de seção (utilizados durante transições)
   stopAllSectionSounds() {
     // Lista de todas as seções
-    const sections = ['nav', 'about', 'aidatingcoach', 'download', 'token', 'roadmap'];
+    const sections = [
+      "nav",
+      "about",
+      "aidatingcoach",
+      "download",
+      "token",
+      "roadmap",
+    ];
 
     // Para os sons de cada seção
-    sections.forEach(section => {
+    sections.forEach((section) => {
       this.stopSectionSounds(section);
     });
 
     // Para sons adicionais que podem estar tocando
-    ['transition', 'mirror', 'atm', 'scroll', 'coins', 'paper'].forEach(sound => {
-      if (this.sounds[sound]) {
-        this.stop(sound);
+    ["transition", "mirror", "atm", "scroll", "coins", "paper"].forEach(
+      (sound) => {
+        if (this.sounds[sound]) {
+          this.stop(sound);
+        }
       }
-    });
+    );
   }
 
   // Método para pausar sons de uma categoria específica
   pauseCategory(category) {
-    const soundsInCategory = Object.keys(this.sounds).filter(id =>
-      this.soundToCategory[id] === category
+    const soundsInCategory = Object.keys(this.sounds).filter(
+      (id) => this.soundToCategory[id] === category
     );
 
-    soundsInCategory.forEach(sound => {
+    soundsInCategory.forEach((sound) => {
       this.pause(sound);
     });
   }
@@ -496,8 +577,9 @@ class AudioManager {
     }
 
     // Pausar os sons dos elementos da seção
-    const sectionElements = this.soundCategories.sectionElements[sectionName] || [];
-    sectionElements.forEach(element => {
+    const sectionElements =
+      this.soundCategories.sectionElements[sectionName] || [];
+    sectionElements.forEach((element) => {
       if (this.sounds[element]) {
         this.pause(element);
       }
@@ -512,8 +594,9 @@ class AudioManager {
     }
 
     // Reproduzir os sons dos elementos da seção
-    const sectionElements = this.soundCategories.sectionElements[sectionName] || [];
-    sectionElements.forEach(element => {
+    const sectionElements =
+      this.soundCategories.sectionElements[sectionName] || [];
+    sectionElements.forEach((element) => {
       if (this.sounds[element]) {
         this.play(element);
       }
@@ -523,7 +606,7 @@ class AudioManager {
   // Método para gerenciar a transição entre seções
   transitionBetweenSections(fromSection, toSection) {
     // Primeiro, tocar o som de transição
-    this.play('transition');
+    this.play("transition");
 
     // Pausar sons da seção anterior (preservando o estado para retomada futura)
     if (fromSection) {
@@ -564,22 +647,28 @@ class AudioManager {
           window.audioManager.sounds.orb.audio.volume = orbVolume;
 
           if (!window.audioManager.sounds.orb.isPlaying) {
-            window.audioManager.play('orb');
+            window.audioManager.play("orb");
           }
         } else {
-          window.audioManager.stop('orb');
+          window.audioManager.stop("orb");
         }
       }
     } else {
       // Se estiver fora do alcance, parar o som
       if (window.audioManager) {
-        window.audioManager.stop('orb');
+        window.audioManager.stop("orb");
       }
     }
   };
 
   // Atualiza o volume de um som específico com base na distância
-  updateElementSound(soundId, cameraPosition, maxDistance, maxVolume, positionKey) {
+  updateElementSound(
+    soundId,
+    cameraPosition,
+    maxDistance,
+    maxVolume,
+    positionKey
+  ) {
     // Usar a chave de posição, ou o ID do som se não for fornecida
     const posKey = positionKey || soundId;
 
@@ -592,11 +681,11 @@ class AudioManager {
     // Reduzir significativamente a distância máxima para ouvir o som do orb
     // Usar valores diferentes para diferentes tipos de sons
     let effectiveMaxDistance = maxDistance;
-    if (soundId === 'orb') {
+    if (soundId === "orb") {
       effectiveMaxDistance = 2.5; // Reduzir drasticamente para o orb (originalmente 10)
-    } else if (soundId === 'portal' || soundId === 'heartbeat') {
+    } else if (soundId === "portal" || soundId === "heartbeat") {
       effectiveMaxDistance = 5; // Menor para sons mais sutis
-    } else if (soundId === 'fountain') {
+    } else if (soundId === "fountain") {
       effectiveMaxDistance = 6; // Um pouco maior para a fonte
     }
 
@@ -617,7 +706,9 @@ class AudioManager {
           this.sounds[soundId].audio.volume = volume;
 
           if (!this.sounds[soundId].isPlaying) {
-            console.log(`Iniciando som ${soundId} a ${distance.toFixed(2)} unidades`);
+            console.log(
+              `Iniciando som ${soundId} a ${distance.toFixed(2)} unidades`
+            );
             this.play(soundId);
           }
         }
@@ -628,7 +719,9 @@ class AudioManager {
     } else {
       // Se estiver fora do alcance, pare o som
       if (this.sounds[soundId] && this.sounds[soundId].isPlaying) {
-        console.log(`Parando som ${soundId} - fora de alcance: ${distance.toFixed(2)}`);
+        console.log(
+          `Parando som ${soundId} - fora de alcance: ${distance.toFixed(2)}`
+        );
         this.stop(soundId);
       }
     }
@@ -639,7 +732,7 @@ class AudioManager {
     this.volume = Math.max(0, Math.min(1, value)); // Garantir que o valor está entre 0 e 1
 
     // Aplicar volume a todos os sons, respeitando suas configurações individuais
-    Object.keys(this.sounds).forEach(id => {
+    Object.keys(this.sounds).forEach((id) => {
       const sound = this.sounds[id];
       const individualVolume = sound.volume || this.volume;
       sound.audio.volume = this.isMuted ? 0 : individualVolume;
@@ -651,9 +744,72 @@ class AudioManager {
     this.positions[elementId] = new Position(x, y, z);
   }
 
+  stopAllAudio() {
+    console.log("Parando TODOS os sons do sistema");
+
+    // Para todos os sons registrados
+    Object.keys(this.sounds).forEach((id) => {
+      if (this.sounds[id] && this.sounds[id].isPlaying) {
+        console.log(`Parando som: ${id}`);
+
+        // Parar som imediatamente (sem fade)
+        this.sounds[id].audio.pause();
+        this.sounds[id].audio.currentTime = 0;
+        this.sounds[id].isPlaying = false;
+      }
+    });
+
+    // Garantir explicitamente que sons críticos estão parados
+    // (mesmo que não estejam marcados como 'isPlaying')
+    const criticalSounds = [
+      "orb",
+      "fountain",
+      "portal",
+      "mirror",
+      "atm",
+      "scroll",
+    ];
+    criticalSounds.forEach((id) => {
+      if (this.sounds[id]) {
+        this.sounds[id].audio.pause();
+        this.sounds[id].audio.currentTime = 0;
+        this.sounds[id].isPlaying = false;
+      }
+    });
+  }
+  setupNavigationHandlers() {
+    if (typeof window !== 'undefined') {
+      // Adicionar método global para parar todos os sons
+      window.stopAllSounds = () => this.stopAllAudio();
+
+      // Se o sistema tiver uma função de navegação global, intercepte-a
+      if (window.globalNavigation) {
+        const originalNavigateTo = window.globalNavigation.navigateTo;
+
+        window.globalNavigation.navigateTo = (sectionName) => {
+          // Parar todos os sons antes da navegação
+          this.stopAllAudio();
+
+          // Depois chamar a função original
+          if (originalNavigateTo) {
+            originalNavigateTo(sectionName);
+          }
+        };
+      }
+
+      // Adicionar evento para comandos de return / back
+      const handleReturnCommand = () => {
+        this.stopAllAudio();
+      };
+
+      // Você pode adicionar este evento a botões de retorno específicos também
+      // ou adicionar um evento global para detectar navegação
+      document.addEventListener('returnToCastle', handleReturnCommand);
+    }
+  }
   // Pré-carregar todos os sons para melhor performance
   preloadAll() {
-    Object.keys(this.sounds).forEach(id => {
+    Object.keys(this.sounds).forEach((id) => {
       const sound = this.sounds[id];
       sound.audio.load();
     });
