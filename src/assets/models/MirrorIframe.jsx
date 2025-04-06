@@ -6,13 +6,21 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
   const [showContent, setShowContent] = useState(false);
   const [showButtons, setShowButtons] = useState(false);
 
-  // Monitor changes in isActive state
   useEffect(() => {
+
+
     if (isActive) {
-      // When component becomes active, show content with a small delay
+        console.log("MirrorIframe: Ativando conteúdo e sons");
+
+        if (window.audioManager) {
+          window.audioManager.play('mirror');
+        }
+
       const timer = setTimeout(() => {
+        if (window.audioManager) {
+          window.audioManager.stop('mirror');
+        }
         setShowContent(true);
-        // Show buttons after a delay to ensure content has loaded
         setTimeout(() => {
           setShowButtons(true);
         }, 500);

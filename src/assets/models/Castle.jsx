@@ -20,11 +20,11 @@ import AtmIframe from "../models/AtmIframe";
 import MirrorIframe from "../models/MirrorIframe";
 import ScrollIframe from "../models/ScrolIframe";
 
+import audioManager from './AudioManager';
 const SMALL_SCREEN_THRESHOLD = 768;
 const TRANSITION_DELAY = 100;
 window.lastClickedPosition = null;
 
-// Add this function at the top of your Castle.jsx file
 function smoothCameraReturn(position, target) {
   if (!window.controls || !window.controls.current) {
     console.error("No controls available for camera transition");
@@ -33,12 +33,9 @@ function smoothCameraReturn(position, target) {
 
   console.log("Smooth transition to position:", position, "target:", target);
 
-  // Use the existing CameraControls that already handle animations
-  window.controls.current.enabled = true; // Important - enable controls first
+  window.controls.current.enabled = true;
 
-  // Let any active animations complete
   setTimeout(() => {
-    // Use the exact same method used for section transitions
     window.controls.current
       .setLookAt(
         position[0],
@@ -52,37 +49,6 @@ function smoothCameraReturn(position, target) {
       .catch((err) => console.error("Camera transition error:", err));
   }, 50);
 }
-
-// Add this in the SceneController's useCameraAnimation function
-// At the beginning of the animate function:
-
-// Rest of animation function continues...
-
-// Now in the ScrollIframe handler:
-
-// Adjust resource paths for deployment
-// const getAssetPath = path => {
-//   // Remove /src/ from paths and ensure they work in deployment
-//   return path.replace("/src/", "/")
-// }
-
-// Audio paths with corrected paths
-// const TRANSITION_SOUND = getAssetPath("/assets/sounds/camerawoosh.MP3")
-// const AUDIO_PATHS = {
-//   nav: getAssetPath("/assets/sounds/nav.mp3"),
-//   about: getAssetPath("/assets/sounds/orb.mp3"),
-//   aidatingcoach: getAssetPath("/assets/sounds/daingcoachmirror.MP3"),
-//   download: getAssetPath("/assets/sounds/daingcoachmirror.mp3"),
-//   token: getAssetPath("/assets/sounds/atmambiance.mp3"),
-//   roadmap: getAssetPath("/assets/sounds/roadmap.mp3"),
-// }
-
-// const NAV_EXTRA_SOUNDS = {
-//   templeAmbient: getAssetPath("/assets/sounds/templeambiance.mp3"),
-//   fountain: getAssetPath("/assets/sounds/fountain.mp3"),
-// }
-// Camera Positions Configuration
-
 window.lastClickedPositions = {
   mirror: null,
   atm: null,
@@ -90,7 +56,6 @@ window.lastClickedPositions = {
   orb: null,
 };
 
-// Function for smooth camera return transitions globally accessible
 window.smoothCameraReturn = function (position, target) {
   if (!window.controls || !window.controls.current) {
     console.error("No controls available for camera transition");
@@ -99,10 +64,8 @@ window.smoothCameraReturn = function (position, target) {
 
   console.log("Smooth transition to position:", position, "target:", target);
 
-  // Use the existing CameraControls that already handle animations
   window.controls.current.enabled = true; // Important - enable controls first
 
-  // Let any active animations complete
   setTimeout(() => {
     // Use the exact same method used for section transitions
     window.controls.current
@@ -458,250 +421,6 @@ const cameraConfig = {
     },
   },
 };
-
-// Enhanced Audio Hook with iOS compatibility
-// const useMultiAudio = () => {
-//   const audioContextRef = useRef(null)
-//   const audioElementsRef = useRef({})
-//   const gainNodesRef = useRef({})
-//   const currentSectionRef = useRef(null)
-//   const transitionSoundRef = useRef(null)
-//   const transitionGainRef = useRef(null)
-//   const navExtraSoundsRef = useRef({})
-//   const navExtraGainsRef = useRef({})
-//   const [audioInitialized, setAudioInitialized] = useState(false)
-
-//   const initAudio = () => {
-//     try {
-//       // Only create AudioContext after user interaction
-//       if (!audioContextRef.current) {
-//         audioContextRef.current = new (window.AudioContext ||
-//           window.webkitAudioContext)()
-//       }
-
-//       if (transitionSoundRef.current) return // Prevent double initialization
-
-//       // Setup transition sound
-//       transitionSoundRef.current = new Audio(TRANSITION_SOUND)
-//       transitionSoundRef.current.load() // Load but don't play
-
-//       if (audioContextRef.current) {
-//         const transitionSource =
-//           audioContextRef.current.createMediaElementSource(
-//             transitionSoundRef.current
-//           )
-//         transitionGainRef.current = audioContextRef.current.createGain()
-//         transitionGainRef.current.gain.value = 0.5
-//         transitionSource.connect(transitionGainRef.current)
-//         transitionGainRef.current.connect(audioContextRef.current.destination)
-//       }
-
-//       // Setup Nav extra sounds
-//       Object.entries(NAV_EXTRA_SOUNDS).forEach(([key, path]) => {
-//         const audioElement = new Audio(path)
-//         audioElement.loop = true
-//         audioElement.load() // Load but don't play
-//         navExtraSoundsRef.current[key] = audioElement
-
-//         if (audioContextRef.current) {
-//           const source =
-//             audioContextRef.current.createMediaElementSource(audioElement)
-//           const gainNode = audioContextRef.current.createGain()
-//           gainNode.gain.value = 0.3
-//           source.connect(gainNode)
-//           gainNode.connect(audioContextRef.current.destination)
-//           navExtraGainsRef.current[key] = gainNode
-//         }
-//       })
-
-//       // Initialize section sounds
-//       Object.entries(AUDIO_PATHS).forEach(([section, path]) => {
-//         const audioElement = new Audio(path)
-//         audioElement.loop = true
-//         audioElement.load() // Load but don't play
-//         audioElementsRef.current[section] = audioElement
-
-//         if (audioContextRef.current) {
-//           const source =
-//             audioContextRef.current.createMediaElementSource(audioElement)
-//           const gainNode = audioContextRef.current.createGain()
-//           gainNode.gain.value = 0.3
-
-//           source.connect(gainNode)
-//           gainNode.connect(audioContextRef.current.destination)
-//           gainNodesRef.current[section] = gainNode
-//         }
-//       })
-
-//       setAudioInitialized(true)
-//       console.log("Audio system initialized successfully")
-//     } catch (error) {
-//       console.error("Error initializing audio system:", error)
-//     }
-//   }
-
-//   const resumeAudioContext = () => {
-//     if (audioContextRef.current?.state === "suspended") {
-//       audioContextRef.current.resume().catch(err => {
-//         console.warn("Could not resume AudioContext:", err)
-//       })
-//     }
-//   }
-
-//   const playTransitionSound = () => {
-//     if (!audioInitialized) return
-
-//     resumeAudioContext()
-
-//     if (transitionSoundRef.current) {
-//       transitionSoundRef.current.currentTime = 0
-//       const playPromise = transitionSoundRef.current.play()
-
-//       if (playPromise !== undefined) {
-//         playPromise.catch(error => {
-//           console.warn("Error playing transition sound:", error)
-//         })
-//       }
-//     }
-//   }
-
-//   const playSound = section => {
-//     if (!audioInitialized) return
-
-//     try {
-//       resumeAudioContext()
-
-//       playTransitionSound()
-
-//       if (currentSectionRef.current && currentSectionRef.current !== section) {
-//         const currentAudio = audioElementsRef.current[currentSectionRef.current]
-//         if (currentAudio) {
-//           currentAudio.pause()
-//           currentAudio.currentTime = 0
-//         }
-
-//         if (currentSectionRef.current === "nav") {
-//           Object.values(navExtraSoundsRef.current).forEach(audio => {
-//             if (audio) {
-//               audio.pause()
-//               audio.currentTime = 0
-//             }
-//           })
-//         }
-//       }
-
-//       setTimeout(() => {
-//         const newAudio = audioElementsRef.current[section]
-//         if (newAudio) {
-//           const playPromise = newAudio.play()
-
-//           if (playPromise !== undefined) {
-//             playPromise.catch(err => {
-//               console.warn(`Could not play audio for section ${section}:`, err)
-//             })
-//           }
-
-//           if (section === "nav") {
-//             Object.values(navExtraSoundsRef.current).forEach(audio => {
-//               if (audio) {
-//                 const navPlayPromise = audio.play()
-//                 if (navPlayPromise !== undefined) {
-//                   navPlayPromise.catch(console.error)
-//                 }
-//               }
-//             })
-//           }
-
-//           currentSectionRef.current = section
-//         }
-//       }, 500)
-//     } catch (error) {
-//       console.error("Error playing sounds:", error)
-//     }
-//   }
-
-//   const stopSound = () => {
-//     if (!audioInitialized) return
-
-//     try {
-//       if (currentSectionRef.current) {
-//         const currentAudio = audioElementsRef.current[currentSectionRef.current]
-//         if (currentAudio) {
-//           currentAudio.pause()
-//           currentAudio.currentTime = 0
-//         }
-
-//         // Stop nav extra sounds if in nav section
-//         if (currentSectionRef.current === "nav") {
-//           Object.values(navExtraSoundsRef.current).forEach(audio => {
-//             if (audio) {
-//               audio.pause()
-//               audio.currentTime = 0
-//             }
-//           })
-//         }
-
-//         currentSectionRef.current = null
-//       }
-//     } catch (error) {
-//       console.error("Error stopping sound:", error)
-//     }
-//   }
-
-//   const updateListenerPosition = position => {
-//     if (audioContextRef.current && position && audioInitialized) {
-//       const [x, y, z] = position
-//       try {
-//         if (audioContextRef.current.listener.setPosition) {
-//           audioContextRef.current.listener.setPosition(x, y, z)
-//         }
-//       } catch (error) {
-//         console.warn("Could not set audio listener position:", error)
-//       }
-//     }
-//   }
-
-//   const cleanup = () => {
-//     try {
-//       if (transitionSoundRef.current) {
-//         transitionSoundRef.current.pause()
-//       }
-
-//       Object.values(audioElementsRef.current).forEach(audio => {
-//         if (audio) {
-//           audio.pause()
-//         }
-//       })
-
-//       Object.values(navExtraSoundsRef.current).forEach(audio => {
-//         if (audio) {
-//           audio.pause()
-//         }
-//       })
-
-//       if (
-//         audioContextRef.current &&
-//         audioContextRef.current.state !== "closed"
-//       ) {
-//         audioContextRef.current.close().catch(console.error)
-//       }
-//     } catch (error) {
-//       console.error("Error during cleanup:", error)
-//     }
-//   }
-
-//   return {
-//     initAudio,
-//     playSound,
-//     stopSound,
-//     updateListenerPosition,
-//     cleanup,
-//     audioInitialized,
-//     resumeAudioContext,
-//   }
-// }
-
-// Localizar o hook useVideoTexture (por volta da linha 220-240)
 
 const useVideoTexture = (videoPath) => {
   const [texture, setTexture] = useState(null);
@@ -1620,6 +1339,88 @@ const CastleModel = ({
     [waterTexture]
   );
 
+  const updateSpatialSounds = (cameraPosition) => {
+    // Coordenadas aproximadas dos elementos no mundo 3D
+    const fountainPosition = new THREE.Vector3(0, 0.8, 2.406);
+    const portalPosition = new THREE.Vector3(0, 1.247, -2.117);
+    const heartPosition = new THREE.Vector3(0, 4.18, -0.006);
+    const orbPosition = new THREE.Vector3(1.76, 1.155, -0.883); // Posição do Orb no mundo 3D
+
+    // Calcular distâncias
+    const distToFountain = cameraPosition.distanceTo(fountainPosition);
+    const distToPortal = cameraPosition.distanceTo(portalPosition);
+    const distToHeart = cameraPosition.distanceTo(heartPosition);
+    const distToOrb = cameraPosition.distanceTo(orbPosition); // Distância ao Orb
+
+    // Ajustar volume com base na distância (quanto mais perto, mais alto)
+    const maxDistance = 10; // Distância máxima para ouvir qualquer som
+
+    // Fountain (código existente)
+    if (distToFountain < maxDistance) {
+      const fountainVolume = Math.max(0, 0.3 * (1 - distToFountain / maxDistance));
+
+      if (audioManager.sounds.fountain) {
+        audioManager.sounds.fountain.audio.volume = fountainVolume;
+
+        if (!audioManager.sounds.fountain.isPlaying) {
+          audioManager.play('fountain');
+        }
+      }
+    } else {
+      audioManager.stop('fountain');
+    }
+
+    // Portal (código existente)
+    if (distToPortal < maxDistance) {
+      const portalVolume = Math.max(0, 0.3 * (1 - distToPortal / maxDistance));
+
+      if (audioManager.sounds.portal) {
+        audioManager.sounds.portal.audio.volume = portalVolume;
+
+        if (!audioManager.sounds.portal.isPlaying) {
+          audioManager.play('portal');
+        }
+      }
+    } else {
+      audioManager.stop('portal');
+    }
+
+    // Heart (código existente)
+    if (distToHeart < maxDistance) {
+      const heartVolume = Math.max(0, 0.2 * (1 - distToHeart / maxDistance));
+
+      if (audioManager.sounds.heartbeat) {
+        audioManager.sounds.heartbeat.audio.volume = heartVolume;
+
+        if (!audioManager.sounds.heartbeat.isPlaying) {
+          audioManager.play('heartbeat');
+        }
+      }
+    } else {
+      audioManager.stop('heartbeat');
+    }
+
+    // Orb - Nova implementação
+    if (distToOrb < maxDistance) {
+      // Volume baseado na distância - mais perto = mais alto
+      const orbVolume = Math.max(0, 0.3 * (1 - distToOrb / maxDistance));
+
+      // Verificar se o som existe
+      if (audioManager.sounds.orb) {
+        audioManager.sounds.orb.audio.volume = orbVolume;
+
+        // Iniciar o som se não estiver tocando
+        if (!audioManager.sounds.orb.isPlaying) {
+          audioManager.play('orb');
+          console.log("Iniciando som do Orb");
+        }
+      }
+    } else {
+      // Se estiver fora do alcance, parar o som
+      audioManager.stop('orb');
+    }
+  };
+
   // Depois no useEffect para iniciar a reprodução:
   useEffect(() => {
     if (hasInteracted) {
@@ -1883,6 +1684,50 @@ const Castle = ({ activeSection }) => {
 
     console.log(`Playing transition to section: ${sectionName}`);
 
+    // Parar sons da seção anterior
+    if (activeSection && activeSection !== sectionName) {
+      audioManager.stopSectionSounds(activeSection);
+    }
+
+    // Reproduzir o som da transição
+    audioManager.play('transition');
+
+    // Após um pequeno atraso, reproduzir o som da nova seção
+    setTimeout(() => {
+      // Reproduzir o som específico da seção, se existir
+      if (audioManager.sounds[sectionName]) {
+        audioManager.play(sectionName);
+      }
+
+      // Reproduzir sons adicionais específicos para certas seções
+      switch(sectionName) {
+        case 'aidatingcoach':
+          // Som do espelho
+          if (audioManager.sounds['mirror']) {
+            audioManager.play('mirror');
+          }
+          break;
+        case 'token':
+          // Som do ATM/moedas
+          if (audioManager.sounds['atm']) {
+            audioManager.play('atm');
+          }
+          if (audioManager.sounds['coins']) {
+            audioManager.play('coins');
+          }
+          break;
+        case 'roadmap':
+          // Som do pergaminho/papel
+          if (audioManager.sounds['scroll']) {
+            audioManager.play('scroll');
+          }
+          if (audioManager.sounds['paper']) {
+            audioManager.play('paper');
+          }
+          break;
+      }
+    }, 300); // Pequeno atraso para não sobrepor o som de transição
+
     // Update iframe active states based on section
     if (sectionName === "roadmap") {
       setScrollIframeActive(true);
@@ -1920,6 +1765,19 @@ const Castle = ({ activeSection }) => {
         });
     }
   };
+
+  useEffect(() => {
+    // Iniciar áudio ambiente quando o componente é montado
+    audioManager.startAmbient();
+
+    // Pré-carregar todos os sons para melhor performance
+    audioManager.preloadAll();
+
+    return () => {
+      // Parar todo áudio quando o componente é desmontado
+      audioManager.stopAmbient();
+    };
+  }, []);
 
   // Make the transition function available globally
   window.globalNavigation.navigateTo = playTransition;
