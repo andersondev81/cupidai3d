@@ -636,19 +636,19 @@ const Experience = () => {
   }, []);
 
 
-  // const handleStart = () => {
-  //   setIsStarted(true);
-  // };
+  const handleStart = () => {
+    setIsStarted(true);
+  };
 
-  // if (!isStarted) {
-    // return (
-    //   <div className="relative w-full h-screen">
-    //     <Canvas>
-    //       {/* <Modeload onStart={handleStart} /> */}
-    //     </Canvas>
-    //   </div>
-    // );
-  // }
+  if (!isStarted) {
+    return (
+      <div className="relative w-full h-screen">
+        <Canvas>
+          <Modeload onStart={handleStart} />
+        </Canvas>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-screen">

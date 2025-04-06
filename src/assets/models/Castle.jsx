@@ -1,7 +1,8 @@
 import { CameraControls, useGLTF, useTexture } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
 import { Select } from "@react-three/postprocessing";
 import { button, useControls } from "leva";
-import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useRef, useState} from "react";
 import * as THREE from "three";
 import {
   Color,
@@ -1278,6 +1279,11 @@ const CastleModel = ({
   const mirror = useMirrorMaterial()
   const hallosMaterial = useHallosMaterial()
 
+  useFrame(({ camera }) => {
+    // Chamar updateSpatialSounds com a posição da câmera a cada frame
+    updateSpatialSounds(camera.position);
+  });
+
   // Use the video texture hook for portal
   const { texture: portalTexture, playVideo: playPortal } =
     useVideoTexture("/video/tunnel.mp4");
@@ -1340,86 +1346,148 @@ const CastleModel = ({
   );
 
   const updateSpatialSounds = (cameraPosition) => {
-    // Coordenadas aproximadas dos elementos no mundo 3D
-    const fountainPosition = new THREE.Vector3(0, 0.8, 2.406);
-    const portalPosition = new THREE.Vector3(0, 1.247, -2.117);
-    const heartPosition = new THREE.Vector3(0, 4.18, -0.006);
-    const orbPosition = new THREE.Vector3(1.76, 1.155, -0.883); // Posição do Orb no mundo 3D
-
-    // Calcular distâncias
-    const distToFountain = cameraPosition.distanceTo(fountainPosition);
-    const distToPortal = cameraPosition.distanceTo(portalPosition);
-    const distToHeart = cameraPosition.distanceTo(heartPosition);
-    const distToOrb = cameraPosition.distanceTo(orbPosition); // Distância ao Orb
-
-    // Ajustar volume com base na distância (quanto mais perto, mais alto)
-    const maxDistance = 10; // Distância máxima para ouvir qualquer som
-
-    // Fountain (código existente)
-    if (distToFountain < maxDistance) {
-      const fountainVolume = Math.max(0, 0.3 * (1 - distToFountain / maxDistance));
-
-      if (audioManager.sounds.fountain) {
-        audioManager.sounds.fountain.audio.volume = fountainVolume;
-
-        if (!audioManager.sounds.fountain.isPlaying) {
-          audioManager.play('fountain');
-        }
-      }
-    } else {
-      audioManager.stop('fountain');
+    // Verificações de segurança para o AudioManager
+    if (!window.audioManager || !window.audioManager.sounds) {
+      console.log("AudioManager não disponível");
+      return;
     }
 
-    // Portal (código existente)
-    if (distToPortal < maxDistance) {
-      const portalVolume = Math.max(0, 0.3 * (1 - distToPortal / maxDistance));
+    // Coordenadas fixas dos elementos
+    const orbPosition = { x: 1.76, y: 1.155, z: -0.883 };
+    const fountainPosition = { x: 0, y: 0.8, z: 2.406 }; // Posição da fonte
 
-      if (audioManager.sounds.portal) {
-        audioManager.sounds.portal.audio.volume = portalVolume;
+    //----- GERENCIAMENTO DO SOM DA ORB -----//
 
-        if (!audioManager.sounds.portal.isPlaying) {
-          audioManager.play('portal');
+    // Cálculo de distância para o orb
+    const dxOrb = cameraPosition.x - orbPosition.x;
+    const dyOrb = cameraPosition.y - orbPosition.y;
+    const dzOrb = cameraPosition.z - orbPosition.z;
+    const distToOrb = Math.sqrt(dxOrb * dxOrb + dyOrb * dyOrb + dzOrb * dzOrb);
+
+    // Distância máxima para o orb
+    const maxOrbDistance = 1.5;
+
+    // Gerenciar som do orb
+    if (window.audioManager.sounds.orb) {
+      if (distToOrb < maxOrbDistance) {
+        // Cálculo de volume para o orb
+        const attenuationOrb = 1 - Math.pow(distToOrb / maxOrbDistance, 3);
+        const orbVolume = Math.max(0, 0.2 * attenuationOrb);
+
+        if (orbVolume > 0.05) {
+          window.audioManager.sounds.orb.audio.volume = orbVolume;
+
+          if (!window.audioManager.sounds.orb.isPlaying) {
+            console.log("Iniciando som da orb");
+            window.audioManager.play('orb');
+          }
+        } else {
+          if (window.audioManager.sounds.orb.isPlaying) {
+            window.audioManager.stop('orb');
+          }
+        }
+      } else {
+        if (window.audioManager.sounds.orb.isPlaying) {
+          window.audioManager.stop('orb');
         }
       }
-    } else {
-      audioManager.stop('portal');
     }
 
-    // Heart (código existente)
-    if (distToHeart < maxDistance) {
-      const heartVolume = Math.max(0, 0.2 * (1 - distToHeart / maxDistance));
+    //----- GERENCIAMENTO DO SOM DA FONTE (FOUNTAIN) -----//
 
-      if (audioManager.sounds.heartbeat) {
-        audioManager.sounds.heartbeat.audio.volume = heartVolume;
+    // Cálculo de distância para a fonte
+    const dxFountain = cameraPosition.x - fountainPosition.x;
+    const dyFountain = cameraPosition.y - fountainPosition.y;
+    const dzFountain = cameraPosition.z - fountainPosition.z;
+    const distToFountain = Math.sqrt(dxFountain * dxFountain + dyFountain * dyFountain + dzFountain * dzFountain);
 
-        if (!audioManager.sounds.heartbeat.isPlaying) {
-          audioManager.play('heartbeat');
+    // Distância máxima para a fonte (um pouco maior que a do orb)
+    const maxFountainDistance = 2.5;
+
+    // Gerenciar som da fonte
+    if (window.audioManager.sounds.fountain) {
+      // Verificar se está dentro do alcance
+      if (distToFountain < maxFountainDistance) {
+        // Atenuação quadrática para a fonte (menos intensa que a cúbica do orb)
+        const attenuationFountain = 1 - Math.pow(distToFountain / maxFountainDistance, 2);
+        const fountainVolume = Math.max(0, 0.3 * attenuationFountain);
+
+        // Log para debug
+        // console.log(`Distância até a fonte: ${distToFountain.toFixed(2)}, Volume: ${fountainVolume.toFixed(2)}`);
+
+        // Aplicar volume apenas se for significativo
+        if (fountainVolume > 0.03) {
+          window.audioManager.sounds.fountain.audio.volume = fountainVolume;
+
+          // Iniciar reprodução se não estiver tocando
+          if (!window.audioManager.sounds.fountain.isPlaying) {
+            console.log("Iniciando som da fonte");
+            window.audioManager.play('fountain');
+          }
+        } else {
+          // Volume muito baixo, parar o som
+          if (window.audioManager.sounds.fountain.isPlaying) {
+            window.audioManager.stop('fountain');
+          }
+        }
+      } else {
+        // Fora do alcance, parar o som
+        if (window.audioManager.sounds.fountain.isPlaying) {
+          console.log("Parando som da fonte - fora de alcance");
+          window.audioManager.stop('fountain');
         }
       }
-    } else {
-      audioManager.stop('heartbeat');
-    }
-
-    // Orb - Nova implementação
-    if (distToOrb < maxDistance) {
-      // Volume baseado na distância - mais perto = mais alto
-      const orbVolume = Math.max(0, 0.3 * (1 - distToOrb / maxDistance));
-
-      // Verificar se o som existe
-      if (audioManager.sounds.orb) {
-        audioManager.sounds.orb.audio.volume = orbVolume;
-
-        // Iniciar o som se não estiver tocando
-        if (!audioManager.sounds.orb.isPlaying) {
-          audioManager.play('orb');
-          console.log("Iniciando som do Orb");
-        }
-      }
-    } else {
-      // Se estiver fora do alcance, parar o som
-      audioManager.stop('orb');
     }
   };
+
+  // Adicione ou atualize o useEffect para garantir que tanto o som do orb quanto
+  // o da fonte começam parados
+  useEffect(() => {
+    // Garantir que os sons começam parados
+    if (window.audioManager && window.audioManager.sounds) {
+      if (window.audioManager.sounds.orb) {
+        window.audioManager.stop('orb');
+      }
+      if (window.audioManager.sounds.fountain) {
+        window.audioManager.stop('fountain');
+      }
+    }
+
+    // Limpar ao desmontar
+    return () => {
+      if (window.audioManager && window.audioManager.sounds) {
+        if (window.audioManager.sounds.orb) {
+          window.audioManager.stop('orb');
+        }
+        if (window.audioManager.sounds.fountain) {
+          window.audioManager.stop('fountain');
+        }
+      }
+    };
+  }, []);
+
+  // Adicione este hook useFrame no componente CastleModel
+  // IMPORTANTE: Certifique-se de que este é o ÚNICO useFrame que chama updateSpatialSounds!
+  useFrame(({ camera }) => {
+    // Chamar a função de atualização de som a cada frame
+    updateSpatialSounds(camera.position);
+  });
+
+  // // Adicione isto no useEffect do CastleModel para garantir que o som sempre começa parado
+  // useEffect(() => {
+  //   // Garantir que o som da orb começa parado
+  //   if (window.audioManager && window.audioManager.sounds && window.audioManager.sounds.orb) {
+  //     window.audioManager.stop('orb');
+  //   }
+
+  //   // Limpar ao desmontar
+  //   return () => {
+  //     if (window.audioManager && window.audioManager.sounds && window.audioManager.sounds.orb) {
+  //       window.audioManager.stop('orb');
+  //     }
+  //   };
+  // }, []);
+
 
   // Depois no useEffect para iniciar a reprodução:
   useEffect(() => {
