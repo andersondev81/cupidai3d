@@ -106,14 +106,15 @@ class AudioManager {
     );
   }
 
-  // Configurar os sons para diferentes transições e elementos
   setupSounds() {
-    // Sons de transição para diferentes seções
     this.registerSound("transition", "/public/sounds/camerawoosh.MP3", {
       loop: false,
       volume: 0.1,
     });
-    // this.registerSound('nav', '../sounds/camerawoosh.MP3');
+        // this.registerSound('nav', '../sounds/camerawoosh.MP3', {
+        //   loop: false,
+        //   volume: 0.1,
+        // });
     this.registerSound("about", "/sounds/nav.mp3");
     this.registerSound("aidatingcoach", "/public/sounds/daingcoachmirror.MP3", {
       loop: true,
@@ -129,14 +130,12 @@ class AudioManager {
       volume: 0.1,
     });
 
-    // Sons para interações
     this.registerSound("click", "/sounds/click.mp3");
     this.registerSound("hover", "/sounds/hover.mp3");
 
-    // Sons ambiente
-    this.registerSound("ambient", "/sounds/ambient.mp3", {
+    this.registerSound("ambient", "/public/sounds/templeambiance.mp3", {
       loop: true,
-      volume: 0.2,
+      volume: 1,
     });
     this.registerSound("orb", "/public/sounds/orb.mp3", {
       loop: true,
@@ -159,7 +158,6 @@ class AudioManager {
       volume: 0.2,
     });
 
-    // Sons de elementos específicos
     this.registerSound("mirror", "/sounds/mirror.mp3", {
       loop: true,
       volume: 0.4,
@@ -278,6 +276,7 @@ class AudioManager {
 
     const sound = this.sounds[id];
     if (sound.isPlaying) {
+      console.log(`STOPPING SOUND: ${id} - Called from:`, new Error().stack);
       sound.audio.pause();
       sound.audio.currentTime = 0;
       sound.isPlaying = false;
@@ -450,6 +449,7 @@ class AudioManager {
 
   // Iniciar áudio ambiente
   startAmbient() {
+    // console.log("playig ambient");
     this.play("ambient");
   }
 

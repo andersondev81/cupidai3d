@@ -1721,500 +1721,505 @@ const CastleModel = ({
 // Main Component
 // Navigation system to handle all interactive elements
 
-const Castle = ({ activeSection }) => {
-  const controls = useRef();
-  const [atmiframeActive, setAtmiframeActive] = useState(false);
-  const [mirrorIframeActive, setMirrorIframeActive] = useState(false);
-  const [scrollIframeActive, setScrollIframeActive] = useState(false);
-  const [cameraLocked, setCameraLocked] = useState(true);
-  const [clipboardMessage, setClipboardMessage] = useState("");
+  const Castle = ({ activeSection }) => {
+    const controls = useRef();
+    const [atmiframeActive, setAtmiframeActive] = useState(false);
+    const [mirrorIframeActive, setMirrorIframeActive] = useState(false);
+    const [scrollIframeActive, setScrollIframeActive] = useState(false);
+    const [cameraLocked, setCameraLocked] = useState(true);
+    const [clipboardMessage, setClipboardMessage] = useState("");
 
-  // Reset function for iframes
-  window.resetIframes = () => {
-    setAtmiframeActive(false);
-    setMirrorIframeActive(false);
-    setScrollIframeActive(false);
-  };
-
-  const getCameraPosition = (section) => {
-    const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD;
-    const screenType = isSmallScreen ? "small" : "large";
-
-    if (section === "default") {
-      return cameraConfig.default[screenType];
-    }
-
-    return cameraConfig.sections[screenType][section];
-  };
-
-  const playTransition = (sectionName) => {
-    if (!controls.current) return;
-
-    console.log(`Playing transition to section: ${sectionName}`);
-
-    // Parar sons da seção anterior
-    if (activeSection && activeSection !== sectionName) {
-      audioManager.stopSectionSounds(activeSection);
-    }
-
-    // Reproduzir o som da transição
-    audioManager.play('transition');
-
-    // Após um pequeno atraso, reproduzir o som da nova seção
-    setTimeout(() => {
-      // Reproduzir o som específico da seção, se existir
-      if (audioManager.sounds[sectionName]) {
-        audioManager.play(sectionName);
-      }
-
-      // Reproduzir sons adicionais específicos para certas seções
-      switch(sectionName) {
-        case 'aidatingcoach':
-          // Som do espelho
-          if (audioManager.sounds['mirror']) {
-            audioManager.play('mirror');
-          }
-          break;
-        case 'token':
-          // Som do ATM/moedas
-          if (audioManager.sounds['atm']) {
-            audioManager.play('atm');
-          }
-          if (audioManager.sounds['coins']) {
-            audioManager.play('coins');
-          }
-          break;
-        case 'roadmap':
-          // Som do pergaminho/papel
-          if (audioManager.sounds['scroll']) {
-            audioManager.play('scroll');
-          }
-          if (audioManager.sounds['paper']) {
-            audioManager.play('paper');
-          }
-          break;
-      }
-    }, 300); // Pequeno atraso para não sobrepor o som de transição
-
-    // Update iframe active states based on section
-    if (sectionName === "roadmap") {
-      setScrollIframeActive(true);
+    // Reset function for iframes
+    window.resetIframes = () => {
       setAtmiframeActive(false);
       setMirrorIframeActive(false);
-    } else if (sectionName === "token" || sectionName === "atm") {
-      setAtmiframeActive(true);
       setScrollIframeActive(false);
-      setMirrorIframeActive(false);
-    } else if (sectionName === "aidatingcoach") {
-      setMirrorIframeActive(true);
-      setScrollIframeActive(false);
-      setAtmiframeActive(false);
-    } else {
-      setScrollIframeActive(false);
-      setAtmiframeActive(false);
-      setMirrorIframeActive(false);
-    }
-
-    controls.current.enabled = true;
-
-    const targetPosition = getCameraPosition(
-      sectionName === "default" ? "default" : sectionName
-    );
-
-    if (targetPosition) {
-      controls.current
-        .setLookAt(...targetPosition, true)
-        .catch((error) => {
-          console.error("Camera transition error:", error);
-        })
-        .finally(() => {
-          controls.current.enabled = sectionName === "nav";
-          console.log(`Transition to ${sectionName} complete`);
-        });
-    }
-  };
-
-  useEffect(() => {
-    // Iniciar áudio ambiente quando o componente é montado
-    audioManager.startAmbient();
-
-    // Pré-carregar todos os sons para melhor performance
-    audioManager.preloadAll();
-
-    return () => {
-      // Parar todo áudio quando o componente é desmontado
-      audioManager.stopAmbient();
     };
-  }, []);
 
-  // Make the transition function available globally
-  window.globalNavigation.navigateTo = playTransition;
+    const getCameraPosition = (section) => {
+      const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD;
+      const screenType = isSmallScreen ? "small" : "large";
 
-  const handleReturnToMain = () => {
-    console.log("Back to main requested");
-    playTransition("nav");
-  };
-
-  // Function to copy camera position to clipboard
-  const copyPositionToClipboard = () => {
-    if (!controls.current) return;
-
-    try {
-      // Get position and target from controls
-      const position = controls.current.getPosition();
-      const target = controls.current.getTarget();
-
-      // Handle different possible return formats
-      let posArray, targetArray;
-
-      // Handle position - might be Vector3, array, or object with x,y,z
-      if (Array.isArray(position)) {
-        posArray = position;
-      } else if (typeof position.toArray === "function") {
-        posArray = position.toArray();
-      } else {
-        posArray = [position.x, position.y, position.z];
+      if (section === "default") {
+        return cameraConfig.default[screenType];
       }
 
-      // Handle target - might be Vector3, array, or object with x,y,z
-      if (Array.isArray(target)) {
-        targetArray = target;
-      } else if (typeof target.toArray === "function") {
-        targetArray = target.toArray();
-      } else {
-        targetArray = [target.x, target.y, target.z];
-      }
-
-      // Combine into the format needed for the camera config
-      const positionArray = [...posArray, ...targetArray];
-
-      // Format the array for display and copy
-      const formattedArray = positionArray
-        .map((val) => Number(val).toFixed(15))
-        .join(", ");
-
-      // Also create a formatted JS array for console
-      const jsArrayFormat = `[\n  ${posArray
-        .map((val) => Number(val).toFixed(15))
-        .join(",\n  ")},\n  ${targetArray
-        .map((val) => Number(val).toFixed(15))
-        .join(",\n  ")}\n]`;
-
-      // Copy to clipboard
-      navigator.clipboard
-        .writeText(formattedArray)
-        .then(() => {
-          setClipboardMessage("Position copied to clipboard!");
-
-          // Clear message after 3 seconds
-          setTimeout(() => {
-            setClipboardMessage("");
-          }, 3000);
-        })
-        .catch((err) => {
-          console.error("Could not copy position to clipboard:", err);
-          setClipboardMessage("Failed to copy position.");
-
-          // Clear message after 3 seconds
-          setTimeout(() => {
-            setClipboardMessage("");
-          }, 3000);
-        });
-
-      // Log to console in different formats for reference
-      console.log("Camera raw position:", position);
-      console.log("Camera raw target:", target);
-      console.log("Camera position array:", positionArray);
-      console.log("Camera position formatted for config:", jsArrayFormat);
-    } catch (error) {
-      console.error("Error getting camera position:", error);
-      setClipboardMessage("Error getting camera position");
-
-      setTimeout(() => {
-        setClipboardMessage("");
-      }, 3000);
-    }
-  };
-
-  // Make controls globally available
-  useEffect(() => {
-    if (!controls.current) return;
-    window.controls = controls;
-
-    // Initial configuration
-    if (cameraLocked) {
-      controls.current.minPolarAngle = Math.PI * 0.4;
-      controls.current.maxPolarAngle = Math.PI * 0.5;
-      controls.current.minDistance = 5;
-      controls.current.maxDistance = 20;
-      controls.current.boundaryFriction = 1;
-      controls.current.boundaryEnclosesCamera = true;
-      controls.current.dollyToCursor = false;
-      controls.current.minY = 1;
-      controls.current.maxY = 15;
-
-      const defaultPosition = getCameraPosition("default");
-      controls.current.setLookAt(...defaultPosition, false);
-
-      // Use direct navigation function
-      setTimeout(() => {
-        playTransition("nav");
-      }, TRANSITION_DELAY);
-    }
-
-    return () => {
-      // Cleanup
-      delete window.controls;
+      return cameraConfig.sections[screenType][section];
     };
-  }, []);
 
-  useControls(
-    "Controls",
-    {
-      cameraLocked: {
-        value: cameraLocked,
-        label: "Lock Camera",
-        onChange: (locked) => {
-          setCameraLocked(locked);
+    const playTransition = (sectionName) => {
+      if (!controls.current) return;
 
+      // if (window.audioManager) {
+      //   console.log("Starting ambient sound from Castle component");
+      //   window.audioManager.startAmbient();
+      // }
+
+      console.log(`Playing transition to section: ${sectionName}`);
+
+      // Parar sons da seção anterior
+      if (activeSection && activeSection !== sectionName) {
+        audioManager.stopSectionSounds(activeSection);
+      }
+
+      // Reproduzir o som da transição
+      audioManager.play('transition');
+
+      // Após um pequeno atraso, reproduzir o som da nova seção
+      setTimeout(() => {
+        // Reproduzir o som específico da seção, se existir
+        if (audioManager.sounds[sectionName]) {
+          audioManager.play(sectionName);
+        }
+
+        // Reproduzir sons adicionais específicos para certas seções
+        switch(sectionName) {
+          case 'aidatingcoach':
+            // Som do espelho
+            if (audioManager.sounds['mirror']) {
+              audioManager.play('mirror');
+            }
+            break;
+          case 'token':
+            // Som do ATM/moedas
+            if (audioManager.sounds['atm']) {
+              audioManager.play('atm');
+            }
+            if (audioManager.sounds['coins']) {
+              audioManager.play('coins');
+            }
+            break;
+          case 'roadmap':
+            // Som do pergaminho/papel
+            if (audioManager.sounds['scroll']) {
+              audioManager.play('scroll');
+            }
+            if (audioManager.sounds['paper']) {
+              audioManager.play('paper');
+            }
+            break;
+        }
+      }, 300); // Pequeno atraso para não sobrepor o som de transição
+
+      // Update iframe active states based on section
+      if (sectionName === "roadmap") {
+        setScrollIframeActive(true);
+        setAtmiframeActive(false);
+        setMirrorIframeActive(false);
+      } else if (sectionName === "token" || sectionName === "atm") {
+        setAtmiframeActive(true);
+        setScrollIframeActive(false);
+        setMirrorIframeActive(false);
+      } else if (sectionName === "aidatingcoach") {
+        setMirrorIframeActive(true);
+        setScrollIframeActive(false);
+        setAtmiframeActive(false);
+      } else {
+        setScrollIframeActive(false);
+        setAtmiframeActive(false);
+        setMirrorIframeActive(false);
+      }
+
+      controls.current.enabled = true;
+
+      const targetPosition = getCameraPosition(
+        sectionName === "default" ? "default" : sectionName
+      );
+
+      if (targetPosition) {
+        controls.current
+          .setLookAt(...targetPosition, true)
+          .catch((error) => {
+            console.error("Camera transition error:", error);
+          })
+          .finally(() => {
+            controls.current.enabled = sectionName === "nav";
+            console.log(`Transition to ${sectionName} complete`);
+          });
+      }
+    };
+
+    useEffect(() => {
+      // Iniciar áudio ambiente quando o componente é montado
+      audioManager.startAmbient();
+
+      // Pré-carregar todos os sons para melhor performance
+      audioManager.preloadAll();
+
+      return () => {
+        // Parar todo áudio quando o componente é desmontado
+        audioManager.stopAmbient();
+      };
+    }, []);
+
+    // Make the transition function available globally
+    window.globalNavigation.navigateTo = playTransition;
+
+    const handleReturnToMain = () => {
+      console.log("Back to main requested");
+      playTransition("nav");
+    };
+
+    // Function to copy camera position to clipboard
+    const copyPositionToClipboard = () => {
+      if (!controls.current) return;
+
+      try {
+        // Get position and target from controls
+        const position = controls.current.getPosition();
+        const target = controls.current.getTarget();
+
+        // Handle different possible return formats
+        let posArray, targetArray;
+
+        // Handle position - might be Vector3, array, or object with x,y,z
+        if (Array.isArray(position)) {
+          posArray = position;
+        } else if (typeof position.toArray === "function") {
+          posArray = position.toArray();
+        } else {
+          posArray = [position.x, position.y, position.z];
+        }
+
+        // Handle target - might be Vector3, array, or object with x,y,z
+        if (Array.isArray(target)) {
+          targetArray = target;
+        } else if (typeof target.toArray === "function") {
+          targetArray = target.toArray();
+        } else {
+          targetArray = [target.x, target.y, target.z];
+        }
+
+        // Combine into the format needed for the camera config
+        const positionArray = [...posArray, ...targetArray];
+
+        // Format the array for display and copy
+        const formattedArray = positionArray
+          .map((val) => Number(val).toFixed(15))
+          .join(", ");
+
+        // Also create a formatted JS array for console
+        const jsArrayFormat = `[\n  ${posArray
+          .map((val) => Number(val).toFixed(15))
+          .join(",\n  ")},\n  ${targetArray
+          .map((val) => Number(val).toFixed(15))
+          .join(",\n  ")}\n]`;
+
+        // Copy to clipboard
+        navigator.clipboard
+          .writeText(formattedArray)
+          .then(() => {
+            setClipboardMessage("Position copied to clipboard!");
+
+            // Clear message after 3 seconds
+            setTimeout(() => {
+              setClipboardMessage("");
+            }, 3000);
+          })
+          .catch((err) => {
+            console.error("Could not copy position to clipboard:", err);
+            setClipboardMessage("Failed to copy position.");
+
+            // Clear message after 3 seconds
+            setTimeout(() => {
+              setClipboardMessage("");
+            }, 3000);
+          });
+
+        // Log to console in different formats for reference
+        console.log("Camera raw position:", position);
+        console.log("Camera raw target:", target);
+        console.log("Camera position array:", positionArray);
+        console.log("Camera position formatted for config:", jsArrayFormat);
+      } catch (error) {
+        console.error("Error getting camera position:", error);
+        setClipboardMessage("Error getting camera position");
+
+        setTimeout(() => {
+          setClipboardMessage("");
+        }, 3000);
+      }
+    };
+
+    // Make controls globally available
+    useEffect(() => {
+      if (!controls.current) return;
+      window.controls = controls;
+
+      // Initial configuration
+      if (cameraLocked) {
+        controls.current.minPolarAngle = Math.PI * 0.4;
+        controls.current.maxPolarAngle = Math.PI * 0.5;
+        controls.current.minDistance = 5;
+        controls.current.maxDistance = 10;
+        controls.current.boundaryFriction = 1;
+        controls.current.boundaryEnclosesCamera = true;
+        controls.current.dollyToCursor = false;
+        controls.current.minY = 1;
+        controls.current.maxY = 15;
+
+        const defaultPosition = getCameraPosition("default");
+        controls.current.setLookAt(...defaultPosition, false);
+
+        // Use direct navigation function
+        setTimeout(() => {
+          playTransition("nav");
+        }, TRANSITION_DELAY);
+      }
+
+      return () => {
+        // Cleanup
+        delete window.controls;
+      };
+    }, []);
+
+    useControls(
+      "Controls",
+      {
+        cameraLocked: {
+          value: cameraLocked,
+          label: "Lock Camera",
+          onChange: (locked) => {
+            setCameraLocked(locked);
+
+            if (!controls.current) return;
+
+            if (locked) {
+              // Quando travada, aplicar restrições
+              controls.current.minPolarAngle = Math.PI * 0.4;
+              controls.current.maxPolarAngle = Math.PI * 0.5;
+              controls.current.minDistance = 5.08;
+              controls.current.maxDistance = 10;
+              controls.current.boundaryFriction = 1;
+              controls.current.boundaryEnclosesCamera = true;
+              controls.current.dollyToCursor = false;
+              controls.current.minY = 1;
+              controls.current.maxY = 5;
+
+              // Retornar para a posição da seção atual
+              const targetPosition = getCameraPosition(activeSection || "nav");
+              if (targetPosition) {
+                controls.current.setLookAt(...targetPosition, true);
+              }
+
+              // Desabilitar controle contínuo
+              controls.current.enabled = activeSection === "nav";
+            } else {
+              // Quando destravada, remover todas as restrições
+              controls.current.minPolarAngle = 0;
+              controls.current.maxPolarAngle = Math.PI;
+              controls.current.minDistance = 0.1;
+              controls.current.maxDistance = 100;
+              controls.current.boundaryFriction = 0;
+              controls.current.boundaryEnclosesCamera = false;
+              controls.current.minY = null;
+              controls.current.maxY = null;
+
+              // Habilitar controle contínuo
+              controls.current.enabled = true;
+            }
+          },
+        },
+        getLookAt: button(() => {
+          copyPositionToClipboard();
+        }),
+        resetCamera: button(() => {
           if (!controls.current) return;
 
-          if (locked) {
-            // Quando travada, aplicar restrições
-            controls.current.minPolarAngle = Math.PI * 0.4;
-            controls.current.maxPolarAngle = Math.PI * 0.5;
-            controls.current.minDistance = 5;
-            controls.current.maxDistance = 20;
-            controls.current.boundaryFriction = 1;
-            controls.current.boundaryEnclosesCamera = true;
-            controls.current.dollyToCursor = false;
-            controls.current.minY = 1;
-            controls.current.maxY = 15;
-
-            // Retornar para a posição da seção atual
-            const targetPosition = getCameraPosition(activeSection || "nav");
-            if (targetPosition) {
-              controls.current.setLookAt(...targetPosition, true);
-            }
-
-            // Desabilitar controle contínuo
-            controls.current.enabled = activeSection === "nav";
-          } else {
-            // Quando destravada, remover todas as restrições
-            controls.current.minPolarAngle = 0;
-            controls.current.maxPolarAngle = Math.PI;
-            controls.current.minDistance = 0.1;
-            controls.current.maxDistance = 100;
-            controls.current.boundaryFriction = 0;
-            controls.current.boundaryEnclosesCamera = false;
-            controls.current.minY = null;
-            controls.current.maxY = null;
-
-            // Habilitar controle contínuo
-            controls.current.enabled = true;
+          const targetPosition = getCameraPosition(activeSection || "nav");
+          if (targetPosition) {
+            controls.current.setLookAt(...targetPosition, true);
           }
-        },
+        }),
       },
-      getLookAt: button(() => {
-        copyPositionToClipboard();
-      }),
-      resetCamera: button(() => {
-        if (!controls.current) return;
+      { collapsed: false }
+    );
 
-        const targetPosition = getCameraPosition(activeSection || "nav");
-        if (targetPosition) {
-          controls.current.setLookAt(...targetPosition, true);
+    useEffect(() => {
+      if (!controls.current || !controls.current.mouseButtons) return;
+
+      controls.current.mouseButtons.left = 1;
+      controls.current.mouseButtons.right = 4; // Truck (move) with right button
+      controls.current.verticalDragToForward = false; // Disable zoom on vertical drag
+
+      // Handle Ctrl+Click safely
+      const handleKeyDown = (event) => {
+        if (event.ctrlKey && controls.current && controls.current.mouseButtons) {
+          controls.current.mouseButtons.left = 4; // Truck with Ctrl+MouseLeft
         }
-      }),
-    },
-    { collapsed: false }
-  );
+      };
 
-  useEffect(() => {
-    if (!controls.current || !controls.current.mouseButtons) return;
+      const handleKeyUp = (event) => {
+        if (
+          event.key === "Control" &&
+          controls.current &&
+          controls.current.mouseButtons
+        ) {
+          controls.current.mouseButtons.left = 1; // Back to ROTATE when Ctrl is released
+        }
+      };
 
-    controls.current.mouseButtons.left = 1;
-    controls.current.mouseButtons.right = 4; // Truck (move) with right button
-    controls.current.verticalDragToForward = false; // Disable zoom on vertical drag
+      window.addEventListener("keydown", handleKeyDown);
+      window.addEventListener("keyup", handleKeyUp);
 
-    // Handle Ctrl+Click safely
-    const handleKeyDown = (event) => {
-      if (event.ctrlKey && controls.current && controls.current.mouseButtons) {
-        controls.current.mouseButtons.left = 4; // Truck with Ctrl+MouseLeft
-      }
-    };
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown);
+        window.removeEventListener("keyup", handleKeyUp);
+      };
+    }, []);
 
-    const handleKeyUp = (event) => {
-      if (
-        event.key === "Control" &&
-        controls.current &&
-        controls.current.mouseButtons
-      ) {
-        controls.current.mouseButtons.left = 1; // Back to ROTATE when Ctrl is released
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-    };
-  }, []);
-
-  // Create notification element outside the 3D canvas
-  useEffect(() => {
-    if (clipboardMessage) {
-      // Create and append notification element
-      const notification = document.createElement("div");
-      notification.style.position = "absolute";
-      notification.style.top = "10px";
-      notification.style.right = "10px";
-      notification.style.padding = "8px 12px";
-      notification.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
-      notification.style.color = "white";
-      notification.style.borderRadius = "4px";
-      notification.style.zIndex = "1000";
-      notification.style.fontFamily = "sans-serif";
-      notification.style.fontSize = "14px";
-      notification.style.transition = "opacity 0.3s ease";
-      notification.style.opacity = "0";
-      notification.textContent = clipboardMessage;
-
-      document.body.appendChild(notification);
-
-      // Fade in
-      setTimeout(() => {
-        notification.style.opacity = "1";
-      }, 10);
-
-      // Remove after timeout
-      setTimeout(() => {
+    // Create notification element outside the 3D canvas
+    useEffect(() => {
+      if (clipboardMessage) {
+        // Create and append notification element
+        const notification = document.createElement("div");
+        notification.style.position = "absolute";
+        notification.style.top = "10px";
+        notification.style.right = "10px";
+        notification.style.padding = "8px 12px";
+        notification.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+        notification.style.color = "white";
+        notification.style.borderRadius = "4px";
+        notification.style.zIndex = "1000";
+        notification.style.fontFamily = "sans-serif";
+        notification.style.fontSize = "14px";
+        notification.style.transition = "opacity 0.3s ease";
         notification.style.opacity = "0";
+        notification.textContent = clipboardMessage;
+
+        document.body.appendChild(notification);
+
+        // Fade in
         setTimeout(() => {
+          notification.style.opacity = "1";
+        }, 10);
+
+        // Remove after timeout
+        setTimeout(() => {
+          notification.style.opacity = "0";
+          setTimeout(() => {
+            if (document.body.contains(notification)) {
+              document.body.removeChild(notification);
+            }
+          }, 300);
+        }, 3000);
+
+        // Cleanup on unmount
+        return () => {
           if (document.body.contains(notification)) {
             document.body.removeChild(notification);
           }
-        }, 300);
-      }, 3000);
+        };
+      }
+    }, [clipboardMessage]);
 
-      // Cleanup on unmount
-      return () => {
-        if (document.body.contains(notification)) {
-          document.body.removeChild(notification);
-        }
-      };
-    }
-  }, [clipboardMessage]);
+    const materialControls = useControls(
+      "Materials",
+      {
+        // Castle controls
+        castleMaterialType: {
+          options: ["standard", "physical", "basic", "lambert", "phong"],
+          value: "standard",
+          label: "Castle Material Type",
+        },
+        castleMetalness: {
+          value: 1,
+          min: 0,
+          max: 2,
+          step: 0.01,
+          label: "Castle Metalness",
+        },
+        castleRoughness: {
+          value: 1.6,
+          min: 0,
+          max: 2,
+          step: 0.01,
+          label: "Castle Roughness",
+        },
+        castleEmissiveColor: {
+          value: "#f6d8fc",
+          label: "Castle Emissive Color",
+        },
+        castleEmissiveIntensity: {
+          value: 2,
+          min: 0,
+          max: 5,
+          step: 0.1,
+          label: "Castle Emissive",
+        },
 
-  const materialControls = useControls(
-    "Materials",
-    {
-      // Castle controls
-      castleMaterialType: {
-        options: ["standard", "physical", "basic", "lambert", "phong"],
-        value: "standard",
-        label: "Castle Material Type",
+        // Floor controls
+        floorMaterialType: {
+          options: ["standard", "physical", "basic", "lambert", "phong"],
+          value: "physical",
+          label: "Floor Material Type",
+        },
+        floorMetalness: {
+          value: 1,
+          min: 0,
+          max: 2,
+          step: 0.01,
+          label: "Floor Metalness",
+        },
+        floorRoughness: {
+          value: 0.2,
+          min: 0,
+          max: 2,
+          step: 0.01,
+          label: "Floor Roughness",
+        },
+        floorEmissiveColor: {
+          value: "#22bcff",
+          label: "Floor Emissive Color",
+        },
+        floorEmissiveIntensity: {
+          value: 2.2,
+          min: 0,
+          max: 5,
+          step: 0.1,
+          label: "Floor Emissive",
+        },
       },
-      castleMetalness: {
-        value: 1,
-        min: 0,
-        max: 2,
-        step: 0.01,
-        label: "Castle Metalness",
-      },
-      castleRoughness: {
-        value: 1.6,
-        min: 0,
-        max: 2,
-        step: 0.01,
-        label: "Castle Roughness",
-      },
-      castleEmissiveColor: {
-        value: "#f6d8fc",
-        label: "Castle Emissive Color",
-      },
-      castleEmissiveIntensity: {
-        value: 2,
-        min: 0,
-        max: 5,
-        step: 0.1,
-        label: "Castle Emissive",
-      },
+      { collapsed: false }
+    );
 
-      // Floor controls
-      floorMaterialType: {
-        options: ["standard", "physical", "basic", "lambert", "phong"],
-        value: "physical",
-        label: "Floor Material Type",
-      },
-      floorMetalness: {
-        value: 1,
-        min: 0,
-        max: 2,
-        step: 0.01,
-        label: "Floor Metalness",
-      },
-      floorRoughness: {
-        value: 0.2,
-        min: 0,
-        max: 2,
-        step: 0.01,
-        label: "Floor Roughness",
-      },
-      floorEmissiveColor: {
-        value: "#22bcff",
-        label: "Floor Emissive Color",
-      },
-      floorEmissiveIntensity: {
-        value: 2.2,
-        min: 0,
-        max: 5,
-        step: 0.1,
-        label: "Floor Emissive",
-      },
-    },
-    { collapsed: false }
-  );
-
-  return (
-    <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
-      <CameraControls
-        ref={controls}
-        makeDefault
-        smoothTime={0.6}
-        dollySpeed={0.1}
-        wheelDampingFactor={0.15}
-        truckSpeed={1.0}
-        verticalDragToForward={false}
-        dollyToCursor={false}
-      />
-
-      <Suspense>
-        <CastleModel
-          controls={controls}
-          onCastleClick={playTransition}
-          atmIframeActive={atmiframeActive}
-          mirrorIframeActive={mirrorIframeActive}
-          scrollIframeActive={scrollIframeActive}
-          hasInteracted={true}
-          onReturnToMain={handleReturnToMain}
-          castleMaterialType={materialControls.castleMaterialType}
-          castleMetalness={materialControls.castleMetalness}
-          castleRoughness={materialControls.castleRoughness}
-          castleEmissiveIntensity={materialControls.castleEmissiveIntensity}
-          floorMaterialType={materialControls.floorMaterialType}
-          floorMetalness={materialControls.floorMetalness}
-          floorRoughness={materialControls.floorRoughness}
-          floorEmissiveIntensity={materialControls.floorEmissiveIntensity}
-          setAtmiframeActive={setAtmiframeActive}
-          setMirrorIframeActive={setMirrorIframeActive}
-          setScrollIframeActive={setScrollIframeActive}
+    return (
+      <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
+        <CameraControls
+          ref={controls}
+          makeDefault
+          smoothTime={0.6}
+          dollySpeed={0.1}
+          wheelDampingFactor={0.15}
+          truckSpeed={1.0}
+          verticalDragToForward={false}
+          dollyToCursor={false}
         />
-      </Suspense>
-    </group>
-  );
-};
+
+        <Suspense>
+          <CastleModel
+            controls={controls}
+            onCastleClick={playTransition}
+            atmIframeActive={atmiframeActive}
+            mirrorIframeActive={mirrorIframeActive}
+            scrollIframeActive={scrollIframeActive}
+            hasInteracted={true}
+            onReturnToMain={handleReturnToMain}
+            castleMaterialType={materialControls.castleMaterialType}
+            castleMetalness={materialControls.castleMetalness}
+            castleRoughness={materialControls.castleRoughness}
+            castleEmissiveIntensity={materialControls.castleEmissiveIntensity}
+            floorMaterialType={materialControls.floorMaterialType}
+            floorMetalness={materialControls.floorMetalness}
+            floorRoughness={materialControls.floorRoughness}
+            floorEmissiveIntensity={materialControls.floorEmissiveIntensity}
+            setAtmiframeActive={setAtmiframeActive}
+            setMirrorIframeActive={setMirrorIframeActive}
+            setScrollIframeActive={setScrollIframeActive}
+          />
+        </Suspense>
+      </group>
+    );
+  };
 
 export default Castle;

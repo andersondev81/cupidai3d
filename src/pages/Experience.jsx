@@ -615,6 +615,19 @@ const Experience = () => {
   }, []);
 
 
+  useEffect(() => {
+    const forceAudioPlay = () => {
+      if (window.audioManager) {
+        window.audioManager.startAmbient();
+        console.log("Forced ambient sound start");
+      }
+      document.removeEventListener('click', forceAudioPlay);
+    };
+
+    document.addEventListener('click', forceAudioPlay);
+    return () => document.removeEventListener('click', forceAudioPlay);
+  }, []);
+
   // ADD THIS: Make the section change handler globally available
   useEffect(() => {
     // Make the section change handler available globally

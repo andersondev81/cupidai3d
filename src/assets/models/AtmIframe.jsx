@@ -31,7 +31,19 @@ const AtmIframe = ({ onReturnToMain, isActive, ...props }) => {
   const handleHomeNavigation = () => {
     // First hide buttons for visual feedback
     setShowButtons(false);
+    console.log("Botão de retorno clicado");
 
+    // Primeiro, pare o som do mirror
+    if (window.audioManager && window.audioManager.sounds.mirror) {
+      window.audioManager.stop('mirror');
+      console.log("Som do mirror parado (retorno ao main)");
+    }
+
+    // Verificar se precisamos parar todos os sons
+    if (window.audioManager && window.audioManager.stopAllAudio) {
+      window.audioManager.stopAllAudio();
+      console.log("Todos os sons parados");
+    }
     // Hide content after a short delay
     setTimeout(() => {
       setShowContent(false);
