@@ -107,7 +107,7 @@ class AudioManager {
   }
 
   setupSounds() {
-    this.registerSound("transition", "/public/sounds/camerawoosh.MP3", {
+    this.registerSound("transition", "../sounds/camerawoosh.MP3", {
       loop: false,
       volume: 0.1,
     });
@@ -115,17 +115,17 @@ class AudioManager {
         //   loop: false,
         //   volume: 0.1,
         // });
-    this.registerSound("about", "/sounds/nav.mp3");
-    this.registerSound("aidatingcoach", "/public/sounds/daingcoachmirror.MP3", {
+    this.registerSound("about", "../sounds/nav.mp3");
+    this.registerSound("aidatingcoach", "../sounds/daingcoachmirror.MP3", {
       loop: true,
       volume: 0.1,
     });
-    this.registerSound("download", "/sounds/download.mp3");
-    this.registerSound("token", "/public/sounds/atmambiance.mp3", {
+    this.registerSound("download", "../sounds/download.mp3");
+    this.registerSound("token", "../sounds/atmambiance.mp3", {
       loop: true,
       volume: 0.1,
     });
-    this.registerSound("roadmap", "/public/sounds/roadmapscroll.mp3", {
+    this.registerSound("roadmap", "../sounds/roadmapscroll.mp3", {
       loop: true,
       volume: 0.1,
     });
@@ -133,23 +133,23 @@ class AudioManager {
     this.registerSound("click", "/sounds/click.mp3");
     this.registerSound("hover", "/sounds/hover.mp3");
 
-    this.registerSound("ambient", "/public/sounds/templeambiance.mp3", {
+    this.registerSound("ambient", "../sounds/templeambiance.mp3", {
       loop: true,
       volume: 1,
     });
-    this.registerSound("orb", "/public/sounds/orb.mp3", {
+    this.registerSound("orb", "../sounds/orb.mp3", {
       loop: true,
       volume: 0.3,
     });
-    this.registerSound("water", "/sounds/water.mp3", {
+    this.registerSound("water", "../sounds/water.mp3", {
       loop: true,
       volume: 0.3,
     });
-    this.registerSound("fountain", "/public/sounds/fountain.mp3", {
+    this.registerSound("fountain", "../sounds/fountain.mp3", {
       loop: true,
       volume: 0.3,
     });
-    this.registerSound("portal", "/sounds/portal.mp3", {
+    this.registerSound("portal", "../sounds/portal.mp3", {
       loop: true,
       volume: 0.3,
     });
@@ -158,12 +158,12 @@ class AudioManager {
       volume: 0.2,
     });
 
-    this.registerSound("mirror", "/sounds/mirror.mp3", {
+    this.registerSound("mirror", "../sounds/mirror.mp3", {
       loop: true,
       volume: 0.4,
     });
-    this.registerSound("atm", "/sounds/atm.mp3", { loop: true, volume: 0.4 });
-    this.registerSound("coins", "/sounds/coins.mp3", {
+    this.registerSound("atm", "../sounds/atm.mp3", { loop: true, volume: 0.4 });
+    this.registerSound("coins", "../sounds/coins.mp3", {
       loop: true,
       volume: 0.3,
     });
