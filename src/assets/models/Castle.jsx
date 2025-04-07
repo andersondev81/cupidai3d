@@ -1,7 +1,8 @@
 import { CameraControls, useGLTF, useTexture } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
 import { Select } from "@react-three/postprocessing";
 import { button, useControls } from "leva";
-import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useRef, useState} from "react";
 import * as THREE from "three";
 import {
   Color,
@@ -20,11 +21,11 @@ import AtmIframe from "../models/AtmIframe";
 import MirrorIframe from "../models/MirrorIframe";
 import ScrollIframe from "../models/ScrolIframe";
 
+import audioManager from './AudioManager';
 const SMALL_SCREEN_THRESHOLD = 768;
 const TRANSITION_DELAY = 100;
 window.lastClickedPosition = null;
 
-// Add this function at the top of your Castle.jsx file
 function smoothCameraReturn(position, target) {
   if (!window.controls || !window.controls.current) {
     console.error("No controls available for camera transition");
@@ -33,12 +34,9 @@ function smoothCameraReturn(position, target) {
 
   console.log("Smooth transition to position:", position, "target:", target);
 
-  // Use the existing CameraControls that already handle animations
-  window.controls.current.enabled = true; // Important - enable controls first
+  window.controls.current.enabled = true;
 
-  // Let any active animations complete
   setTimeout(() => {
-    // Use the exact same method used for section transitions
     window.controls.current
       .setLookAt(
         position[0],
@@ -52,37 +50,6 @@ function smoothCameraReturn(position, target) {
       .catch((err) => console.error("Camera transition error:", err));
   }, 50);
 }
-
-// Add this in the SceneController's useCameraAnimation function
-// At the beginning of the animate function:
-
-// Rest of animation function continues...
-
-// Now in the ScrollIframe handler:
-
-// Adjust resource paths for deployment
-// const getAssetPath = path => {
-//   // Remove /src/ from paths and ensure they work in deployment
-//   return path.replace("/src/", "/")
-// }
-
-// Audio paths with corrected paths
-// const TRANSITION_SOUND = getAssetPath("/assets/sounds/camerawoosh.MP3")
-// const AUDIO_PATHS = {
-//   nav: getAssetPath("/assets/sounds/nav.mp3"),
-//   about: getAssetPath("/assets/sounds/orb.mp3"),
-//   aidatingcoach: getAssetPath("/assets/sounds/daingcoachmirror.MP3"),
-//   download: getAssetPath("/assets/sounds/daingcoachmirror.mp3"),
-//   token: getAssetPath("/assets/sounds/atmambiance.mp3"),
-//   roadmap: getAssetPath("/assets/sounds/roadmap.mp3"),
-// }
-
-// const NAV_EXTRA_SOUNDS = {
-//   templeAmbient: getAssetPath("/assets/sounds/templeambiance.mp3"),
-//   fountain: getAssetPath("/assets/sounds/fountain.mp3"),
-// }
-// Camera Positions Configuration
-
 window.lastClickedPositions = {
   mirror: null,
   atm: null,
@@ -90,7 +57,6 @@ window.lastClickedPositions = {
   orb: null,
 };
 
-// Function for smooth camera return transitions globally accessible
 window.smoothCameraReturn = function (position, target) {
   if (!window.controls || !window.controls.current) {
     console.error("No controls available for camera transition");
@@ -99,10 +65,8 @@ window.smoothCameraReturn = function (position, target) {
 
   console.log("Smooth transition to position:", position, "target:", target);
 
-  // Use the existing CameraControls that already handle animations
   window.controls.current.enabled = true; // Important - enable controls first
 
-  // Let any active animations complete
   setTimeout(() => {
     // Use the exact same method used for section transitions
     window.controls.current
@@ -458,250 +422,6 @@ const cameraConfig = {
     },
   },
 };
-
-// Enhanced Audio Hook with iOS compatibility
-// const useMultiAudio = () => {
-//   const audioContextRef = useRef(null)
-//   const audioElementsRef = useRef({})
-//   const gainNodesRef = useRef({})
-//   const currentSectionRef = useRef(null)
-//   const transitionSoundRef = useRef(null)
-//   const transitionGainRef = useRef(null)
-//   const navExtraSoundsRef = useRef({})
-//   const navExtraGainsRef = useRef({})
-//   const [audioInitialized, setAudioInitialized] = useState(false)
-
-//   const initAudio = () => {
-//     try {
-//       // Only create AudioContext after user interaction
-//       if (!audioContextRef.current) {
-//         audioContextRef.current = new (window.AudioContext ||
-//           window.webkitAudioContext)()
-//       }
-
-//       if (transitionSoundRef.current) return // Prevent double initialization
-
-//       // Setup transition sound
-//       transitionSoundRef.current = new Audio(TRANSITION_SOUND)
-//       transitionSoundRef.current.load() // Load but don't play
-
-//       if (audioContextRef.current) {
-//         const transitionSource =
-//           audioContextRef.current.createMediaElementSource(
-//             transitionSoundRef.current
-//           )
-//         transitionGainRef.current = audioContextRef.current.createGain()
-//         transitionGainRef.current.gain.value = 0.5
-//         transitionSource.connect(transitionGainRef.current)
-//         transitionGainRef.current.connect(audioContextRef.current.destination)
-//       }
-
-//       // Setup Nav extra sounds
-//       Object.entries(NAV_EXTRA_SOUNDS).forEach(([key, path]) => {
-//         const audioElement = new Audio(path)
-//         audioElement.loop = true
-//         audioElement.load() // Load but don't play
-//         navExtraSoundsRef.current[key] = audioElement
-
-//         if (audioContextRef.current) {
-//           const source =
-//             audioContextRef.current.createMediaElementSource(audioElement)
-//           const gainNode = audioContextRef.current.createGain()
-//           gainNode.gain.value = 0.3
-//           source.connect(gainNode)
-//           gainNode.connect(audioContextRef.current.destination)
-//           navExtraGainsRef.current[key] = gainNode
-//         }
-//       })
-
-//       // Initialize section sounds
-//       Object.entries(AUDIO_PATHS).forEach(([section, path]) => {
-//         const audioElement = new Audio(path)
-//         audioElement.loop = true
-//         audioElement.load() // Load but don't play
-//         audioElementsRef.current[section] = audioElement
-
-//         if (audioContextRef.current) {
-//           const source =
-//             audioContextRef.current.createMediaElementSource(audioElement)
-//           const gainNode = audioContextRef.current.createGain()
-//           gainNode.gain.value = 0.3
-
-//           source.connect(gainNode)
-//           gainNode.connect(audioContextRef.current.destination)
-//           gainNodesRef.current[section] = gainNode
-//         }
-//       })
-
-//       setAudioInitialized(true)
-//       console.log("Audio system initialized successfully")
-//     } catch (error) {
-//       console.error("Error initializing audio system:", error)
-//     }
-//   }
-
-//   const resumeAudioContext = () => {
-//     if (audioContextRef.current?.state === "suspended") {
-//       audioContextRef.current.resume().catch(err => {
-//         console.warn("Could not resume AudioContext:", err)
-//       })
-//     }
-//   }
-
-//   const playTransitionSound = () => {
-//     if (!audioInitialized) return
-
-//     resumeAudioContext()
-
-//     if (transitionSoundRef.current) {
-//       transitionSoundRef.current.currentTime = 0
-//       const playPromise = transitionSoundRef.current.play()
-
-//       if (playPromise !== undefined) {
-//         playPromise.catch(error => {
-//           console.warn("Error playing transition sound:", error)
-//         })
-//       }
-//     }
-//   }
-
-//   const playSound = section => {
-//     if (!audioInitialized) return
-
-//     try {
-//       resumeAudioContext()
-
-//       playTransitionSound()
-
-//       if (currentSectionRef.current && currentSectionRef.current !== section) {
-//         const currentAudio = audioElementsRef.current[currentSectionRef.current]
-//         if (currentAudio) {
-//           currentAudio.pause()
-//           currentAudio.currentTime = 0
-//         }
-
-//         if (currentSectionRef.current === "nav") {
-//           Object.values(navExtraSoundsRef.current).forEach(audio => {
-//             if (audio) {
-//               audio.pause()
-//               audio.currentTime = 0
-//             }
-//           })
-//         }
-//       }
-
-//       setTimeout(() => {
-//         const newAudio = audioElementsRef.current[section]
-//         if (newAudio) {
-//           const playPromise = newAudio.play()
-
-//           if (playPromise !== undefined) {
-//             playPromise.catch(err => {
-//               console.warn(`Could not play audio for section ${section}:`, err)
-//             })
-//           }
-
-//           if (section === "nav") {
-//             Object.values(navExtraSoundsRef.current).forEach(audio => {
-//               if (audio) {
-//                 const navPlayPromise = audio.play()
-//                 if (navPlayPromise !== undefined) {
-//                   navPlayPromise.catch(console.error)
-//                 }
-//               }
-//             })
-//           }
-
-//           currentSectionRef.current = section
-//         }
-//       }, 500)
-//     } catch (error) {
-//       console.error("Error playing sounds:", error)
-//     }
-//   }
-
-//   const stopSound = () => {
-//     if (!audioInitialized) return
-
-//     try {
-//       if (currentSectionRef.current) {
-//         const currentAudio = audioElementsRef.current[currentSectionRef.current]
-//         if (currentAudio) {
-//           currentAudio.pause()
-//           currentAudio.currentTime = 0
-//         }
-
-//         // Stop nav extra sounds if in nav section
-//         if (currentSectionRef.current === "nav") {
-//           Object.values(navExtraSoundsRef.current).forEach(audio => {
-//             if (audio) {
-//               audio.pause()
-//               audio.currentTime = 0
-//             }
-//           })
-//         }
-
-//         currentSectionRef.current = null
-//       }
-//     } catch (error) {
-//       console.error("Error stopping sound:", error)
-//     }
-//   }
-
-//   const updateListenerPosition = position => {
-//     if (audioContextRef.current && position && audioInitialized) {
-//       const [x, y, z] = position
-//       try {
-//         if (audioContextRef.current.listener.setPosition) {
-//           audioContextRef.current.listener.setPosition(x, y, z)
-//         }
-//       } catch (error) {
-//         console.warn("Could not set audio listener position:", error)
-//       }
-//     }
-//   }
-
-//   const cleanup = () => {
-//     try {
-//       if (transitionSoundRef.current) {
-//         transitionSoundRef.current.pause()
-//       }
-
-//       Object.values(audioElementsRef.current).forEach(audio => {
-//         if (audio) {
-//           audio.pause()
-//         }
-//       })
-
-//       Object.values(navExtraSoundsRef.current).forEach(audio => {
-//         if (audio) {
-//           audio.pause()
-//         }
-//       })
-
-//       if (
-//         audioContextRef.current &&
-//         audioContextRef.current.state !== "closed"
-//       ) {
-//         audioContextRef.current.close().catch(console.error)
-//       }
-//     } catch (error) {
-//       console.error("Error during cleanup:", error)
-//     }
-//   }
-
-//   return {
-//     initAudio,
-//     playSound,
-//     stopSound,
-//     updateListenerPosition,
-//     cleanup,
-//     audioInitialized,
-//     resumeAudioContext,
-//   }
-// }
-
-// Localizar o hook useVideoTexture (por volta da linha 220-240)
 
 const useVideoTexture = (videoPath) => {
   const [texture, setTexture] = useState(null);
@@ -1559,6 +1279,11 @@ const CastleModel = ({
   const mirror = useMirrorMaterial()
   const hallosMaterial = useHallosMaterial()
 
+  useFrame(({ camera }) => {
+    // Chamar updateSpatialSounds com a posição da câmera a cada frame
+    updateSpatialSounds(camera.position);
+  });
+
   // Use the video texture hook for portal
   const { texture: portalTexture, playVideo: playPortal } =
     useVideoTexture("/video/tunnel.mp4");
@@ -1619,6 +1344,150 @@ const CastleModel = ({
           }),
     [waterTexture]
   );
+
+  const updateSpatialSounds = (cameraPosition) => {
+    // Verificações de segurança para o AudioManager
+    if (!window.audioManager || !window.audioManager.sounds) {
+      console.log("AudioManager não disponível");
+      return;
+    }
+
+    // Coordenadas fixas dos elementos
+    const orbPosition = { x: 1.76, y: 1.155, z: -0.883 };
+    const fountainPosition = { x: 0, y: 0.8, z: 2.406 }; // Posição da fonte
+
+    //----- GERENCIAMENTO DO SOM DA ORB -----//
+
+    // Cálculo de distância para o orb
+    const dxOrb = cameraPosition.x - orbPosition.x;
+    const dyOrb = cameraPosition.y - orbPosition.y;
+    const dzOrb = cameraPosition.z - orbPosition.z;
+    const distToOrb = Math.sqrt(dxOrb * dxOrb + dyOrb * dyOrb + dzOrb * dzOrb);
+
+    // Distância máxima para o orb
+    const maxOrbDistance = 1.5;
+
+    // Gerenciar som do orb
+    if (window.audioManager.sounds.orb) {
+      if (distToOrb < maxOrbDistance) {
+        // Cálculo de volume para o orb
+        const attenuationOrb = 1 - Math.pow(distToOrb / maxOrbDistance, 3);
+        const orbVolume = Math.max(0, 0.2 * attenuationOrb);
+
+        if (orbVolume > 0.05) {
+          window.audioManager.sounds.orb.audio.volume = orbVolume;
+
+          if (!window.audioManager.sounds.orb.isPlaying) {
+            console.log("Iniciando som da orb");
+            window.audioManager.play('orb');
+          }
+        } else {
+          if (window.audioManager.sounds.orb.isPlaying) {
+            window.audioManager.stop('orb');
+          }
+        }
+      } else {
+        if (window.audioManager.sounds.orb.isPlaying) {
+          window.audioManager.stop('orb');
+        }
+      }
+    }
+
+    //----- GERENCIAMENTO DO SOM DA FONTE (FOUNTAIN) -----//
+
+    // Cálculo de distância para a fonte
+    const dxFountain = cameraPosition.x - fountainPosition.x;
+    const dyFountain = cameraPosition.y - fountainPosition.y;
+    const dzFountain = cameraPosition.z - fountainPosition.z;
+    const distToFountain = Math.sqrt(dxFountain * dxFountain + dyFountain * dyFountain + dzFountain * dzFountain);
+
+    // Distância máxima para a fonte (um pouco maior que a do orb)
+    const maxFountainDistance = 2.5;
+
+    // Gerenciar som da fonte
+    if (window.audioManager.sounds.fountain) {
+      // Verificar se está dentro do alcance
+      if (distToFountain < maxFountainDistance) {
+        // Atenuação quadrática para a fonte (menos intensa que a cúbica do orb)
+        const attenuationFountain = 1 - Math.pow(distToFountain / maxFountainDistance, 2);
+        const fountainVolume = Math.max(0, 0.3 * attenuationFountain);
+
+        // Log para debug
+        // console.log(`Distância até a fonte: ${distToFountain.toFixed(2)}, Volume: ${fountainVolume.toFixed(2)}`);
+
+        // Aplicar volume apenas se for significativo
+        if (fountainVolume > 0.03) {
+          window.audioManager.sounds.fountain.audio.volume = fountainVolume;
+
+          // Iniciar reprodução se não estiver tocando
+          if (!window.audioManager.sounds.fountain.isPlaying) {
+            console.log("Iniciando som da fonte");
+            window.audioManager.play('fountain');
+          }
+        } else {
+          // Volume muito baixo, parar o som
+          if (window.audioManager.sounds.fountain.isPlaying) {
+            window.audioManager.stop('fountain');
+          }
+        }
+      } else {
+        // Fora do alcance, parar o som
+        if (window.audioManager.sounds.fountain.isPlaying) {
+          console.log("Parando som da fonte - fora de alcance");
+          window.audioManager.stop('fountain');
+        }
+      }
+    }
+  };
+
+  // Adicione ou atualize o useEffect para garantir que tanto o som do orb quanto
+  // o da fonte começam parados
+  useEffect(() => {
+    // Garantir que os sons começam parados
+    if (window.audioManager && window.audioManager.sounds) {
+      if (window.audioManager.sounds.orb) {
+        window.audioManager.stop('orb');
+      }
+      if (window.audioManager.sounds.fountain) {
+        window.audioManager.stop('fountain');
+      }
+    }
+
+    // Limpar ao desmontar
+    return () => {
+      if (window.audioManager && window.audioManager.sounds) {
+        if (window.audioManager.sounds.orb) {
+          window.audioManager.stop('orb');
+        }
+        if (window.audioManager.sounds.fountain) {
+          window.audioManager.stop('fountain');
+        }
+      }
+    };
+  }, []);
+
+  // Adicione este hook useFrame no componente CastleModel
+  // IMPORTANTE: Certifique-se de que este é o ÚNICO useFrame que chama updateSpatialSounds!
+  useFrame(({ camera }) => {
+    // Chamar a função de atualização de som a cada frame
+    updateSpatialSounds(camera.position);
+  });
+
+  // // Adicione isto no useEffect do CastleModel para garantir que o som sempre começa parado
+  // useEffect(() => {
+  //   // Garantir que o som da orb começa parado
+  //   if (window.audioManager && window.audioManager.sounds && window.audioManager.sounds.orb) {
+  //     window.audioManager.stop('orb');
+  //   }
+
+  //   // Limpar ao desmontar
+  //   return () => {
+  //     if (window.audioManager && window.audioManager.sounds && window.audioManager.sounds.orb) {
+  //       window.audioManager.stop('orb');
+  //     }
+  //   };
+  // }, []);
+
 
   // Depois no useEffect para iniciar a reprodução:
   useEffect(() => {
@@ -1852,443 +1721,505 @@ const CastleModel = ({
 // Main Component
 // Navigation system to handle all interactive elements
 
-const Castle = ({ activeSection }) => {
-  const controls = useRef();
-  const [atmiframeActive, setAtmiframeActive] = useState(false);
-  const [mirrorIframeActive, setMirrorIframeActive] = useState(false);
-  const [scrollIframeActive, setScrollIframeActive] = useState(false);
-  const [cameraLocked, setCameraLocked] = useState(true);
-  const [clipboardMessage, setClipboardMessage] = useState("");
+  const Castle = ({ activeSection }) => {
+    const controls = useRef();
+    const [atmiframeActive, setAtmiframeActive] = useState(false);
+    const [mirrorIframeActive, setMirrorIframeActive] = useState(false);
+    const [scrollIframeActive, setScrollIframeActive] = useState(false);
+    const [cameraLocked, setCameraLocked] = useState(true);
+    const [clipboardMessage, setClipboardMessage] = useState("");
 
-  // Reset function for iframes
-  window.resetIframes = () => {
-    setAtmiframeActive(false);
-    setMirrorIframeActive(false);
-    setScrollIframeActive(false);
-  };
-
-  const getCameraPosition = (section) => {
-    const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD;
-    const screenType = isSmallScreen ? "small" : "large";
-
-    if (section === "default") {
-      return cameraConfig.default[screenType];
-    }
-
-    return cameraConfig.sections[screenType][section];
-  };
-
-  const playTransition = (sectionName) => {
-    if (!controls.current) return;
-
-    console.log(`Playing transition to section: ${sectionName}`);
-
-    // Update iframe active states based on section
-    if (sectionName === "roadmap") {
-      setScrollIframeActive(true);
+    // Reset function for iframes
+    window.resetIframes = () => {
       setAtmiframeActive(false);
       setMirrorIframeActive(false);
-    } else if (sectionName === "token" || sectionName === "atm") {
-      setAtmiframeActive(true);
       setScrollIframeActive(false);
-      setMirrorIframeActive(false);
-    } else if (sectionName === "aidatingcoach") {
-      setMirrorIframeActive(true);
-      setScrollIframeActive(false);
-      setAtmiframeActive(false);
-    } else {
-      setScrollIframeActive(false);
-      setAtmiframeActive(false);
-      setMirrorIframeActive(false);
-    }
-
-    controls.current.enabled = true;
-
-    const targetPosition = getCameraPosition(
-      sectionName === "default" ? "default" : sectionName
-    );
-
-    if (targetPosition) {
-      controls.current
-        .setLookAt(...targetPosition, true)
-        .catch((error) => {
-          console.error("Camera transition error:", error);
-        })
-        .finally(() => {
-          controls.current.enabled = sectionName === "nav";
-          console.log(`Transition to ${sectionName} complete`);
-        });
-    }
-  };
-
-  // Make the transition function available globally
-  window.globalNavigation.navigateTo = playTransition;
-
-  const handleReturnToMain = () => {
-    console.log("Back to main requested");
-    playTransition("nav");
-  };
-
-  // Function to copy camera position to clipboard
-  const copyPositionToClipboard = () => {
-    if (!controls.current) return;
-
-    try {
-      // Get position and target from controls
-      const position = controls.current.getPosition();
-      const target = controls.current.getTarget();
-
-      // Handle different possible return formats
-      let posArray, targetArray;
-
-      // Handle position - might be Vector3, array, or object with x,y,z
-      if (Array.isArray(position)) {
-        posArray = position;
-      } else if (typeof position.toArray === "function") {
-        posArray = position.toArray();
-      } else {
-        posArray = [position.x, position.y, position.z];
-      }
-
-      // Handle target - might be Vector3, array, or object with x,y,z
-      if (Array.isArray(target)) {
-        targetArray = target;
-      } else if (typeof target.toArray === "function") {
-        targetArray = target.toArray();
-      } else {
-        targetArray = [target.x, target.y, target.z];
-      }
-
-      // Combine into the format needed for the camera config
-      const positionArray = [...posArray, ...targetArray];
-
-      // Format the array for display and copy
-      const formattedArray = positionArray
-        .map((val) => Number(val).toFixed(15))
-        .join(", ");
-
-      // Also create a formatted JS array for console
-      const jsArrayFormat = `[\n  ${posArray
-        .map((val) => Number(val).toFixed(15))
-        .join(",\n  ")},\n  ${targetArray
-        .map((val) => Number(val).toFixed(15))
-        .join(",\n  ")}\n]`;
-
-      // Copy to clipboard
-      navigator.clipboard
-        .writeText(formattedArray)
-        .then(() => {
-          setClipboardMessage("Position copied to clipboard!");
-
-          // Clear message after 3 seconds
-          setTimeout(() => {
-            setClipboardMessage("");
-          }, 3000);
-        })
-        .catch((err) => {
-          console.error("Could not copy position to clipboard:", err);
-          setClipboardMessage("Failed to copy position.");
-
-          // Clear message after 3 seconds
-          setTimeout(() => {
-            setClipboardMessage("");
-          }, 3000);
-        });
-
-      // Log to console in different formats for reference
-      console.log("Camera raw position:", position);
-      console.log("Camera raw target:", target);
-      console.log("Camera position array:", positionArray);
-      console.log("Camera position formatted for config:", jsArrayFormat);
-    } catch (error) {
-      console.error("Error getting camera position:", error);
-      setClipboardMessage("Error getting camera position");
-
-      setTimeout(() => {
-        setClipboardMessage("");
-      }, 3000);
-    }
-  };
-
-  // Make controls globally available
-  useEffect(() => {
-    if (!controls.current) return;
-    window.controls = controls;
-
-    // Initial configuration
-    if (cameraLocked) {
-      controls.current.minPolarAngle = Math.PI * 0.4;
-      controls.current.maxPolarAngle = Math.PI * 0.5;
-      controls.current.minDistance = 5;
-      controls.current.maxDistance = 20;
-      controls.current.boundaryFriction = 1;
-      controls.current.boundaryEnclosesCamera = true;
-      controls.current.dollyToCursor = false;
-      controls.current.minY = 1;
-      controls.current.maxY = 15;
-
-      const defaultPosition = getCameraPosition("default");
-      controls.current.setLookAt(...defaultPosition, false);
-
-      // Use direct navigation function
-      setTimeout(() => {
-        playTransition("nav");
-      }, TRANSITION_DELAY);
-    }
-
-    return () => {
-      // Cleanup
-      delete window.controls;
     };
-  }, []);
 
-  useControls(
-    "Controls",
-    {
-      cameraLocked: {
-        value: cameraLocked,
-        label: "Lock Camera",
-        onChange: (locked) => {
-          setCameraLocked(locked);
+    const getCameraPosition = (section) => {
+      const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD;
+      const screenType = isSmallScreen ? "small" : "large";
 
+      if (section === "default") {
+        return cameraConfig.default[screenType];
+      }
+
+      return cameraConfig.sections[screenType][section];
+    };
+
+    const playTransition = (sectionName) => {
+      if (!controls.current) return;
+
+      // if (window.audioManager) {
+      //   console.log("Starting ambient sound from Castle component");
+      //   window.audioManager.startAmbient();
+      // }
+
+      console.log(`Playing transition to section: ${sectionName}`);
+
+      // Parar sons da seção anterior
+      if (activeSection && activeSection !== sectionName) {
+        audioManager.stopSectionSounds(activeSection);
+      }
+
+      // Reproduzir o som da transição
+      audioManager.play('transition');
+
+      // Após um pequeno atraso, reproduzir o som da nova seção
+      setTimeout(() => {
+        // Reproduzir o som específico da seção, se existir
+        if (audioManager.sounds[sectionName]) {
+          audioManager.play(sectionName);
+        }
+
+        // Reproduzir sons adicionais específicos para certas seções
+        switch(sectionName) {
+          case 'aidatingcoach':
+            // Som do espelho
+            if (audioManager.sounds['mirror']) {
+              audioManager.play('mirror');
+            }
+            break;
+          case 'token':
+            // Som do ATM/moedas
+            if (audioManager.sounds['atm']) {
+              audioManager.play('atm');
+            }
+            if (audioManager.sounds['coins']) {
+              audioManager.play('coins');
+            }
+            break;
+          case 'roadmap':
+            // Som do pergaminho/papel
+            if (audioManager.sounds['scroll']) {
+              audioManager.play('scroll');
+            }
+            if (audioManager.sounds['paper']) {
+              audioManager.play('paper');
+            }
+            break;
+        }
+      }, 300); // Pequeno atraso para não sobrepor o som de transição
+
+      // Update iframe active states based on section
+      if (sectionName === "roadmap") {
+        setScrollIframeActive(true);
+        setAtmiframeActive(false);
+        setMirrorIframeActive(false);
+      } else if (sectionName === "token" || sectionName === "atm") {
+        setAtmiframeActive(true);
+        setScrollIframeActive(false);
+        setMirrorIframeActive(false);
+      } else if (sectionName === "aidatingcoach") {
+        setMirrorIframeActive(true);
+        setScrollIframeActive(false);
+        setAtmiframeActive(false);
+      } else {
+        setScrollIframeActive(false);
+        setAtmiframeActive(false);
+        setMirrorIframeActive(false);
+      }
+
+      controls.current.enabled = true;
+
+      const targetPosition = getCameraPosition(
+        sectionName === "default" ? "default" : sectionName
+      );
+
+      if (targetPosition) {
+        controls.current
+          .setLookAt(...targetPosition, true)
+          .catch((error) => {
+            console.error("Camera transition error:", error);
+          })
+          .finally(() => {
+            controls.current.enabled = sectionName === "nav";
+            console.log(`Transition to ${sectionName} complete`);
+          });
+      }
+    };
+
+    useEffect(() => {
+      // Iniciar áudio ambiente quando o componente é montado
+      audioManager.startAmbient();
+
+      // Pré-carregar todos os sons para melhor performance
+      audioManager.preloadAll();
+
+      return () => {
+        // Parar todo áudio quando o componente é desmontado
+        audioManager.stopAmbient();
+      };
+    }, []);
+
+    // Make the transition function available globally
+    window.globalNavigation.navigateTo = playTransition;
+
+    const handleReturnToMain = () => {
+      console.log("Back to main requested");
+      playTransition("nav");
+    };
+
+    // Function to copy camera position to clipboard
+    const copyPositionToClipboard = () => {
+      if (!controls.current) return;
+
+      try {
+        // Get position and target from controls
+        const position = controls.current.getPosition();
+        const target = controls.current.getTarget();
+
+        // Handle different possible return formats
+        let posArray, targetArray;
+
+        // Handle position - might be Vector3, array, or object with x,y,z
+        if (Array.isArray(position)) {
+          posArray = position;
+        } else if (typeof position.toArray === "function") {
+          posArray = position.toArray();
+        } else {
+          posArray = [position.x, position.y, position.z];
+        }
+
+        // Handle target - might be Vector3, array, or object with x,y,z
+        if (Array.isArray(target)) {
+          targetArray = target;
+        } else if (typeof target.toArray === "function") {
+          targetArray = target.toArray();
+        } else {
+          targetArray = [target.x, target.y, target.z];
+        }
+
+        // Combine into the format needed for the camera config
+        const positionArray = [...posArray, ...targetArray];
+
+        // Format the array for display and copy
+        const formattedArray = positionArray
+          .map((val) => Number(val).toFixed(15))
+          .join(", ");
+
+        // Also create a formatted JS array for console
+        const jsArrayFormat = `[\n  ${posArray
+          .map((val) => Number(val).toFixed(15))
+          .join(",\n  ")},\n  ${targetArray
+          .map((val) => Number(val).toFixed(15))
+          .join(",\n  ")}\n]`;
+
+        // Copy to clipboard
+        navigator.clipboard
+          .writeText(formattedArray)
+          .then(() => {
+            setClipboardMessage("Position copied to clipboard!");
+
+            // Clear message after 3 seconds
+            setTimeout(() => {
+              setClipboardMessage("");
+            }, 3000);
+          })
+          .catch((err) => {
+            console.error("Could not copy position to clipboard:", err);
+            setClipboardMessage("Failed to copy position.");
+
+            // Clear message after 3 seconds
+            setTimeout(() => {
+              setClipboardMessage("");
+            }, 3000);
+          });
+
+        // Log to console in different formats for reference
+        console.log("Camera raw position:", position);
+        console.log("Camera raw target:", target);
+        console.log("Camera position array:", positionArray);
+        console.log("Camera position formatted for config:", jsArrayFormat);
+      } catch (error) {
+        console.error("Error getting camera position:", error);
+        setClipboardMessage("Error getting camera position");
+
+        setTimeout(() => {
+          setClipboardMessage("");
+        }, 3000);
+      }
+    };
+
+    // Make controls globally available
+    useEffect(() => {
+      if (!controls.current) return;
+      window.controls = controls;
+
+      // Initial configuration
+      if (cameraLocked) {
+        controls.current.minPolarAngle = Math.PI * 0.4;
+        controls.current.maxPolarAngle = Math.PI * 0.5;
+        controls.current.minDistance = 5;
+        controls.current.maxDistance = 10;
+        controls.current.boundaryFriction = 1;
+        controls.current.boundaryEnclosesCamera = true;
+        controls.current.dollyToCursor = false;
+        controls.current.minY = 1;
+        controls.current.maxY = 15;
+
+        const defaultPosition = getCameraPosition("default");
+        controls.current.setLookAt(...defaultPosition, false);
+
+        // Use direct navigation function
+        setTimeout(() => {
+          playTransition("nav");
+        }, TRANSITION_DELAY);
+      }
+
+      return () => {
+        // Cleanup
+        delete window.controls;
+      };
+    }, []);
+
+    useControls(
+      "Controls",
+      {
+        cameraLocked: {
+          value: cameraLocked,
+          label: "Lock Camera",
+          onChange: (locked) => {
+            setCameraLocked(locked);
+
+            if (!controls.current) return;
+
+            if (locked) {
+              // Quando travada, aplicar restrições
+              controls.current.minPolarAngle = Math.PI * 0.4;
+              controls.current.maxPolarAngle = Math.PI * 0.5;
+              controls.current.minDistance = 5.08;
+              controls.current.maxDistance = 10;
+              controls.current.boundaryFriction = 1;
+              controls.current.boundaryEnclosesCamera = true;
+              controls.current.dollyToCursor = false;
+              controls.current.minY = 1;
+              controls.current.maxY = 5;
+
+              // Retornar para a posição da seção atual
+              const targetPosition = getCameraPosition(activeSection || "nav");
+              if (targetPosition) {
+                controls.current.setLookAt(...targetPosition, true);
+              }
+
+              // Desabilitar controle contínuo
+              controls.current.enabled = activeSection === "nav";
+            } else {
+              // Quando destravada, remover todas as restrições
+              controls.current.minPolarAngle = 0;
+              controls.current.maxPolarAngle = Math.PI;
+              controls.current.minDistance = 0.1;
+              controls.current.maxDistance = 100;
+              controls.current.boundaryFriction = 0;
+              controls.current.boundaryEnclosesCamera = false;
+              controls.current.minY = null;
+              controls.current.maxY = null;
+
+              // Habilitar controle contínuo
+              controls.current.enabled = true;
+            }
+          },
+        },
+        getLookAt: button(() => {
+          copyPositionToClipboard();
+        }),
+        resetCamera: button(() => {
           if (!controls.current) return;
 
-          if (locked) {
-            // Quando travada, aplicar restrições
-            controls.current.minPolarAngle = Math.PI * 0.4;
-            controls.current.maxPolarAngle = Math.PI * 0.5;
-            controls.current.minDistance = 5;
-            controls.current.maxDistance = 20;
-            controls.current.boundaryFriction = 1;
-            controls.current.boundaryEnclosesCamera = true;
-            controls.current.dollyToCursor = false;
-            controls.current.minY = 1;
-            controls.current.maxY = 15;
-
-            // Retornar para a posição da seção atual
-            const targetPosition = getCameraPosition(activeSection || "nav");
-            if (targetPosition) {
-              controls.current.setLookAt(...targetPosition, true);
-            }
-
-            // Desabilitar controle contínuo
-            controls.current.enabled = activeSection === "nav";
-          } else {
-            // Quando destravada, remover todas as restrições
-            controls.current.minPolarAngle = 0;
-            controls.current.maxPolarAngle = Math.PI;
-            controls.current.minDistance = 0.1;
-            controls.current.maxDistance = 100;
-            controls.current.boundaryFriction = 0;
-            controls.current.boundaryEnclosesCamera = false;
-            controls.current.minY = null;
-            controls.current.maxY = null;
-
-            // Habilitar controle contínuo
-            controls.current.enabled = true;
+          const targetPosition = getCameraPosition(activeSection || "nav");
+          if (targetPosition) {
+            controls.current.setLookAt(...targetPosition, true);
           }
-        },
+        }),
       },
-      getLookAt: button(() => {
-        copyPositionToClipboard();
-      }),
-      resetCamera: button(() => {
-        if (!controls.current) return;
+      { collapsed: false }
+    );
 
-        const targetPosition = getCameraPosition(activeSection || "nav");
-        if (targetPosition) {
-          controls.current.setLookAt(...targetPosition, true);
+    useEffect(() => {
+      if (!controls.current || !controls.current.mouseButtons) return;
+
+      controls.current.mouseButtons.left = 1;
+      controls.current.mouseButtons.right = 4; // Truck (move) with right button
+      controls.current.verticalDragToForward = false; // Disable zoom on vertical drag
+
+      // Handle Ctrl+Click safely
+      const handleKeyDown = (event) => {
+        if (event.ctrlKey && controls.current && controls.current.mouseButtons) {
+          controls.current.mouseButtons.left = 4; // Truck with Ctrl+MouseLeft
         }
-      }),
-    },
-    { collapsed: false }
-  );
+      };
 
-  useEffect(() => {
-    if (!controls.current || !controls.current.mouseButtons) return;
+      const handleKeyUp = (event) => {
+        if (
+          event.key === "Control" &&
+          controls.current &&
+          controls.current.mouseButtons
+        ) {
+          controls.current.mouseButtons.left = 1; // Back to ROTATE when Ctrl is released
+        }
+      };
 
-    controls.current.mouseButtons.left = 1;
-    controls.current.mouseButtons.right = 4; // Truck (move) with right button
-    controls.current.verticalDragToForward = false; // Disable zoom on vertical drag
+      window.addEventListener("keydown", handleKeyDown);
+      window.addEventListener("keyup", handleKeyUp);
 
-    // Handle Ctrl+Click safely
-    const handleKeyDown = (event) => {
-      if (event.ctrlKey && controls.current && controls.current.mouseButtons) {
-        controls.current.mouseButtons.left = 4; // Truck with Ctrl+MouseLeft
-      }
-    };
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown);
+        window.removeEventListener("keyup", handleKeyUp);
+      };
+    }, []);
 
-    const handleKeyUp = (event) => {
-      if (
-        event.key === "Control" &&
-        controls.current &&
-        controls.current.mouseButtons
-      ) {
-        controls.current.mouseButtons.left = 1; // Back to ROTATE when Ctrl is released
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-    };
-  }, []);
-
-  // Create notification element outside the 3D canvas
-  useEffect(() => {
-    if (clipboardMessage) {
-      // Create and append notification element
-      const notification = document.createElement("div");
-      notification.style.position = "absolute";
-      notification.style.top = "10px";
-      notification.style.right = "10px";
-      notification.style.padding = "8px 12px";
-      notification.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
-      notification.style.color = "white";
-      notification.style.borderRadius = "4px";
-      notification.style.zIndex = "1000";
-      notification.style.fontFamily = "sans-serif";
-      notification.style.fontSize = "14px";
-      notification.style.transition = "opacity 0.3s ease";
-      notification.style.opacity = "0";
-      notification.textContent = clipboardMessage;
-
-      document.body.appendChild(notification);
-
-      // Fade in
-      setTimeout(() => {
-        notification.style.opacity = "1";
-      }, 10);
-
-      // Remove after timeout
-      setTimeout(() => {
+    // Create notification element outside the 3D canvas
+    useEffect(() => {
+      if (clipboardMessage) {
+        // Create and append notification element
+        const notification = document.createElement("div");
+        notification.style.position = "absolute";
+        notification.style.top = "10px";
+        notification.style.right = "10px";
+        notification.style.padding = "8px 12px";
+        notification.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+        notification.style.color = "white";
+        notification.style.borderRadius = "4px";
+        notification.style.zIndex = "1000";
+        notification.style.fontFamily = "sans-serif";
+        notification.style.fontSize = "14px";
+        notification.style.transition = "opacity 0.3s ease";
         notification.style.opacity = "0";
+        notification.textContent = clipboardMessage;
+
+        document.body.appendChild(notification);
+
+        // Fade in
         setTimeout(() => {
+          notification.style.opacity = "1";
+        }, 10);
+
+        // Remove after timeout
+        setTimeout(() => {
+          notification.style.opacity = "0";
+          setTimeout(() => {
+            if (document.body.contains(notification)) {
+              document.body.removeChild(notification);
+            }
+          }, 300);
+        }, 3000);
+
+        // Cleanup on unmount
+        return () => {
           if (document.body.contains(notification)) {
             document.body.removeChild(notification);
           }
-        }, 300);
-      }, 3000);
+        };
+      }
+    }, [clipboardMessage]);
 
-      // Cleanup on unmount
-      return () => {
-        if (document.body.contains(notification)) {
-          document.body.removeChild(notification);
-        }
-      };
-    }
-  }, [clipboardMessage]);
+    const materialControls = useControls(
+      "Materials",
+      {
+        // Castle controls
+        castleMaterialType: {
+          options: ["standard", "physical", "basic", "lambert", "phong"],
+          value: "standard",
+          label: "Castle Material Type",
+        },
+        castleMetalness: {
+          value: 1,
+          min: 0,
+          max: 2,
+          step: 0.01,
+          label: "Castle Metalness",
+        },
+        castleRoughness: {
+          value: 1.6,
+          min: 0,
+          max: 2,
+          step: 0.01,
+          label: "Castle Roughness",
+        },
+        castleEmissiveColor: {
+          value: "#f6d8fc",
+          label: "Castle Emissive Color",
+        },
+        castleEmissiveIntensity: {
+          value: 2,
+          min: 0,
+          max: 5,
+          step: 0.1,
+          label: "Castle Emissive",
+        },
 
-  const materialControls = useControls(
-    "Materials",
-    {
-      // Castle controls
-      castleMaterialType: {
-        options: ["standard", "physical", "basic", "lambert", "phong"],
-        value: "standard",
-        label: "Castle Material Type",
+        // Floor controls
+        floorMaterialType: {
+          options: ["standard", "physical", "basic", "lambert", "phong"],
+          value: "physical",
+          label: "Floor Material Type",
+        },
+        floorMetalness: {
+          value: 1,
+          min: 0,
+          max: 2,
+          step: 0.01,
+          label: "Floor Metalness",
+        },
+        floorRoughness: {
+          value: 0.2,
+          min: 0,
+          max: 2,
+          step: 0.01,
+          label: "Floor Roughness",
+        },
+        floorEmissiveColor: {
+          value: "#22bcff",
+          label: "Floor Emissive Color",
+        },
+        floorEmissiveIntensity: {
+          value: 2.2,
+          min: 0,
+          max: 5,
+          step: 0.1,
+          label: "Floor Emissive",
+        },
       },
-      castleMetalness: {
-        value: 1,
-        min: 0,
-        max: 2,
-        step: 0.01,
-        label: "Castle Metalness",
-      },
-      castleRoughness: {
-        value: 1.6,
-        min: 0,
-        max: 2,
-        step: 0.01,
-        label: "Castle Roughness",
-      },
-      castleEmissiveColor: {
-        value: "#f6d8fc",
-        label: "Castle Emissive Color",
-      },
-      castleEmissiveIntensity: {
-        value: 2,
-        min: 0,
-        max: 5,
-        step: 0.1,
-        label: "Castle Emissive",
-      },
+      { collapsed: false }
+    );
 
-      // Floor controls
-      floorMaterialType: {
-        options: ["standard", "physical", "basic", "lambert", "phong"],
-        value: "physical",
-        label: "Floor Material Type",
-      },
-      floorMetalness: {
-        value: 1,
-        min: 0,
-        max: 2,
-        step: 0.01,
-        label: "Floor Metalness",
-      },
-      floorRoughness: {
-        value: 0.2,
-        min: 0,
-        max: 2,
-        step: 0.01,
-        label: "Floor Roughness",
-      },
-      floorEmissiveColor: {
-        value: "#22bcff",
-        label: "Floor Emissive Color",
-      },
-      floorEmissiveIntensity: {
-        value: 2.2,
-        min: 0,
-        max: 5,
-        step: 0.1,
-        label: "Floor Emissive",
-      },
-    },
-    { collapsed: false }
-  );
-
-  return (
-    <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
-      <CameraControls
-        ref={controls}
-        makeDefault
-        smoothTime={0.6}
-        dollySpeed={0.1}
-        wheelDampingFactor={0.15}
-        truckSpeed={1.0}
-        verticalDragToForward={false}
-        dollyToCursor={false}
-      />
-
-      <Suspense>
-        <CastleModel
-          controls={controls}
-          onCastleClick={playTransition}
-          atmIframeActive={atmiframeActive}
-          mirrorIframeActive={mirrorIframeActive}
-          scrollIframeActive={scrollIframeActive}
-          hasInteracted={true}
-          onReturnToMain={handleReturnToMain}
-          castleMaterialType={materialControls.castleMaterialType}
-          castleMetalness={materialControls.castleMetalness}
-          castleRoughness={materialControls.castleRoughness}
-          castleEmissiveIntensity={materialControls.castleEmissiveIntensity}
-          floorMaterialType={materialControls.floorMaterialType}
-          floorMetalness={materialControls.floorMetalness}
-          floorRoughness={materialControls.floorRoughness}
-          floorEmissiveIntensity={materialControls.floorEmissiveIntensity}
-          setAtmiframeActive={setAtmiframeActive}
-          setMirrorIframeActive={setMirrorIframeActive}
-          setScrollIframeActive={setScrollIframeActive}
+    return (
+      <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
+        <CameraControls
+          ref={controls}
+          makeDefault
+          smoothTime={0.6}
+          dollySpeed={0.1}
+          wheelDampingFactor={0.15}
+          truckSpeed={1.0}
+          verticalDragToForward={false}
+          dollyToCursor={false}
         />
-      </Suspense>
-    </group>
-  );
-};
+
+        <Suspense>
+          <CastleModel
+            controls={controls}
+            onCastleClick={playTransition}
+            atmIframeActive={atmiframeActive}
+            mirrorIframeActive={mirrorIframeActive}
+            scrollIframeActive={scrollIframeActive}
+            hasInteracted={true}
+            onReturnToMain={handleReturnToMain}
+            castleMaterialType={materialControls.castleMaterialType}
+            castleMetalness={materialControls.castleMetalness}
+            castleRoughness={materialControls.castleRoughness}
+            castleEmissiveIntensity={materialControls.castleEmissiveIntensity}
+            floorMaterialType={materialControls.floorMaterialType}
+            floorMetalness={materialControls.floorMetalness}
+            floorRoughness={materialControls.floorRoughness}
+            floorEmissiveIntensity={materialControls.floorEmissiveIntensity}
+            setAtmiframeActive={setAtmiframeActive}
+            setMirrorIframeActive={setMirrorIframeActive}
+            setScrollIframeActive={setScrollIframeActive}
+          />
+        </Suspense>
+      </group>
+    );
+  };
 
 export default Castle;

@@ -70,6 +70,8 @@ const ENVIRONMENT_OPTIONS = {
   "Vino Sky V2": "/images/VinoSkyV2.hdr",
   "Vino Sky V3": "/images/clouds-vino.hdr",
   "Vino Sky V4": "/images/VinoSkyV4.hdr",
+  "Vino Sky V5": "/images/CloudsBG1.hdr",
+
 }
 
 // Environment presets
@@ -615,6 +617,19 @@ const Experience = () => {
   }, []);
 
 
+  useEffect(() => {
+    const forceAudioPlay = () => {
+      if (window.audioManager) {
+        window.audioManager.startAmbient();
+        console.log("Forced ambient sound start");
+      }
+      document.removeEventListener('click', forceAudioPlay);
+    };
+
+    document.addEventListener('click', forceAudioPlay);
+    return () => document.removeEventListener('click', forceAudioPlay);
+  }, []);
+
   // ADD THIS: Make the section change handler globally available
   useEffect(() => {
     // Make the section change handler available globally
@@ -636,19 +651,19 @@ const Experience = () => {
   }, []);
 
 
-  // const handleStart = () => {
-  //   setIsStarted(true);
-  // };
+  const handleStart = () => {
+    setIsStarted(true);
+  };
 
-  // if (!isStarted) {
-    // return (
-    //   <div className="relative w-full h-screen">
-    //     <Canvas>
-    //       {/* <Modeload onStart={handleStart} /> */}
-    //     </Canvas>
-    //   </div>
-    // );
-  // }
+  if (!isStarted) {
+    return (
+      <div className="relative w-full h-screen">
+        <Canvas>
+          <Modeload onStart={handleStart} />
+        </Canvas>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-screen">

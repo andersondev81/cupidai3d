@@ -4,7 +4,7 @@ import { Html } from "@react-three/drei"
 const Modeload = ({ onStart }) => {
   const [progress, setProgress] = useState(0)
   const [loadingComplete, setLoadingComplete] = useState(false)
-
+  
   useEffect(() => {
     const timer = setInterval(() => {
       setProgress(prev => {

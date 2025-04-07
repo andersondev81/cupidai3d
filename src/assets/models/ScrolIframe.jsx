@@ -42,6 +42,20 @@ export default function ScrollIframe({
     setShowButtons(false);
     setShowContent(false);
 
+    console.log("Botão de retorno clicado");
+
+
+    if (window.audioManager && window.audioManager.sounds.mirror) {
+      window.audioManager.stop('mirror');
+      console.log("Som do mirror parado (retorno ao main)");
+    }
+
+    // Verificar se precisamos parar todos os sons
+    if (window.audioManager && window.audioManager.stopAllAudio) {
+      window.audioManager.stopAllAudio();
+      console.log("Todos os sons parados");
+    }
+
     // Get the navigation source from the system
     const source = window.navigationSystem &&
                   window.navigationSystem.getNavigationSource ?

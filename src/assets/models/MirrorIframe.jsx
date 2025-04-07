@@ -6,10 +6,14 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
   const [showContent, setShowContent] = useState(false);
   const [showButtons, setShowButtons] = useState(false);
 
-  // Monitor changes in isActive state
   useEffect(() => {
     if (isActive) {
-      // When component becomes active, show content with a small delay
+      console.log("MirrorIframe: Ativando conteúdo e sons");
+      if (window.audioManager && window.audioManager.sounds.mirror) {
+        window.audioManager.play('mirror');
+        console.log("Som do mirror iniciado");
+      }
+
       const timer = setTimeout(() => {
         setShowContent(true);
         // Show buttons after a delay to ensure content has loaded
@@ -18,16 +22,43 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
         }, 500);
       }, 300);
 
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(timer);
+        // Parar o som do mirror quando o componente é desmontado
+        if (window.audioManager && window.audioManager.sounds.mirror) {
+          window.audioManager.stop('mirror');
+          console.log("Som do mirror parado (desmontagem)");
+        }
+      };
     } else {
-      // When component becomes inactive, hide content
+      // When component becomes inactive, hide content and stop sound
       setShowContent(false);
       setShowButtons(false);
+
+      // Parar o som quando o componente fica inativo
+      if (window.audioManager && window.audioManager.sounds.mirror) {
+        window.audioManager.stop('mirror');
+        console.log("Som do mirror parado (inativação)");
+      }
     }
   }, [isActive]);
 
   // Function to handle Back to Main button click
   const handleBackToMain = () => {
+    console.log("Botão de retorno clicado");
+
+    // Primeiro, pare o som do mirror
+    if (window.audioManager && window.audioManager.sounds.mirror) {
+      window.audioManager.stop('mirror');
+      console.log("Som do mirror parado (retorno ao main)");
+    }
+
+    // Verificar se precisamos parar todos os sons
+    if (window.audioManager && window.audioManager.stopAllAudio) {
+      window.audioManager.stopAllAudio();
+      console.log("Todos os sons parados");
+    }
+
     // Hide content for a smooth transition
     setShowContent(false);
     setShowButtons(false);
@@ -39,10 +70,16 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
 
     console.log(`MirrorIframe: Returning with source: ${source}`);
 
+    // Disparar evento personalizado
+    if (typeof document !== 'undefined') {
+      document.dispatchEvent(new CustomEvent('returnToCastle'));
+    }
+
     // Wait a bit to ensure the fade-out animation is visible
     setTimeout(() => {
       // Call the callback function provided by parent component
       if (onReturnToMain) {
+        console.log(`Chamando onReturnToMain com source: ${source}`);
         onReturnToMain(source);
       }
     }, 300);
