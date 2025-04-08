@@ -16,7 +16,6 @@ import {
   EquirectangularReflectionMapping,
 } from "three"
 import * as THREE from "three"
-import { metalness, roughness } from "three/examples/jsm/nodes/Nodes.js"
 
 const usePoleMaterial = () => {
   // Carregar texturas do Pole
@@ -54,7 +53,7 @@ const usePoleMaterial = () => {
         roughness: 0,
         metalness: 1.3,
         envMap: envMap,
-        envMapIntensity: 1.9,
+        envMapIntensity: 1,
       }),
     [textures, envMap]
   )

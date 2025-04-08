@@ -4,7 +4,6 @@ import Experience from "./pages/Experience"
 function App() {
   return (
     <>
-      {/* <ExperienceTheater /> */}
       <Experience />
     </>
   )

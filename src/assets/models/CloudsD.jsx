@@ -35,7 +35,13 @@ function CloudsD() {
 
     // Controles de movimento (NOVOS)
     positionX: { value: 0, min: -20, max: 20, step: 0.5, label: "Left/Right" },
-    positionZ: { value: 0, min: -20, max: 20, step: 0.5, label: "Forward/Back" },
+    positionZ: {
+      value: 0,
+      min: -20,
+      max: 20,
+      step: 0.5,
+      label: "Forward/Back",
+    },
 
     // Aparência das nuvens
     cloudCount: { value: 30, min: 10, max: 100, step: 1 },

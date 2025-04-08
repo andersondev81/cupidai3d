@@ -11,7 +11,6 @@ import {
   NearestFilter,
   EquirectangularReflectionMapping,
 } from "three"
-import { normalMap } from "three/examples/jsm/nodes/Nodes.js"
 
 const useStairsMaterial = () => {
   // Carregar texturas do Stairs

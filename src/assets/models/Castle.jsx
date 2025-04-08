@@ -456,10 +456,8 @@ const useVideoTexture = videoPath => {
 // Castle materials
 const useCastleMaterial = (
   materialType = "standard",
-  metalness = 1,
-  roughness = 1.6,
-  emissiveIntensity = 0,
-  emissiveColor = "#000"
+  metalness = 1.3,
+  roughness = 1.6
 ) => {
   const textures = useTexture({
     map: "/texture/castle_Base_ColorAO.webp",
@@ -491,15 +489,12 @@ const useCastleMaterial = (
       alphaTest: 0.05,
     }
 
-    // Propriedades específicas para materiais que suportam PBR
+    // Propriedades específicas para materiais que suportam PBR (sem emissive)
     const pbrProps = {
       ...commonProps,
       roughnessMap: textures.roughnessMap,
       roughness: roughness,
       metalness: metalness,
-      emissiveMap: textures.emissiveMap,
-      emissive: new Color(emissiveColor),
-      emissiveIntensity: emissiveIntensity,
       blending: NormalBlending,
       envMap: clouds,
       envMapIntensity: 1.0,
@@ -518,15 +513,7 @@ const useCastleMaterial = (
       default:
         return new MeshStandardMaterial(pbrProps)
     }
-  }, [
-    textures,
-    materialType,
-    metalness,
-    roughness,
-    emissiveIntensity,
-    emissiveColor,
-    clouds, // Adicionado clouds como dependência
-  ])
+  }, [textures, materialType, metalness, roughness, clouds])
 }
 
 const useCastleHeartMaterial = (
@@ -605,8 +592,8 @@ const useCastleLightsMaterial = () => {
 
 const usecastleGodsWallsMaterial = (
   materialType = "standard",
-  metalness = 0,
-  roughness = 0.3
+  metalness = 1.3,
+  roughness = 1.6
 ) => {
   const textures = useTexture({
     map: "/texture/castleGodsWall_Base_color.webp",
@@ -648,7 +635,6 @@ const usecastleGodsWallsMaterial = (
       envMapIntensity: 1.0,
     }
 
-    // Criar o material baseado no tipo selecionado
     switch (materialType) {
       case "physical":
         return new MeshPhysicalMaterial(pbrProps)
@@ -666,8 +652,8 @@ const usecastleGodsWallsMaterial = (
 
 const useCastleWallsMaterial = (
   materialType = "standard",
-  metalness = 0,
-  roughness = 0.3
+  metalness = 1.3,
+  roughness = 1.6
 ) => {
   const textures = useTexture({
     map: "/texture/castleWalls_Base_color.webp",
@@ -727,14 +713,13 @@ const useCastleWallsMaterial = (
 
 const useCastlePilarsMaterial = (
   materialType = "standard",
-  metalness = 0,
-  roughness = 1
+  metalness = 1.3,
+  roughness = 1.6
 ) => {
   const textures = useTexture({
     map: "/texture/castlePilars_Base_color.webp",
     roughnessMap: "/texture/castlePilars_Roughness.webp",
     metalnessMap: "/texture/castlePilars_Metallic.webp",
-    emissiveMap: "/texture/castlePilars_Emissive.webp",
   })
 
   const clouds = useTexture("/images/bg1.jpg")
@@ -765,10 +750,6 @@ const useCastlePilarsMaterial = (
     const pbrProps = {
       ...commonProps,
       roughnessMap: textures.roughnessMap,
-      metalnessMap: textures.metalnessMap,
-      emissiveMap: textures.emissiveMap,
-      emissive: new Color(0xffffff), // Cor base para a emissão
-      emissiveIntensity: 2.0, // Intensidade da emissão
       roughness: roughness,
       metalness: metalness,
       blending: NormalBlending,
@@ -779,9 +760,9 @@ const useCastlePilarsMaterial = (
     // Criar o material baseado no tipo selecionado
     switch (materialType) {
       case "physical":
-        return new MeshPhysicalMaterial(pbrProps)
+        return new MeshBasicMaterial(pbrProps)
       case "basic":
-        return new MeshBasicMaterial({
+        return new MeshPhysicalMaterial({
           ...commonProps,
           color: new Color(0xffffff),
         })
@@ -794,7 +775,7 @@ const useCastlePilarsMaterial = (
 // Floor Material
 const useFloorMaterial = (
   materialType = "physical", // "standard", "physical", ou "basic"
-  metalness = 0,
+  metalness = 1.35,
   roughness = 1
 ) => {
   const textures = useTexture({
@@ -835,15 +816,14 @@ const useFloorMaterial = (
       metalness: metalness,
       blending: NormalBlending,
       envMap: clouds,
-      envMapIntensity: 1.0,
     }
 
     // Criar o material baseado no tipo selecionado
     switch (materialType) {
       case "standard":
-        return new MeshStandardMaterial(pbrProps)
+        return new MeshBasicMaterial(pbrProps)
       case "basic":
-        return new MeshBasicMaterial({
+        return new MeshStandardMaterial({
           ...commonProps,
           color: new Color(0xffffff),
         })
@@ -1202,6 +1182,10 @@ const CastleModel = ({
   floorMetalness,
   floorRoughness,
   floorEmissiveIntensity,
+  floorHeartMetalness,
+  floorHeartRoughness,
+  floorHeartEmissiveIntensity,
+  floorHeartEmissiveColor,
 }) => {
   const { nodes } = useGLTF("/models/Castle.glb")
   const material = useCastleMaterial(
@@ -1222,7 +1206,12 @@ const CastleModel = ({
     floorRoughness,
     floorEmissiveIntensity
   )
-  const floorHeart = useFloorHeartMaterial()
+  const floorHeart = useFloorHeartMaterial(
+    floorHeartMetalness,
+    floorHeartRoughness,
+    floorHeartEmissiveIntensity,
+    floorHeartEmissiveColor
+  )
   const logoMaterial = useLogoMaterial()
   const decorMaterial = useDecorMaterial()
   const godsMaterial = useGodsMaterial()
@@ -1788,29 +1777,18 @@ const Castle = ({ activeSection }) => {
         label: "Castle Material Type",
       },
       castleMetalness: {
-        value: 1,
+        value: 1.32,
         min: 0,
         max: 2,
         step: 0.01,
         label: "Castle Metalness",
       },
       castleRoughness: {
-        value: 1.6,
+        value: 1.45,
         min: 0,
         max: 2,
         step: 0.01,
         label: "Castle Roughness",
-      },
-      castleEmissiveColor: {
-        value: "#f6d8fc",
-        label: "Castle Emissive Color",
-      },
-      castleEmissiveIntensity: {
-        value: 2,
-        min: 0,
-        max: 5,
-        step: 0.1,
-        label: "Castle Emissive",
       },
 
       // Floor controls
@@ -1820,29 +1798,43 @@ const Castle = ({ activeSection }) => {
         label: "Floor Material Type",
       },
       floorMetalness: {
-        value: 1,
+        value: 1.32,
         min: 0,
         max: 2,
         step: 0.01,
         label: "Floor Metalness",
       },
       floorRoughness: {
-        value: 0.2,
+        value: 1.45,
         min: 0,
         max: 2,
         step: 0.01,
         label: "Floor Roughness",
       },
-      floorEmissiveColor: {
-        value: "#22bcff",
-        label: "Floor Emissive Color",
+      floorHeartMetalness: {
+        value: 1,
+        min: 0,
+        max: 2,
+        step: 0.01,
+        label: "Floor Heart Metalness",
       },
-      floorEmissiveIntensity: {
-        value: 2.2,
+      floorHeartRoughness: {
+        value: 0.2,
+        min: 0,
+        max: 2,
+        step: 0.01,
+        label: "Floor Heart Roughness",
+      },
+      floorHeartEmissiveIntensity: {
+        value: 1.5,
         min: 0,
         max: 5,
         step: 0.1,
-        label: "Floor Emissive",
+        label: "Floor Heart Emissive",
+      },
+      floorHeartEmissiveColor: {
+        value: "#fff",
+        label: "Floor Heart Color",
       },
     },
     { collapsed: false }
@@ -1875,6 +1867,12 @@ const Castle = ({ activeSection }) => {
           floorMetalness={materialControls.floorMetalness}
           floorRoughness={materialControls.floorRoughness}
           floorEmissiveIntensity={materialControls.floorEmissiveIntensity}
+          floorHeartMetalness={materialControls.floorHeartMetalness}
+          floorHeartRoughness={materialControls.floorHeartRoughness}
+          floorHeartEmissiveIntensity={
+            materialControls.floorHeartEmissiveIntensity
+          }
+          floorHeartEmissiveColor={materialControls.floorHeartEmissiveColor}
         />
       </Suspense>
     </group>
