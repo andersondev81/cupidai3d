@@ -1,23 +1,19 @@
-import { useGLTF, useTexture } from "@react-three/drei";
-import { useLoader } from "@react-three/fiber";
-import React, { useEffect, useMemo } from "react";
-
-import * as THREE from "three";
+import { useGLTF, useTexture } from "@react-three/drei"
+import { useLoader } from "@react-three/fiber"
+import React, { useEffect, useMemo } from "react"
+import { MeshStandardMaterial } from "three"
+import * as THREE from "three"
+import { RGBELoader } from "three/addons/loaders/RGBELoader.js"
 import {
-  DoubleSide,
-  EquirectangularReflectionMapping,
+  Color,
+  MeshBasicMaterial,
   MeshPhysicalMaterial,
-  MeshStandardMaterial,
-  MeshLambertMaterial,
-  MeshPhongMaterial,
-
+  DoubleSide,
   NormalBlending,
   NearestFilter,
-
+  EquirectangularReflectionMapping,
 } from "three"
-import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
-import { metalness, roughness } from "three/examples/jsm/nodes/Nodes.js"
-import RotateAxis from "../../components/helpers/RotateAxis";
+import RotateAxis from "../../components/helpers/RotateAxis"
 
 const usePoleMaterial = () => {
   // Carregar texturas do Pole
@@ -25,31 +21,26 @@ const usePoleMaterial = () => {
     map: "/texture/PoleColorAO.webp",
     metalnessMap: "/texture/PoleMetallicA.webp",
     roughnessMap: "/texture/Pole_Roughness.webp",
-    map: "/texture/PoleColorAO.webp",
-    metalnessMap: "/texture/PoleMetallicA.webp",
-    roughnessMap: "/texture/Pole_Roughness.webp",
   })
 
   // Carregar HDR específico para o Pole
-  const envMap = useLoader(RGBELoader, "/images/PanoramaV1.hdr");
-  envMap.mapping = EquirectangularReflectionMapping;
+  const envMap = useLoader(RGBELoader, "/images/PanoramaV1.hdr")
+  envMap.mapping = EquirectangularReflectionMapping
 
   useMemo(() => {
-    Object.values(textures).forEach((texture) => {
+    Object.values(textures).forEach(texture => {
       if (texture) {
-        texture.flipY = false;
-        texture.minFilter = NearestFilter;
-        texture.magFilter = NearestFilter;
+        texture.flipY = false
+        texture.minFilter = NearestFilter
+        texture.magFilter = NearestFilter
       }
-    });
-  }, [textures]);
+    })
+  }, [textures])
 
   const material = useMemo(
     () =>
-      new MeshStandardMaterial({
+      new MeshBasicMaterial({
         map: textures.map,
-        metalnessMap: textures.metalnessMap,
-        roughnessMap: textures.roughnessMap,
         metalnessMap: textures.metalnessMap,
         roughnessMap: textures.roughnessMap,
         emissiveMap: textures.emissiveMap,
@@ -59,10 +50,7 @@ const usePoleMaterial = () => {
         blending: NormalBlending,
         roughness: 0,
         metalness: 1.3,
-        roughness: 0,
-        metalness: 1.3,
         envMap: envMap,
-        envMapIntensity: 1.9,
         envMapIntensity: 1.9,
       }),
     [textures, envMap]
@@ -70,12 +58,12 @@ const usePoleMaterial = () => {
   // Força atualização quando o HDR for carregado
   useEffect(() => {
     if (envMap) {
-      material.needsUpdate = true;
+      material.needsUpdate = true
     }
-  }, [envMap, material]);
+  }, [envMap, material])
 
-  return material;
-};
+  return material
+}
 
 // Added new material function for hearts
 const useHeartsMaterial = () => {
@@ -83,19 +71,18 @@ const useHeartsMaterial = () => {
   const textures = useTexture({
     map: "/texture/heartColor.webp",
     emissiveMap: "/texture/Heart_EmissiveW.webp",
-    emissiveMap: "/texture/Heart_EmissiveW.webp",
   })
 
   // Process all textures
   useMemo(() => {
-    Object.values(textures).forEach((texture) => {
+    Object.values(textures).forEach(texture => {
       if (texture) {
-        texture.flipY = false;
-        texture.minFilter = NearestFilter;
-        texture.magFilter = NearestFilter;
+        texture.flipY = false
+        texture.minFilter = NearestFilter
+        texture.magFilter = NearestFilter
       }
-    });
-  }, [textures]);
+    })
+  }, [textures])
 
   // Create and return material
   return useMemo(
@@ -105,79 +92,83 @@ const useHeartsMaterial = () => {
         emissiveMap: textures.emissiveMap,
         emissive: new THREE.Color(0x00bdff),
         emissiveIntensity: 2.5,
-        emissiveIntensity: 2.5,
         side: DoubleSide,
         metalness: 1,
         roughness: 0.4,
       }),
     [textures]
-  );
-};
+  )
+}
 
 export function Pole({ onSectionChange, ...props }) {
-  const { nodes } = useGLTF("/models/Pole.glb");
-  const material = usePoleMaterial();
-  const materialHearts = useHeartsMaterial();
+  const { nodes } = useGLTF("/models/Pole.glb")
+  const material = usePoleMaterial()
+  const materialHearts = useHeartsMaterial()
 
   // Simplified click handler using the navigation system
- // Update the handleElementClick function in Pole.jsx
+  // Update the handleElementClick function in Pole.jsx
 
-// Find this code block in the createClickHandler function:
-const createClickHandler = (sectionIndex, sectionName) => (e) => {
-  e.stopPropagation();
-  console.log(`Pole: Clicked on section ${sectionName}`);
+  // Find this code block in the createClickHandler function:
+  const createClickHandler = (sectionIndex, sectionName) => e => {
+    e.stopPropagation()
+    console.log(`Pole: Clicked on section ${sectionName}`)
 
-  // Tag this navigation as coming from the pole
-  if (window.navigationSystem) {
-    // Get the corresponding element ID for this section
-    const elementId = sectionName === "aidatingcoach" ? "mirror" :
-                     sectionName === "token" ? "atm" :
-                     sectionName === "roadmap" ? "scroll" : null;
+    // Tag this navigation as coming from the pole
+    if (window.navigationSystem) {
+      // Get the corresponding element ID for this section
+      const elementId =
+        sectionName === "aidatingcoach"
+          ? "mirror"
+          : sectionName === "token"
+          ? "atm"
+          : sectionName === "roadmap"
+          ? "scroll"
+          : null
 
-    if (elementId) {
-      // NEW: Set navigation source to 'pole'
-      if (window.navigationSystem.setNavigationSource) {
-        window.navigationSystem.setNavigationSource(elementId, 'pole');
-        console.log(`Pole: Set navigation source for ${elementId} to 'pole'`);
-      }
+      if (elementId) {
+        // NEW: Set navigation source to 'pole'
+        if (window.navigationSystem.setNavigationSource) {
+          window.navigationSystem.setNavigationSource(elementId, "pole")
+          console.log(`Pole: Set navigation source for ${elementId} to 'pole'`)
+        }
 
-      // Clear any stored position to ensure we don't return to a specific camera position
-      if (window.navigationSystem.clearPositionForElement) {
-        window.navigationSystem.clearPositionForElement(elementId);
+        // Clear any stored position to ensure we don't return to a specific camera position
+        if (window.navigationSystem.clearPositionForElement) {
+          window.navigationSystem.clearPositionForElement(elementId)
+        }
       }
     }
-  }
 
-  if (onSectionChange && typeof onSectionChange === "function") {
-    console.log(`Pole: Using onSectionChange callback for ${sectionName}`);
-    onSectionChange(sectionIndex, sectionName);
-  }
+    if (onSectionChange && typeof onSectionChange === "function") {
+      console.log(`Pole: Using onSectionChange callback for ${sectionName}`)
+      onSectionChange(sectionIndex, sectionName)
+    }
 
-  if (window.globalNavigation && window.globalNavigation.navigateTo) {
-    console.log(`Pole: Using global navigation for ${sectionName}`);
-    window.globalNavigation.navigateTo(sectionName);
-  }
+    if (window.globalNavigation && window.globalNavigation.navigateTo) {
+      console.log(`Pole: Using global navigation for ${sectionName}`)
+      window.globalNavigation.navigateTo(sectionName)
+    }
 
-  console.log(
-    `Pole: Navigation to ${sectionName} attempted. Check if camera moved.`
-  );
-};
+    console.log(
+      `Pole: Navigation to ${sectionName} attempted. Check if camera moved.`
+    )
+  }
 
   const pointerHandlers = {
-    onPointerEnter: (e) => {
-      e.stopPropagation();
-      document.body.style.cursor = "pointer";
+    onPointerEnter: e => {
+      e.stopPropagation()
+      document.body.style.cursor = "pointer"
     },
-    onPointerLeave: (e) => {
-      e.stopPropagation();
-      document.body.style.cursor = "default";
+    onPointerLeave: e => {
+      e.stopPropagation()
+      document.body.style.cursor = "default"
     },
-  };
+  }
 
   // Verificar se os nós existem antes de tentar acessar suas geometrias
   if (!nodes || !nodes.pole) {
-    console.warn("Pole nodes not loaded properly");
-    return null;
+    console.warn("Pole nodes not loaded properly")
+    return null
   }
 
   return (
@@ -212,8 +203,7 @@ const createClickHandler = (sectionIndex, sectionName) => (e) => {
           />
         )}
 
-
-{nodes.about && (
+        {nodes.about && (
           <mesh
             geometry={nodes.about.geometry}
             material={materialHearts}
@@ -236,7 +226,7 @@ const createClickHandler = (sectionIndex, sectionName) => (e) => {
         </group>
       </group>
     </group>
-  );
+  )
 }
 
-useGLTF.preload("/models/Pole.glb");
+useGLTF.preload("/models/Pole.glb")

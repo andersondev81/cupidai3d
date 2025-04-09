@@ -1,28 +1,27 @@
 import React, { useMemo, useEffect } from "react"
 import { useGLTF, useTexture } from "@react-three/drei"
 import { useLoader } from "@react-three/fiber"
-
-import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader"
 import {
   Color,
   MeshPhysicalMaterial,
+  MeshStandardMaterial,
   DoubleSide,
   NormalBlending,
   NearestFilter,
   EquirectangularReflectionMapping,
 } from "three"
-import { normalMap } from "three/examples/jsm/nodes/Nodes.js"
+
+// Remove the normalMap import from three/nodes - not needed for basic material
+import { RGBELoader } from "three/addons/loaders/RGBELoader.js"
 
 const useStairsMaterial = () => {
-  // Carregar texturas do Stairs
   const textures = useTexture({
     map: "/texture/stairs_Color.webp",
-    normalMap: "/texture/stairs_Normal.webp",
+    normalMap: "/texture/stairs_Normal.webp", // This is your texture, not the node
     alphaMap: "/texture/stairs_Alpha.webp",
     roughnessMap: "/texture/stairs_Roughness.webp",
   })
 
-  // Carregar HDR específico para o Stairs
   const envMap = useLoader(RGBELoader, "/images/PanoramaV1.hdr")
   envMap.mapping = EquirectangularReflectionMapping
 

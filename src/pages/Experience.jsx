@@ -1,4 +1,4 @@
-import { Environment } from "@react-three/drei"
+import { Environment, useMask, useGLTF } from "@react-three/drei"
 import { Canvas, useThree } from "@react-three/fiber"
 import { useControls } from "leva"
 import { Perf } from "r3f-perf"
@@ -12,19 +12,33 @@ import { Stairs } from "../assets/models/Stairs"
 import { CAMERA_CONFIG } from "../components/cameraConfig"
 import { EffectsTree } from "../components/helpers/EffectsTree"
 import { CloudGroup } from "../assets/models/CloudsGroup"
-import CloudParticle from "../assets/models/CloudParticle"
 
 // Iframes
 import AtmIframe from "../assets/models/AtmIframe"
 import MirrorIframe from "../assets/models/MirrorIframe"
 
 import Orb from "../assets/models/Orb"
-// import OldOrb from "../assets/models/OldOrb"
-
-import CloudsD from "../assets/models/CloudsD"
-import CloudsPole from "../assets/models/CloudsPole"
 import EnvMapLoader from "../components/helpers/EnvMapLoader"
 import Modeload from "../components/helpers/Modeload"
+
+// clouds mask
+const CloudMask = () => {
+  const stencil = useMask(1, true)
+  const { scene } = useGLTF("/models/castleClouds.glb")
+
+  scene.traverse(obj => {
+    if (obj.isMesh) {
+      obj.material = new THREE.MeshBasicMaterial({
+        ...stencil,
+        colorWrite: false,
+      })
+    }
+  })
+
+  return (
+    <primitive object={scene} position={[0, 0, 0]} scale={1} visible={false} />
+  )
+}
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -71,7 +85,6 @@ const ENVIRONMENT_OPTIONS = {
   "Vino Sky V3": "/images/clouds-vino.hdr",
   "Vino Sky V4": "/images/VinoSkyV4.hdr",
   "Vino Sky V5": "/images/CloudsBG1.hdr",
-
 }
 
 // Environment presets
@@ -94,7 +107,7 @@ const CANVAS_CONFIG = {
   gl: {
     antialias: false,
     powerPreference: "high-performance",
-    stencil: false,
+    stencil: true,
     depth: true,
     alpha: false,
   },
@@ -142,13 +155,13 @@ const useCameraAnimation = (section, cameraRef) => {
 
     let animationFrameId
 
-    const animate = (currentTime) => {
-        // BLOCK ALL ANIMATIONS if global flag is set
-        if (window.blockAllCameraMovement) {
-          return;
-        }
+    const animate = currentTime => {
+      // BLOCK ALL ANIMATIONS if global flag is set
+      if (window.blockAllCameraMovement) {
+        return
+      }
 
-      if (!animationRef.current.isActive) return;
+      if (!animationRef.current.isActive) return
 
       // Calcule delta de tempo para ter uma velocidade consistente
       const deltaTime = Math.min(
@@ -243,14 +256,14 @@ const useCameraAnimation = (section, cameraRef) => {
 
 // Scene Controller component with environment controls
 const SceneController = React.memo(({ section, cameraRef }) => {
-  const { camera } = useThree();
-  useCameraAnimation(section, cameraRef);
-  const { scene } = useThree();
+  const { camera } = useThree()
+  useCameraAnimation(section, cameraRef)
+  const { scene } = useThree()
   useEffect(() => {
     // Store camera globally
-    window.threeCamera = camera;
-    console.log("Camera captured globally", camera);
-  }, [camera]);
+    window.threeCamera = camera
+    console.log("Camera captured globally", camera)
+  }, [camera])
   // Modifique o bloco useControls por completo (aproximadamente linhas 230-254)
 
   const {
@@ -425,14 +438,7 @@ const SceneController = React.memo(({ section, cameraRef }) => {
           environmentRotation={[0, Math.PI / 2, 0]} // Adicione esta linha
         />
       )}
-      {/* {lightEnabled && (
-        <directionalLight
-          intensity={lightIntensity}
-          color={lightColor}
-          position={[lightPositionX, lightPositionY, lightPositionZ]}
-          castShadow={castShadow}
-        />
-      )} */}
+
       <EnvMapLoader />
 
       {process.env.NODE_ENV !== "development" && <Perf position="top-left" />}
@@ -445,100 +451,12 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
   <>
     <EffectsTree />
     <Castle
-  activeSection={activeSection}
-  scale={[2, 1.6, 2]}
-  onCustomCamera={handleCustomCameraPosition}
-/>
+      activeSection={activeSection}
+      scale={[2, 1.6, 2]}
+      onCustomCamera={handleCustomCameraPosition}
+    />
     <Flowers />
-    {/* <CloudsD /> */}
-    {/* <CloudsPole /> */}
-    {/* <CloudGroup
-      clouds={[
-        // line 1
-        {
-          position: [1.2, -0.04, 4.2],
-          color: "#e6f2ff",
-        },
-        {
-          position: [0.8, -0.1, 3.2],
-          color: "#ffe7ef",
-        },
-        // { position: [1, 0.3, 3.2] },
-        // { position: [1.7, 0.3, 3] },
-        // { position: [2.4, 0.3, 2.5] },
-        // { position: [2.7, 0.3, 1.8] },
-        // { position: [2.7, 0.3, 0.9] },
-        // { position: [2.7, 0.3, 0] },
-        // { position: [2.7, 0.3, -0.9] },
-        // { position: [2.7, 0.3, -1.8] },
-        // { position: [2.2, 0.3, -2.5] },
-        // { position: [1.4, 0.3, -3] },
-        // { position: [0.5, 0.3, -3.2] },
-        // { position: [0, 0.3, -3.2] },
-        //side
-        // { position: [-1, 0.1, 4.2] },
-        // { position: [-0.8, 0.2, 3.8] },
-        // { position: [-1, 0.3, 3.2] },
-        // { position: [-1.7, 0.3, 3] },
-        // { position: [-2.4, 0.3, 2.5] },
-        // { position: [-2.7, 0.3, 1.8] },
-        // { position: [-2.7, 0.3, 0.9] },
-        // { position: [-2.7, 0.3, 0] },
-        // { position: [-2.7, 0.3, -0.9] },
-        // { position: [-2.7, 0.3, -1.8] },
-        // { position: [-2.2, 0.3, -2.5] },
-        // { position: [-1.4, 0.3, -3] },
-        // { position: [-0.5, 0.3, -3.2] },
-        // { position: [-0, 0.3, -3.2] },
-        // line 2
-      ]}
-    /> */}
-    {/* <CloudGroup
-      commonProps={{
-        concentration: 1,
-        sizeAttenuation: true,
-      }}
-      clouds={[
-        // line 1
-        {
-          position: [1.2, -0.3, 4.2],
-          color: "#adbac8",
-        },
-        {
-          position: [1.2, -0.3, 3],
-          color: "#d5cbcd",
-        },
-        { position: [2.2, -0.3, 2.2], color: "#ffd6ff" },
-        { position: [2.4, -0.3, 1], color: "#FDE7FF" },
-        { position: [2.5, -0.3, -0.5], color: "#caf0f8" },
-        { position: [2.4, -0.3, -2], color: "#e6f2ff" },
-        { position: [2, -0.3, -3], color: "#fae0e4" },
-        { position: [0.8, -0.3, -3], color: "#e6f2ff" },
-        // line
-        {
-          position: [-1.2, -0.3, 4.2],
-          color: "#e6f2ff",
-        },
-        {
-          position: [-1.2, -0.3, 3],
-          color: "#fae0e4",
-        },
-        { position: [-2.5, -0.3, 2.2], color: "#ffd6ff" },
-        { position: [-2.4, -0.3, 1], color: "#FDE7FF" },
-        { position: [-2.5, -0.3, -0.5], color: "#caf0f8" },
-        { position: [-2.4, -0.3, -2], color: "#e6f2ff" },
-        { position: [-2, -0.3, -3], color: "#fae0e4" },
-        { position: [-0.8, -0.3, -3], color: "#e6f2ff" },
-      ]}
-    /> */}
-    {/* <CloudParticle
-      position={[2, 0, -5]}
-      count={500}
-      size={2}
-      opacity={0.7}
-      color="#e6f2ff"
-      noBloom={false}
-    /> */}
+    <Stairs />
     <Orb />
     <Pole
       position={[-0.8, 0, 5.8]}
@@ -550,8 +468,50 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
 
 const SecondaryContent = React.memo(() => (
   <>
-    {/* <CloudsD /> */}
-    <Stairs />
+    {/* <ambientLight intensity={3} /> */}
+    <CloudMask />
+    <CloudGroup
+      commonProps={{
+        concentration: 1.2,
+        sizeAttenuation: true,
+        color: "#ffffff",
+        depthWrite: false,
+        stencilRef: 1, // Adicione esta linha
+        stencilWrite: true, // E esta
+        stencilFunc: THREE.EqualStencilFunc, // E esta
+      }}
+      clouds={[
+        //Front clouds
+        {
+          position: [-0.3, -0.3, 4.1],
+          scale: [0.4, 0.4, 0.4],
+        },
+        // // line 1 right
+        // { position: [1, -0.6, 2.85] },
+        // { position: [1.4, -0.5, 2] },
+        // { position: [2.4, -0.4, 1] },
+        // { position: [2.5, -0.3, -0.5] },
+        // { position: [2.4, -0.3, -2] },
+
+        // // line 2 right
+        // { position: [3.6, -0.3, 1] },
+        // { position: [4.2, -0.3, -0.5] },
+        // { position: [3.6, -0.3, -2] },
+        // // line 1 left
+        // { position: [-1, -0.6, 2.85] },
+        // { position: [-1.4, -0.5, 2] },
+        // { position: [-2.4, -0.4, 1] },
+        // { position: [-2.5, -0.3, -0.5] },
+        // { position: [-2.4, -0.3, -2] },
+
+        // // line 2 left
+        // { position: [-3.6, -0.3, 1] },
+        // { position: [-4.2, -0.3, -0.5] },
+        // { position: [-3.6, -0.3, -2] },
+        // //Back clouds
+        // { position: [0, -0.4, -2.2] },
+      ]}
+    />
   </>
 ))
 
@@ -584,24 +544,23 @@ const SceneContent = React.memo(({ activeSection, onSectionChange }) => {
       {loadingStage >= 1 && <SecondaryContent />}
       {loadingStage >= 2 && <TertiaryContent />}
     </>
-  );
-});
+  )
+})
 
 const handleCustomCameraPosition = (position, target) => {
   if (cameraRef.current && cameraRef.current.camera) {
-    cameraRef.current.camera.position.set(position[0], position[1], position[2]);
-    cameraRef.current.camera.lookAt(target[0], target[1], target[2]);
-    cameraRef.current.camera.updateProjectionMatrix();
+    cameraRef.current.camera.position.set(position[0], position[1], position[2])
+    cameraRef.current.camera.lookAt(target[0], target[1], target[2])
+    cameraRef.current.camera.updateProjectionMatrix()
   }
-};
-
+}
 
 // Main Experience Component
 const Experience = () => {
-  const [isStarted, setIsStarted] = useState(false);
-  const [currentSection, setCurrentSection] = useState(0);
-  const [activeSection, setActiveSection] = useState("intro");
-  const cameraRef = useRef(null);
+  const [isStarted, setIsStarted] = useState(false)
+  const [currentSection, setCurrentSection] = useState(0)
+  const [activeSection, setActiveSection] = useState("intro")
+  const cameraRef = useRef(null)
 
   const handleSectionChange = (index, sectionName) => {
     setCurrentSection(index)
@@ -609,67 +568,65 @@ const Experience = () => {
   }
 
   useEffect(() => {
-    window.customCameraNavigation = handleCustomCameraPosition;
+    window.customCameraNavigation = handleCustomCameraPosition
 
     return () => {
-      delete window.customCameraNavigation;
-    };
-  }, []);
-
+      delete window.customCameraNavigation
+    }
+  }, [])
 
   useEffect(() => {
     const forceAudioPlay = () => {
       if (window.audioManager) {
-        window.audioManager.startAmbient();
-        console.log("Forced ambient sound start");
+        window.audioManager.startAmbient()
+        console.log("Forced ambient sound start")
       }
-      document.removeEventListener('click', forceAudioPlay);
-    };
+      document.removeEventListener("click", forceAudioPlay)
+    }
 
-    document.addEventListener('click', forceAudioPlay);
-    return () => document.removeEventListener('click', forceAudioPlay);
-  }, []);
+    document.addEventListener("click", forceAudioPlay)
+    return () => document.removeEventListener("click", forceAudioPlay)
+  }, [])
 
   // ADD THIS: Make the section change handler globally available
   useEffect(() => {
     // Make the section change handler available globally
-    window.onSectionChange = handleSectionChange;
+    window.onSectionChange = handleSectionChange
 
     // Listen for the sectionChange event as a backup method
-    const handleSectionChangeEvent = (event) => {
-      if (event.detail && typeof event.detail.sectionIndex === 'number') {
-        handleSectionChange(event.detail.sectionIndex, event.detail.sectionName);
+    const handleSectionChangeEvent = event => {
+      if (event.detail && typeof event.detail.sectionIndex === "number") {
+        handleSectionChange(event.detail.sectionIndex, event.detail.sectionName)
       }
-    };
+    }
 
-    window.addEventListener('sectionChange', handleSectionChangeEvent);
+    window.addEventListener("sectionChange", handleSectionChangeEvent)
 
     return () => {
-      window.removeEventListener('sectionChange', handleSectionChangeEvent);
-      window.onSectionChange = null;
-    };
-  }, []);
-
+      window.removeEventListener("sectionChange", handleSectionChangeEvent)
+      window.onSectionChange = null
+    }
+  }, [])
 
   const handleStart = () => {
-    setIsStarted(true);
-  };
+    setIsStarted(true)
+  }
 
   if (!isStarted) {
     return (
       <div className="relative w-full h-screen">
-        <Canvas>
+        <Canvas dpr={1}>
           <Modeload onStart={handleStart} />
         </Canvas>
       </div>
-    );
+    )
   }
 
   return (
     <div className="relative w-full h-screen">
       <ErrorBoundary>
         <div className="absolute inset-0 z-0">
-          <Canvas {...CANVAS_CONFIG} className="w-full h-full">
+          <Canvas {...CANVAS_CONFIG} className="w-full h-full" dpr={1}>
             <Suspense fallback={null}>
               <SceneController section={currentSection} cameraRef={cameraRef} />
               <SceneContent
@@ -700,4 +657,4 @@ const Experience = () => {
   )
 }
 
-export default Experience;
+export default Experience
