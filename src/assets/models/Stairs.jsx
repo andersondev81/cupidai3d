@@ -1,6 +1,7 @@
 import React, { useMemo, useEffect } from "react"
 import { useGLTF, useTexture } from "@react-three/drei"
 import { useLoader } from "@react-three/fiber"
+import { TextureLoader } from "three"
 import {
   Color,
   MeshPhysicalMaterial,
@@ -22,7 +23,8 @@ const useStairsMaterial = () => {
     roughnessMap: "/texture/stairs_Roughness.webp",
   })
 
-  const envMap = useLoader(RGBELoader, "/images/PanoramaV1.hdr")
+  // load Environment
+  const envMap = useLoader(TextureLoader, "/images/bg1.jpg")
   envMap.mapping = EquirectangularReflectionMapping
 
   useMemo(() => {
@@ -48,6 +50,7 @@ const useStairsMaterial = () => {
         blending: NormalBlending,
         roughness: 1,
         metalness: 0.6,
+        envMap: envMap,
       }),
     [textures, envMap]
   )
