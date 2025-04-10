@@ -1,105 +1,89 @@
-import { useGLTF, useTexture } from "@react-three/drei"
+import { useGLTF, useTexture } from "@react-three/drei" // Adicionei useGLTF de volta aqui
 import { useLoader } from "@react-three/fiber"
-import React, { useEffect, useMemo } from "react"
-import { MeshStandardMaterial } from "three"
+import { useMemo } from "react"
 import * as THREE from "three"
-import { RGBELoader } from "three/addons/loaders/RGBELoader.js"
 import {
-  Color,
-  MeshBasicMaterial,
+  TextureLoader,
   MeshPhysicalMaterial,
+  MeshStandardMaterial,
   DoubleSide,
-  NormalBlending,
   NearestFilter,
   EquirectangularReflectionMapping,
 } from "three"
 import RotateAxis from "../../components/helpers/RotateAxis"
 
+// Configurações de textura
+const TEXTURE_SETTINGS = {
+  flipY: false,
+  minFilter: NearestFilter,
+  magFilter: NearestFilter,
+}
+
+// Caminhos dos environment maps separados
+const POLE_ENV_MAP_PATH = "/images/venice_sunset_2k.png"
+const HEARTS_ENV_MAP_PATH = "/images/bg1.jpg"
+
 const usePoleMaterial = () => {
-  // Carregar texturas do Pole
   const textures = useTexture({
     map: "/texture/PoleColorAO.webp",
     metalnessMap: "/texture/PoleMetallicA.webp",
     roughnessMap: "/texture/Pole_Roughness.webp",
   })
 
-  // Carregar HDR específico para o Pole
-  const envMap = useLoader(RGBELoader, "/images/PanoramaV1.hdr")
+  const envMap = useLoader(TextureLoader, POLE_ENV_MAP_PATH)
   envMap.mapping = EquirectangularReflectionMapping
 
   useMemo(() => {
     Object.values(textures).forEach(texture => {
-      if (texture) {
-        texture.flipY = false
-        texture.minFilter = NearestFilter
-        texture.magFilter = NearestFilter
-      }
+      if (texture) Object.assign(texture, TEXTURE_SETTINGS)
     })
   }, [textures])
 
-  const material = useMemo(
+  return useMemo(
     () =>
-      new MeshBasicMaterial({
-        map: textures.map,
-        metalnessMap: textures.metalnessMap,
-        roughnessMap: textures.roughnessMap,
-        emissiveMap: textures.emissiveMap,
-        transparent: false,
-        alphaTest: 0.5,
+      new MeshStandardMaterial({
+        ...textures,
+        envMap,
         side: DoubleSide,
-        blending: NormalBlending,
         roughness: 0,
-        metalness: 1.3,
-        envMap: envMap,
-        envMapIntensity: 1.9,
+        metalness: 1.2,
       }),
     [textures, envMap]
   )
-  // Força atualização quando o HDR for carregado
-  useEffect(() => {
-    if (envMap) {
-      material.needsUpdate = true
-    }
-  }, [envMap, material])
-
-  return material
 }
 
-// Added new material function for hearts
 const useHeartsMaterial = () => {
-  // Load heart textures
   const textures = useTexture({
     map: "/texture/heartColor.webp",
     emissiveMap: "/texture/Heart_EmissiveW.webp",
   })
 
-  // Process all textures
+  const envMap = useLoader(TextureLoader, HEARTS_ENV_MAP_PATH)
+  envMap.mapping = EquirectangularReflectionMapping
+
   useMemo(() => {
     Object.values(textures).forEach(texture => {
-      if (texture) {
-        texture.flipY = false
-        texture.minFilter = NearestFilter
-        texture.magFilter = NearestFilter
-      }
+      if (texture) Object.assign(texture, TEXTURE_SETTINGS)
     })
   }, [textures])
 
-  // Create and return material
   return useMemo(
     () =>
       new MeshPhysicalMaterial({
-        map: textures.map,
-        emissiveMap: textures.emissiveMap,
-        emissive: new THREE.Color(0x00bdff),
-        emissiveIntensity: 2.5,
+        ...textures,
+        envMap,
         side: DoubleSide,
-        metalness: 1,
+        emissive: new THREE.Color(0x00bdff),
+        emissiveIntensity: 2.3,
+        metalness: 0.6,
         roughness: 0.4,
+        clearcoat: 0.5,
+        clearcoatRoughness: 0.2,
+        envMapIntensity: 1.5,
       }),
-    [textures]
+    [textures, envMap]
   )
 }
-
 export function Pole({ onSectionChange, ...props }) {
   const { nodes } = useGLTF("/models/Pole.glb")
   const material = usePoleMaterial()
