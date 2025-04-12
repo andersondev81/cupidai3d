@@ -188,7 +188,7 @@ const SceneController = React.memo(({ section, cameraRef }) => {
 const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
   <>
     <Environment
-      files="src/assets/images/bg1.jpg"
+      files="/images/bg1.hdr"
       background
       ground={{ height: 5, radius: 20, scale: 14 }}
     />
