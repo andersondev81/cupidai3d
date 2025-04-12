@@ -1,6 +1,12 @@
-import { Environment, useMask, useGLTF } from "@react-three/drei"
+import {
+  useMask,
+  useGLTF,
+  Environment,
+  Points,
+  PointMaterial,
+  Sparkles,
+} from "@react-three/drei"
 import { Canvas, useThree } from "@react-three/fiber"
-import { useControls } from "leva"
 import { Perf } from "r3f-perf"
 import React, { Suspense, useEffect, useRef, useState } from "react"
 import * as THREE from "three"
@@ -12,97 +18,14 @@ import { Stairs } from "../assets/models/Stairs"
 import { CAMERA_CONFIG } from "../components/cameraConfig"
 import { EffectsTree } from "../components/helpers/EffectsTree"
 import { CloudGroup } from "../assets/models/CloudsGroup"
-
-// Iframes
 import AtmIframe from "../assets/models/AtmIframe"
 import MirrorIframe from "../assets/models/MirrorIframe"
-
 import Orb from "../assets/models/Orb"
 import EnvMapLoader from "../components/helpers/EnvMapLoader"
 import Modeload from "../components/helpers/Modeload"
+import StarParticles from "../components/StarParticles"
 
-// clouds mask
-const CloudMask = () => {
-  const stencil = useMask(1, true)
-  const { scene } = useGLTF("/models/castleClouds.glb")
-
-  scene.traverse(obj => {
-    if (obj.isMesh) {
-      obj.material = new THREE.MeshBasicMaterial({
-        ...stencil,
-        colorWrite: false,
-      })
-    }
-  })
-
-  return (
-    <primitive object={scene} position={[0, 0, 0]} scale={1} visible={false} />
-  )
-}
-
-// Error Boundary Component
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = { hasError: false, error: null }
-  }
-
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error }
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.error("3D Scene Error:", error, errorInfo)
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="w-full h-full flex items-center justify-center bg-gray-900 text-white">
-          <div className="text-center p-8">
-            <h2 className="text-xl mb-4">Unable to load 3D scene</h2>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600"
-            >
-              Reload Page
-            </button>
-          </div>
-        </div>
-      )
-    }
-    return this.props.children
-  }
-}
-
-// HDR Environment options
-const ENVIRONMENT_OPTIONS = {
-  "Sky Linekotsi": "/images/sky_linekotsi_16_HDRI.hdr",
-  "Sky 20": "/images/sky20.hdr",
-  "Vino Sky": "/images/VinoSky.hdr",
-  "Vino Sky V1": "/images/VinoSkyV1.hdr",
-  "Vino Sky V2": "/images/VinoSkyV2.hdr",
-  "Vino Sky V3": "/images/clouds-vino.hdr",
-  "Vino Sky V4": "/images/VinoSkyV4.hdr",
-  "Vino Sky V5": "/images/CloudsBG1.hdr",
-}
-
-// Environment presets
-const ENVIRONMENT_PRESETS = {
-  None: null,
-  Apartment: "apartment",
-  City: "city",
-  Dawn: "dawn",
-  Forest: "forest",
-  Lobby: "lobby",
-  Night: "night",
-  Park: "park",
-  Studio: "studio",
-  Sunset: "sunset",
-  Warehouse: "warehouse",
-}
-
-// Optimized Canvas configuration
+// Constants
 const CANVAS_CONFIG = {
   gl: {
     antialias: false,
@@ -118,12 +41,65 @@ const CANVAS_CONFIG = {
     far: 1000,
     position: [15.9, 6.8, -11.4],
   },
-  shadows: false, // Disable shadows in the renderer
+  shadows: false,
+}
+
+// Components
+const CloudMask = React.memo(() => {
+  const stencil = useMask(1, true)
+  const { scene } = useGLTF("/models/castleClouds.glb")
+
+  useEffect(() => {
+    scene.traverse(obj => {
+      if (obj.isMesh) {
+        obj.material = new THREE.MeshBasicMaterial({
+          ...stencil,
+          colorWrite: false,
+        })
+      }
+    })
+  }, [scene, stencil])
+
+  return (
+    <primitive object={scene} position={[0, 0, 0]} scale={1} visible={false} />
+  )
+})
+
+class ErrorBoundary extends React.Component {
+  state = { hasError: false, error: null }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("3D Scene Error:", error, errorInfo)
+  }
+
+  handleReload = () => window.location.reload()
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="w-full h-full flex items-center justify-center bg-gray-900 text-white">
+          <div className="text-center p-8">
+            <h2 className="text-xl mb-4">Unable to load 3D scene</h2>
+            <button
+              onClick={this.handleReload}
+              className="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600"
+            >
+              Reload Page
+            </button>
+          </div>
+        </div>
+      )
+    }
+    return this.props.children
+  }
 }
 
 const useCameraAnimation = (section, cameraRef) => {
   const { camera } = useThree()
-  const [isStarted, setIsStarted] = useState(false)
   const animationRef = useRef({
     progress: 0,
     isActive: false,
@@ -139,78 +115,67 @@ const useCameraAnimation = (section, cameraRef) => {
     const sectionKey = section in CAMERA_CONFIG.sections ? section : "intro"
     const config = CAMERA_CONFIG.sections[sectionKey]
 
-    // Use uma curva de easing mais suave para transições
     const easing = t => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t)
 
-    // Armazene a posição e rotação inicial da câmera
-    animationRef.current = {
-      ...animationRef.current,
-      isActive: true,
-      startPosition: camera.position.clone(),
-      startRotation: camera.rotation.clone(),
-      startFov: camera.fov,
-      lastTime: performance.now(),
-      config,
+    const updateAnimationState = () => {
+      animationRef.current = {
+        ...animationRef.current,
+        isActive: true,
+        startPosition: camera.position.clone(),
+        startRotation: camera.rotation.clone(),
+        startFov: camera.fov,
+        lastTime: performance.now(),
+        config,
+      }
     }
+
+    updateAnimationState()
 
     let animationFrameId
 
     const animate = currentTime => {
-      // BLOCK ALL ANIMATIONS if global flag is set
-      if (window.blockAllCameraMovement) {
-        return
-      }
-
+      if (window.blockAllCameraMovement) return
       if (!animationRef.current.isActive) return
 
-      // Calcule delta de tempo para ter uma velocidade consistente
       const deltaTime = Math.min(
         (currentTime - animationRef.current.lastTime) / 1000,
         0.1
-      ) // Limita o delta para evitar saltos grandes
-
+      )
       animationRef.current.lastTime = currentTime
 
-      // Velocidade de transição ajustável - quanto menor, mais suave
-      const transitionSpeed = 1.5 // Ajuste este valor para mais lento (menor) ou mais rápido (maior)
-
+      const transitionSpeed = 1.5
       animationRef.current.progress += deltaTime * transitionSpeed
       const t = Math.min(animationRef.current.progress, 1)
       const { config, startPosition, startFov } = animationRef.current
 
-      // Usa a função de easing para suavizar a transição
       const curveValue = easing(t)
 
-      // Calcule a posição de destino com interpolação suave
       const targetPosition = new THREE.Vector3().lerpVectors(
         startPosition,
         config.position,
         curveValue
       )
 
-      // Reduz o FOV máximo e usa um valor alvo mais baixo para evitar FOV alto
-      // Limita o FOV entre 35 e 60 para uma visualização mais confortável
-      const configFov = config.fov || 50 // Usa 50 como padrão se config.fov não estiver definido
       const targetFov = THREE.MathUtils.clamp(
-        THREE.MathUtils.lerp(startFov, Math.min(configFov, 55), curveValue),
-        35, // valor mínimo de FOV
-        60 // valor máximo de FOV (reduzido para evitar FOV alto)
+        THREE.MathUtils.lerp(
+          startFov,
+          Math.min(config.fov || 50, 55),
+          curveValue
+        ),
+        35,
+        60
       )
 
-      // Aplique as mudanças
       camera.position.copy(targetPosition)
       camera.fov = targetFov
       camera.updateProjectionMatrix()
 
-      // Continuar animação se não estiver completa
       if (t < 1) {
         animationFrameId = requestAnimationFrame(animate)
       } else {
         animationRef.current.isActive = false
         animationRef.current.progress = 0
-
-        // Define o FOV final para um valor confortável
-        camera.fov = Math.min(configFov, 55)
+        camera.fov = Math.min(config.fov || 50, 55)
         camera.updateProjectionMatrix()
       }
     }
@@ -220,233 +185,43 @@ const useCameraAnimation = (section, cameraRef) => {
     if (cameraRef) {
       cameraRef.current = {
         goToHome: () => {
-          // Inicie uma nova animação para retornar à posição inicial
-          animationRef.current = {
-            ...animationRef.current,
-            isActive: true,
-            progress: 0,
-            startPosition: camera.position.clone(),
-            startRotation: camera.rotation.clone(),
-            startFov: camera.fov,
-            lastTime: performance.now(),
-            config: {
-              position: new THREE.Vector3(15.9, 6.8, -11.4),
-              fov: 50, // FOV padrão para a posição inicial
-              transition: { fovMultiplier: 0, zOffset: 0 },
-            },
+          updateAnimationState()
+          animationRef.current.config = {
+            position: new THREE.Vector3(15.9, 6.8, -11.4),
+            fov: 50,
+            transition: { fovMultiplier: 0, zOffset: 0 },
           }
-
-          // Inicie a animação
           requestAnimationFrame(animate)
         },
       }
     }
 
     return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId)
-      }
-
+      cancelAnimationFrame(animationFrameId)
       animationRef.current.isActive = false
     }
   }, [section, camera, cameraRef])
-
-  return isStarted
 }
 
-// Scene Controller component with environment controls
 const SceneController = React.memo(({ section, cameraRef }) => {
   const { camera } = useThree()
   useCameraAnimation(section, cameraRef)
-  const { scene } = useThree()
+
   useEffect(() => {
-    // Store camera globally
     window.threeCamera = camera
-    console.log("Camera captured globally", camera)
-  }, [camera])
-  // Modifique o bloco useControls por completo (aproximadamente linhas 230-254)
-
-  const {
-    environment,
-    showBackground,
-    preset,
-    presetIntensity,
-    backgroundBlur,
-    environmentIntensity,
-    groundEnabled,
-    groundHeight,
-    groundRadius,
-    groundScale,
-  } = useControls(
-    "Environment",
-    {
-      environment: {
-        value: "Vino Sky V4",
-        options: Object.keys(ENVIRONMENT_OPTIONS),
-        label: "HDR File",
-      },
-      showBackground: {
-        value: true,
-        label: "Show Background",
-      },
-      preset: {
-        value: "Sunset",
-        options: Object.keys(ENVIRONMENT_PRESETS),
-        label: "Lighting Preset",
-      },
-      // Adicione estes controles que estão faltando
-      presetIntensity: {
-        value: 4.0, // Seu valor desejado aqui
-        min: 0.0,
-        max: 10.0, // Aumentei o máximo para ter mais margem de ajuste
-        step: 0.1,
-        label: "Preset Intensity",
-      },
-      backgroundBlur: {
-        value: 0.0,
-        min: 0.0,
-        max: 1.0,
-        step: 0.01,
-        label: "Background Blur",
-      },
-      environmentIntensity: {
-        value: 1.0,
-        min: 0.0,
-        max: 5.0,
-        step: 0.1,
-        label: "HDR Intensity",
-      },
-      groundEnabled: {
-        value: false,
-        label: "Enable Ground",
-      },
-      groundHeight: {
-        value: 20,
-        min: 1,
-        max: 50,
-        step: 1,
-        label: "Ground Height",
-      },
-      groundRadius: {
-        value: 40,
-        min: 10,
-        max: 100,
-        step: 5,
-        label: "Ground Radius",
-      },
-      groundScale: {
-        value: 8,
-        min: 1,
-        max: 30,
-        step: 1,
-        label: "Ground Scale",
-      },
-    },
-    { collapsed: false }
-  )
-
-  // const {
-  //   lightEnabled,
-  //   lightIntensity,
-  //   lightColor,
-  //   lightPositionX,
-  //   lightPositionY,
-  //   lightPositionZ,
-  //   castShadow,
-  // } = useControls(
-  //   "Directional Light",
-  //   {
-  //     lightEnabled: {
-  //       value: false,
-  //       label: "Enable Light",
-  //     },
-  //     lightIntensity: {
-  //       value: 1.5,
-  //       min: 0,
-  //       max: 5,
-  //       step: 0.1,
-  //       label: "Intensity",
-  //     },
-  //     lightColor: {
-  //       value: "#ffffff",
-  //       label: "Color",
-  //     },
-  //     lightPositionX: {
-  //       value: -10,
-  //       min: -50,
-  //       max: 50,
-  //       step: 0.5,
-  //       label: "X",
-  //     },
-  //     lightPositionY: {
-  //       value: 20,
-  //       min: -50,
-  //       max: 50,
-  //       step: 0.5,
-  //       label: "Y",
-  //     },
-  //     lightPositionZ: {
-  //       value: 10,
-  //       min: -50,
-  //       max: 50,
-  //       step: 0.5,
-  //       label: "Z",
-  //     },
-  //     castShadow: {
-  //       value: false,
-  //       label: "Cast Shadow",
-  //     },
-  //   },
-  //   { collapsed: false }
-  // );
-
-  const environmentFile = ENVIRONMENT_OPTIONS[environment]
-  const presetValue = ENVIRONMENT_PRESETS[preset]
-
-  useEffect(() => {
-    if (!showBackground) {
-      scene.background = null
+    return () => {
+      delete window.threeCamera
     }
-  }, [showBackground, scene])
+  }, [camera])
 
   return (
     <>
-      <Environment
-        files={environmentFile}
-        resolution={256}
-        background={showBackground}
-        backgroundBlurriness={backgroundBlur}
-        environmentIntensity={environmentIntensity}
-        environmentRotation={[0, Math.PI / 2, 0]} // Adicione esta linha
-        preset={null}
-        ground={
-          groundEnabled
-            ? {
-                height: groundHeight,
-                radius: groundRadius,
-                scale: groundScale,
-              }
-            : undefined
-        }
-      />
-
-      {/* Only render second Environment component when preset is not "None" */}
-      {presetValue && (
-        <Environment
-          preset={presetValue}
-          environmentIntensity={presetIntensity}
-          environmentRotation={[0, Math.PI / 2, 0]} // Adicione esta linha
-        />
-      )}
-
       <EnvMapLoader />
-
       {process.env.NODE_ENV !== "development" && <Perf position="top-left" />}
     </>
   )
 })
 
-// Split the scene content into smaller components for better performance
 const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
   <>
     <EffectsTree />
@@ -468,37 +243,46 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
 
 const SecondaryContent = React.memo(() => (
   <>
-    {/* <ambientLight intensity={3} /> */}
     <CloudMask />
     <CloudGroup
-      commonProps={{
-        concentration: 1.2,
-        sizeAttenuation: true,
-        color: "#ffffff",
-        depthWrite: false,
-        stencilRef: 1, // Adicione esta linha
-        stencilWrite: true, // E esta
-        stencilFunc: THREE.EqualStencilFunc, // E esta
-      }}
+      commonProps={
+        {
+          // concentration: 1.2,
+          // sizeAttenuation: false,
+          // color: "#ffffff",
+          // depthWrite: false,
+          // stencilRef: 1, // Adicione esta linha
+          // stencilWrite: true, // E esta
+          // stencilFunc: THREE.EqualStencilFunc, // E esta
+        }
+      }
       clouds={[
         //Front clouds
         {
-          position: [-0.3, -0.3, 4.1],
-          scale: [0.4, 0.4, 0.4],
+          position: [0, 0, 4.3],
+          bounds: [9, 1, 1],
+          // scale: [0.4, 0.4, 0.4]
         },
-        // // line 1 right
-        // { position: [1, -0.6, 2.85] },
-        // { position: [1.4, -0.5, 2] },
-        // { position: [2.4, -0.4, 1] },
-        // { position: [2.5, -0.3, -0.5] },
-        // { position: [2.4, -0.3, -2] },
+        // right side
+        { position: [0.3, 0, 3.85], rotation: [0, 1.8, 0] },
+        { position: [1.15, 0.1, 2.8], rotation: [0, Math.PI / 6, 0] },
+        { position: [2.25, 0.05, 2], rotation: [0, Math.PI / 3, 0] },
+        { position: [2.65, 0.1, 0.5], rotation: [0, Math.PI / 2, 0] },
+        { position: [2.9, 0.1, -1.6], rotation: [0, Math.PI / 2, 0] },
 
-        // // line 2 right
-        // { position: [3.6, -0.3, 1] },
-        // { position: [4.2, -0.3, -0.5] },
-        // { position: [3.6, -0.3, -2] },
-        // // line 1 left
-        // { position: [-1, -0.6, 2.85] },
+        // rear side
+        { position: [1.85, 0.1, -2.5], rotation: [0, -Math.PI / 4, 0] },
+        { position: [1, 0.2, -3.5], rotation: [Math.PI, 0, 0] },
+        { position: [-0.7, 0.15, -3.5], rotation: [Math.PI, 0, 0] },
+        { position: [-1.85, 0.1, -2.45], rotation: [0, 0.6, 0] },
+        //left side
+        { position: [-2.65, 0.1, -1], rotation: [0, 1.65, Math.PI] },
+        { position: [-2.85, 0.1, 0.4], rotation: [Math.PI, 1.6, Math.PI] },
+        { position: [-2.1, 0.1, 2.4], rotation: [0, -1, 0] },
+        { position: [-1.5, 0.1, 2.6], rotation: [0, -0.3, 0] },
+        { position: [-0.3, 0, 3.95], rotation: [0, -1.7, 0] },
+        // //line 1 left
+        //{ position: [-1, -0.6, 5.85] ,bounds: [1, 1, 1]}
         // { position: [-1.4, -0.5, 2] },
         // { position: [-2.4, -0.4, 1] },
         // { position: [-2.5, -0.3, -0.5] },
@@ -509,7 +293,7 @@ const SecondaryContent = React.memo(() => (
         // { position: [-4.2, -0.3, -0.5] },
         // { position: [-3.6, -0.3, -2] },
         // //Back clouds
-        // { position: [0, -0.4, -2.2] },
+        // { position: [0, -0.3, -2.2] },
       ]}
     />
   </>
@@ -525,18 +309,44 @@ const SceneContent = React.memo(({ activeSection, onSectionChange }) => {
   const [loadingStage, setLoadingStage] = useState(0)
 
   useEffect(() => {
-    const primaryTimer = setTimeout(() => setLoadingStage(1), 100)
-    const secondaryTimer = setTimeout(() => setLoadingStage(2), 1000)
-
-    return () => {
-      clearTimeout(primaryTimer)
-      clearTimeout(secondaryTimer)
-    }
+    const timers = [
+      setTimeout(() => setLoadingStage(1), 100),
+      setTimeout(() => setLoadingStage(2), 1000),
+    ]
+    return () => timers.forEach(timer => clearTimeout(timer))
   }, [])
 
   return (
     <>
+      <Sparkles
+        count={200}
+        size={3}
+        speed={0}
+        color="#f0a0ff" // Roxo claro
+        opacity={0.7}
+        scale={[10, 8, 10]}
+        position={[0, 8, 0]}
+        noise={2}
+      />
+
       <EffectsTree />
+      <StarParticles
+        count={150}
+        size={4}
+        color="#ffd700"
+        position={[0, 15, -10]}
+        scale={[40, 40, 40]}
+      />
+      <Environment
+        files="/public/images/bg1.hdr"
+        background
+        ground={{
+          height: 5,
+          radius: 20,
+          scale: 14,
+        }}
+      />
+
       <PrimaryContent
         activeSection={activeSection}
         onSectionChange={onSectionChange}
@@ -549,13 +359,12 @@ const SceneContent = React.memo(({ activeSection, onSectionChange }) => {
 
 const handleCustomCameraPosition = (position, target) => {
   if (cameraRef.current && cameraRef.current.camera) {
-    cameraRef.current.camera.position.set(position[0], position[1], position[2])
-    cameraRef.current.camera.lookAt(target[0], target[1], target[2])
+    cameraRef.current.camera.position.set(...position)
+    cameraRef.current.camera.lookAt(...target)
     cameraRef.current.camera.updateProjectionMatrix()
   }
 }
 
-// Main Experience Component
 const Experience = () => {
   const [isStarted, setIsStarted] = useState(false)
   const [currentSection, setCurrentSection] = useState(0)
@@ -569,48 +378,33 @@ const Experience = () => {
 
   useEffect(() => {
     window.customCameraNavigation = handleCustomCameraPosition
-
-    return () => {
-      delete window.customCameraNavigation
-    }
-  }, [])
-
-  useEffect(() => {
-    const forceAudioPlay = () => {
-      if (window.audioManager) {
-        window.audioManager.startAmbient()
-        console.log("Forced ambient sound start")
-      }
-      document.removeEventListener("click", forceAudioPlay)
-    }
-
-    document.addEventListener("click", forceAudioPlay)
-    return () => document.removeEventListener("click", forceAudioPlay)
-  }, [])
-
-  // ADD THIS: Make the section change handler globally available
-  useEffect(() => {
-    // Make the section change handler available globally
     window.onSectionChange = handleSectionChange
 
-    // Listen for the sectionChange event as a backup method
     const handleSectionChangeEvent = event => {
-      if (event.detail && typeof event.detail.sectionIndex === "number") {
+      if (event.detail?.sectionIndex !== undefined) {
         handleSectionChange(event.detail.sectionIndex, event.detail.sectionName)
       }
     }
 
+    const forceAudioPlay = () => {
+      if (window.audioManager) {
+        window.audioManager.startAmbient()
+      }
+      document.removeEventListener("click", forceAudioPlay)
+    }
+
     window.addEventListener("sectionChange", handleSectionChangeEvent)
+    document.addEventListener("click", forceAudioPlay)
 
     return () => {
       window.removeEventListener("sectionChange", handleSectionChangeEvent)
-      window.onSectionChange = null
+      document.removeEventListener("click", forceAudioPlay)
+      delete window.customCameraNavigation
+      delete window.onSectionChange
     }
   }, [])
 
-  const handleStart = () => {
-    setIsStarted(true)
-  }
+  const handleStart = () => setIsStarted(true)
 
   if (!isStarted) {
     return (
