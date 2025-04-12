@@ -6,6 +6,7 @@ import * as THREE from "three"
 import { useControls, button } from "leva"
 import {
   Color,
+  Group,
   DoubleSide,
   LinearFilter,
   MeshBasicMaterial,
@@ -1646,29 +1647,26 @@ const CastleModel = ({
         position={[1.675, 1.185, 0.86]}
         rotation={[1.47, 0.194, -1.088]}
         onReturnToMain={source => {
-          // Close the iframe first for better visual feedback
-          setAtmiframeActive(false)
-
-          // Short delay to let the UI update first
+          // Adiar a atualização do estado para evitar conflito com Suspense
           setTimeout(() => {
+            // Fecha o iframe
+            setAtmiframeActive(false)
+
             if (source === "pole") {
-              // If coming from pole, go back to nav section
               console.log("ATM: Source is pole, returning to nav")
               onCastleClick("nav")
             } else {
-              // Check for stored position and use it if available
               const storedPosition = window.navigationSystem.getPosition("atm")
               if (storedPosition) {
                 const { position, target } = storedPosition
                 smoothCameraReturn(position, target)
                 console.log("Returning to stored ATM position")
               } else {
-                // Fallback to nav if no stored position
                 console.log("No stored position for ATM, going to nav")
                 onCastleClick("nav")
               }
             }
-          }, 100)
+          }, 0) // ⬅ 0ms já resolve o conflito de render
         }}
         isActive={atmIframeActive}
       />
