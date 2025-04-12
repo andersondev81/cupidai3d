@@ -1,4 +1,11 @@
-import { useMask, useGLTF } from "@react-three/drei"
+import {
+  useMask,
+  useGLTF,
+  Environment,
+  Points,
+  PointMaterial,
+  Sparkles,
+} from "@react-three/drei"
 import { Canvas, useThree } from "@react-three/fiber"
 import { Perf } from "r3f-perf"
 import React, { Suspense, useEffect, useRef, useState } from "react"
@@ -16,6 +23,7 @@ import MirrorIframe from "../assets/models/MirrorIframe"
 import Orb from "../assets/models/Orb"
 import EnvMapLoader from "../components/helpers/EnvMapLoader"
 import Modeload from "../components/helpers/Modeload"
+import StarParticles from "../components/StarParticles"
 
 // Constants
 const CANVAS_CONFIG = {
@@ -237,20 +245,55 @@ const SecondaryContent = React.memo(() => (
   <>
     <CloudMask />
     <CloudGroup
-      commonProps={{
-        concentration: 1.2,
-        sizeAttenuation: true,
-        color: "#ffffff",
-        depthWrite: false,
-        stencilRef: 1,
-        stencilWrite: true,
-        stencilFunc: THREE.EqualStencilFunc,
-      }}
-      clouds={[
+      commonProps={
         {
-          position: [-0.3, -0.3, 4.1],
-          scale: [0.4, 0.4, 0.4],
+          // concentration: 1.2,
+          // sizeAttenuation: false,
+          // color: "#ffffff",
+          // depthWrite: false,
+          // stencilRef: 1, // Adicione esta linha
+          // stencilWrite: true, // E esta
+          // stencilFunc: THREE.EqualStencilFunc, // E esta
+        }
+      }
+      clouds={[
+        //Front clouds
+        {
+          position: [0, 0, 4.3],
+          bounds: [9, 1, 1],
+          // scale: [0.4, 0.4, 0.4]
         },
+        // right side
+        { position: [0.3, 0, 3.85], rotation: [0, 1.8, 0] },
+        { position: [1.15, 0.1, 2.8], rotation: [0, Math.PI / 6, 0] },
+        { position: [2.25, 0.05, 2], rotation: [0, Math.PI / 3, 0] },
+        { position: [2.65, 0.1, 0.5], rotation: [0, Math.PI / 2, 0] },
+        { position: [2.9, 0.1, -1.6], rotation: [0, Math.PI / 2, 0] },
+
+        // rear side
+        { position: [1.85, 0.1, -2.5], rotation: [0, -Math.PI / 4, 0] },
+        { position: [1, 0.2, -3.5], rotation: [Math.PI, 0, 0] },
+        { position: [-0.7, 0.15, -3.5], rotation: [Math.PI, 0, 0] },
+        { position: [-1.85, 0.1, -2.45], rotation: [0, 0.6, 0] },
+        //left side
+        { position: [-2.65, 0.1, -1], rotation: [0, 1.65, Math.PI] },
+        { position: [-2.85, 0.1, 0.4], rotation: [Math.PI, 1.6, Math.PI] },
+        { position: [-2.1, 0.1, 2.4], rotation: [0, -1, 0] },
+        { position: [-1.5, 0.1, 2.6], rotation: [0, -0.3, 0] },
+        { position: [-0.3, 0, 3.95], rotation: [0, -1.7, 0] },
+        // //line 1 left
+        //{ position: [-1, -0.6, 5.85] ,bounds: [1, 1, 1]}
+        // { position: [-1.4, -0.5, 2] },
+        // { position: [-2.4, -0.4, 1] },
+        // { position: [-2.5, -0.3, -0.5] },
+        // { position: [-2.4, -0.3, -2] },
+
+        // // line 2 left
+        // { position: [-3.6, -0.3, 1] },
+        // { position: [-4.2, -0.3, -0.5] },
+        // { position: [-3.6, -0.3, -2] },
+        // //Back clouds
+        // { position: [0, -0.3, -2.2] },
       ]}
     />
   </>
@@ -275,7 +318,35 @@ const SceneContent = React.memo(({ activeSection, onSectionChange }) => {
 
   return (
     <>
+      <Sparkles
+        count={200}
+        size={3}
+        speed={0}
+        color="#f0a0ff" // Roxo claro
+        opacity={0.7}
+        scale={[10, 8, 10]}
+        position={[0, 8, 0]}
+        noise={2}
+      />
+
       <EffectsTree />
+      <StarParticles
+        count={150}
+        size={4}
+        color="#ffd700"
+        position={[0, 15, -10]}
+        scale={[40, 40, 40]}
+      />
+      <Environment
+        files="/public/images/bg1.hdr"
+        background
+        ground={{
+          height: 5,
+          radius: 20,
+          scale: 14,
+        }}
+      />
+
       <PrimaryContent
         activeSection={activeSection}
         onSectionChange={onSectionChange}

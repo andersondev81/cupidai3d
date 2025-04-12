@@ -6,6 +6,7 @@ import {
   TextureLoader,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
+  MeshBasicMaterial,
   DoubleSide,
   NearestFilter,
   EquirectangularReflectionMapping,
@@ -20,8 +21,8 @@ const TEXTURE_SETTINGS = {
 }
 
 // Caminhos dos environment maps separados
-const POLE_ENV_MAP_PATH = "/images/venice_sunset_2k.png"
-const HEARTS_ENV_MAP_PATH = "/images/bg1.jpg"
+const POLE_ENV_MAP_PATH = "/images/studio.jpg"
+const HEARTS_ENV_MAP_PATH = "/images/studio.jpg"
 
 const usePoleMaterial = () => {
   const textures = useTexture({
@@ -44,9 +45,10 @@ const usePoleMaterial = () => {
       new MeshStandardMaterial({
         ...textures,
         envMap,
+        envMapIntensity: 2,
         side: DoubleSide,
-        roughness: 0,
-        metalness: 1.2,
+        roughness: 0.6,
+        metalness: 1,
       }),
     [textures, envMap]
   )
@@ -55,7 +57,7 @@ const usePoleMaterial = () => {
 const useHeartsMaterial = () => {
   const textures = useTexture({
     map: "/texture/heartColor.webp",
-    emissiveMap: "/texture/Heart_EmissiveW.webp",
+    emissiveMap: "/texture/HeartPoleEmissive.webp",
   })
 
   const envMap = useLoader(TextureLoader, HEARTS_ENV_MAP_PATH)
@@ -74,12 +76,42 @@ const useHeartsMaterial = () => {
         envMap,
         side: DoubleSide,
         emissive: new THREE.Color(0x00bdff),
-        emissiveIntensity: 2.3,
+        emissiveIntensity: 6.8,
         metalness: 0.6,
         roughness: 0.4,
         clearcoat: 0.5,
         clearcoatRoughness: 0.2,
-        envMapIntensity: 1.5,
+        envMapIntensity: 1.2,
+      }),
+    [textures, envMap]
+  )
+}
+
+const useFlowersMaterial = () => {
+  const textures = useTexture({
+    map: "/texture/PoleColorAO.webp",
+    metalnessMap: "/texture/PoleMetallicA.webp",
+    roughnessMap: "/texture/Pole_Roughness.webp",
+  })
+
+  const envMap = useLoader(TextureLoader, POLE_ENV_MAP_PATH)
+  envMap.mapping = EquirectangularReflectionMapping
+
+  useMemo(() => {
+    Object.values(textures).forEach(texture => {
+      if (texture) Object.assign(texture, TEXTURE_SETTINGS)
+    })
+  }, [textures])
+
+  return useMemo(
+    () =>
+      new MeshStandardMaterial({
+        ...textures,
+        envMap,
+        envMapIntensity: 1,
+        side: DoubleSide,
+        roughness: 1,
+        metalness: 0,
       }),
     [textures, envMap]
   )
@@ -88,11 +120,7 @@ export function Pole({ onSectionChange, ...props }) {
   const { nodes } = useGLTF("/models/Pole.glb")
   const material = usePoleMaterial()
   const materialHearts = useHeartsMaterial()
-
-  // Simplified click handler using the navigation system
-  // Update the handleElementClick function in Pole.jsx
-
-  // Find this code block in the createClickHandler function:
+  const materialFlowers = useFlowersMaterial()
   const createClickHandler = (sectionIndex, sectionName) => e => {
     e.stopPropagation()
     console.log(`Pole: Clicked on section ${sectionName}`)
@@ -159,7 +187,7 @@ export function Pole({ onSectionChange, ...props }) {
     <group {...props} dispose={null}>
       <group position={[0.2, -0.35, -0.2]} rotation={[0, Math.PI + 5, 0]}>
         <mesh geometry={nodes.pole.geometry} material={material} />
-
+        <mesh geometry={nodes.flowers.geometry} material={materialFlowers} />
         {nodes.aidatingcoach && (
           <mesh
             geometry={nodes.aidatingcoach.geometry}

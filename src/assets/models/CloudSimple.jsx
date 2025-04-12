@@ -5,15 +5,15 @@ import * as THREE from "three"
 
 // Configurações padrão otimizadas
 const DEFAULT_PROPS = {
-  position: [0, 10, 0],
-  scale: [0.5, 0.5, 0.5],
-  opacity: 1,
+  position: [0, 0, 0],
+  scale: [0.2, 0.2, 0.2],
+  opacity: 3,
   speed: 0,
   width: 4,
   depth: 1.5,
-  segments: 10,
+  segments: 25,
   color: "#ffffff",
-  fade: 0,
+  fade: 20,
   concentration: 1.2,
   windDirection: 0,
   castShadow: false,
@@ -73,8 +73,8 @@ const CloudSimple = React.memo(
         color: new THREE.Color(color),
         transparent: true,
         opacity: Math.min(opacity, 0.8),
-        emissive: new THREE.Color(color),
-        emissiveIntensity: 0.7, // Ajuste conforme necessário
+        roughness: 0,
+        metalness: 0,
         side: THREE.DoubleSide,
       })
     }, [color, opacity])
@@ -115,6 +115,7 @@ const CloudSimple = React.memo(
             castShadow={i === 0 && castShadow}
             material={cloudMaterial} // Usa o mesmo material para todas as camadas
             position={layerPosition}
+            bounds={[9, 1, 1]} //{/* Added bounds prop for horizontal stretch */}
           />
         )
       })

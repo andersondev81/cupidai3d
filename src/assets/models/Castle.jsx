@@ -714,7 +714,7 @@ const useCastlePilarsMaterial = (metalness = 0, roughness = 1) => {
       metalnessMap: textures.metalnessMap,
       emissiveMap: textures.emissiveMap,
       emissive: new Color(0xffffff),
-      emissiveIntensity: 2.0,
+      emissiveIntensity: 1.3,
       roughness: roughness,
       metalness: metalness,
       blending: NormalBlending,
@@ -851,7 +851,7 @@ const useFloorHeartMaterial = () => {
       side: DoubleSide,
       roughness: 0.2,
       metalness: 1,
-      emissive: new Color("0x578fd7"),
+      emissive: new Color("#578fd7"),
       emissiveIntensity: 2.5,
       transparent: false,
       blending: NormalBlending,
@@ -1147,48 +1147,32 @@ const useAtmMaterial = () => {
 
 //Scroll Material
 const useScrollMaterial = () => {
-  try {
-    const textures = useTexture({
-      map: "./texture/ScrollColor.webp",
-    })
+  const [hasError, setHasError] = useState(false)
 
-    const clouds = useTexture("/images/bg1.jpg")
-
-    useMemo(() => {
-      Object.values(textures).forEach(texture => {
-        if (texture) {
-          texture.flipY = true
-          texture.minFilter = texture.magFilter = NearestFilter
+  const textures = useTexture(
+    hasError
+      ? {} // Load nothing if error
+      : {
+          map: "/texture/ScrollColor.png",
         }
-      })
+  )
 
-      if (clouds) {
-        clouds.mapping = THREE.EquirectangularReflectionMapping
-      }
-    }, [textures, clouds])
+  const clouds = useTexture("/images/bg1.jpg")
 
-    return useMemo(
-      () =>
-        new MeshStandardMaterial({
-          map: textures.map,
-          roughness: 0.7,
-          metalness: 0.0,
-          side: DoubleSide,
-          envMap: clouds,
-          envMapIntensity: 1.8,
-        }),
-      [textures, clouds]
-    )
-  } catch (error) {
-    console.warn("Failed to load ScrollColor texture, using fallback")
-    const clouds = useTexture("/images/bg1.jpg")
+  useEffect(() => {
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [clouds])
 
-    useEffect(() => {
-      if (clouds) {
-        clouds.mapping = THREE.EquirectangularReflectionMapping
-      }
-    }, [clouds])
+  useEffect(() => {
+    if (!textures.map || textures.map.image === undefined) {
+      console.warn("Scroll texture not found. Using fallback material.")
+      setHasError(true)
+    }
+  }, [textures.map])
 
+  if (hasError) {
     return useMemo(
       () =>
         new MeshStandardMaterial({
@@ -1196,12 +1180,25 @@ const useScrollMaterial = () => {
           roughness: 0.7,
           metalness: 0.0,
           side: DoubleSide,
-          envMap: clouds, // Mesmo envMap no fallback
+          envMap: clouds,
           envMapIntensity: 0.3,
         }),
       [clouds]
     )
   }
+
+  return useMemo(
+    () =>
+      new MeshStandardMaterial({
+        map: textures.map,
+        roughness: 0.7,
+        metalness: 0.0,
+        side: DoubleSide,
+        envMap: clouds,
+        envMapIntensity: 1.8,
+      }),
+    [textures, clouds]
+  )
 }
 
 //Portal Material
@@ -1736,8 +1733,7 @@ const CastleModel = ({
     </group>
   )
 }
-// Main Component
-// Main Component
+
 // Navigation system to handle all interactive elements
 
 const Castle = ({ activeSection }) => {
@@ -1969,8 +1965,8 @@ const Castle = ({ activeSection }) => {
     if (cameraLocked) {
       controls.current.minPolarAngle = Math.PI * 0.4
       controls.current.maxPolarAngle = Math.PI * 0.5
-      controls.current.minDistance = 5
-      controls.current.maxDistance = 10
+      controls.current.minDistance = 0
+      controls.current.maxDistance = 100
       controls.current.boundaryFriction = 1
       controls.current.boundaryEnclosesCamera = true
       controls.current.dollyToCursor = false
