@@ -44,6 +44,7 @@ const useMobileDetection = () => {
 // Preload Models
 useGLTF.preload("/models/castleClouds.glb")
 useGLTF.preload("/models/Castle.glb")
+useGLTF.preload("/models/Castle.glb")
 
 // Canvas Configuration
 const CANVAS_CONFIG = isMobile => ({
