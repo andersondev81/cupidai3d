@@ -1,6 +1,7 @@
 import { Html, useGLTF } from "@react-three/drei";
 import React, { useEffect, useState } from "react";
 import RoadmapPage from "../../components/iframes/Roadmap";
+import audioManager from "./AudioManager";
 
 export default function ScrollIframe({
   onReturnToMain,
@@ -34,41 +35,60 @@ export default function ScrollIframe({
   // Check navigation source when handling return
   const handleBackToMain = (e) => {
     if (e) {
-      e.preventDefault();
-      e.stopPropagation();
+      e.preventDefault()
+      e.stopPropagation()
     }
 
     // Hide UI for visual feedback
-    setShowButtons(false);
-    setShowContent(false);
+    setShowButtons(false)
+    setShowContent(false)
 
-    console.log("Botão de retorno clicado");
-
-
-    if (window.audioManager && window.audioManager.sounds.mirror) {
-      window.audioManager.stop('mirror');
-      console.log("Som do mirror parado (retorno ao main)");
-    }
-
-    // Verificar se precisamos parar todos os sons
-    if (window.audioManager && window.audioManager.stopAllAudio) {
-      window.audioManager.stopAllAudio();
-      console.log("Todos os sons parados");
-    }
+    console.log("Botão de retorno clicado")
 
     // Get the navigation source from the system
     const source = window.navigationSystem &&
                   window.navigationSystem.getNavigationSource ?
-                  window.navigationSystem.getNavigationSource('scroll') : 'direct';
+                  window.navigationSystem.getNavigationSource('scroll') : 'direct'
 
-    console.log(`ScrollIframe: Returning with source: ${source}`);
+    console.log(`Scroll return button clicked, navigation source: ${source}`)
+
+    // FIXED CONDITION: Play transition sound for direct navigation
+    if (source === "direct") {
+      console.log("Tentando reproduzir som de transição para navegação direta...")
+
+      // Use timeout to ensure the sound plays
+      setTimeout(() => {
+        if (window.audioManager) {
+          window.audioManager.play("transition")
+          console.log("✓ Som de transição reproduzido")
+        } else {
+          console.log("✗ audioManager não disponível")
+        }
+      }, 50)
+    } else {
+      console.log("Sem som de transição para navegação via pole")
+    }
+
+    // Stop current sounds
+    if (window.audioManager && window.audioManager.sounds.scroll) {
+      window.audioManager.stop('scroll')
+      console.log("Som do scroll parado")
+    }
+
+    // Verificar se precisamos parar todos os sons
+    if (window.audioManager && window.audioManager.stopAllAudio) {
+      window.audioManager.stopAllAudio()
+      console.log("Todos os sons parados")
+    }
+
+    console.log(`ScrollIframe: Returning with source: ${source}`)
 
     // Short delay to let the UI update first
     setTimeout(() => {
       if (onReturnToMain) {
-        onReturnToMain(source);
+        onReturnToMain(source)
       }
-    }, 300);
+    }, 300)
   };
 
   return (
@@ -166,6 +186,7 @@ export default function ScrollIframe({
                 >
                   {window.navigationSystem &&
                    window.navigationSystem.getNavigationSource &&
+                  //  audioManager.play("transition") &&
                    window.navigationSystem.getNavigationSource('scroll') === 'pole'
                     ? "Return to Cupid's Church"
                     : "Return to Castle"}

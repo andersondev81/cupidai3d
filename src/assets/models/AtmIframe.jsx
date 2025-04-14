@@ -33,10 +33,34 @@ const AtmIframe = ({ onReturnToMain, isActive, ...props }) => {
     setShowButtons(false)
     console.log("Botão de retorno clicado")
 
-    // Primeiro, pare o som do mirror
-    if (window.audioManager && window.audioManager.sounds.mirror) {
-      window.audioManager.stop("mirror")
-      console.log("Som do mirror parado (retorno ao main)")
+    // Get the navigation source
+    const source = window.navigationSystem && window.navigationSystem.getNavigationSource
+      ? window.navigationSystem.getNavigationSource("atm")
+      : "direct"
+
+    console.log(`ATM return button clicked, navigation source: ${source}`)
+
+    // FIXED CONDITION: Play transition sound for direct navigation
+    if (source === "direct") {
+      console.log("Tentando reproduzir som de transição para navegação direta...")
+
+      // Use timeout to ensure the sound plays
+      setTimeout(() => {
+        if (window.audioManager) {
+          window.audioManager.play("transition")
+          console.log("✓ Som de transição reproduzido")
+        } else {
+          console.log("✗ audioManager não disponível")
+        }
+      }, 50)
+    } else {
+      console.log("Sem som de transição para navegação via pole")
+    }
+
+    // Stop current audio
+    if (window.audioManager && window.audioManager.sounds.atm) {
+      window.audioManager.stop("atm")
+      console.log("Som do ATM parado")
     }
 
     // Verificar se precisamos parar todos os sons
@@ -44,17 +68,10 @@ const AtmIframe = ({ onReturnToMain, isActive, ...props }) => {
       window.audioManager.stopAllAudio()
       console.log("Todos os sons parados")
     }
+
     // Hide content after a short delay
     setTimeout(() => {
       setShowContent(false)
-
-      // Get the navigation source
-      const source =
-        window.navigationSystem && window.navigationSystem.getNavigationSource
-          ? window.navigationSystem.getNavigationSource("atm")
-          : "direct"
-
-      console.log(`ATM iframe returning with source: ${source}`)
 
       // Additional delay to complete visual transitions
       setTimeout(() => {
@@ -65,6 +82,7 @@ const AtmIframe = ({ onReturnToMain, isActive, ...props }) => {
       }, 100)
     }, 100)
   }
+
 
   const containerStyle = {
     width: "100%",
