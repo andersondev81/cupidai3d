@@ -1,6 +1,6 @@
-import React, { useMemo } from "react"
-import { EffectComposer, Bloom } from "@react-three/postprocessing"
+import { Bloom, EffectComposer } from "@react-three/postprocessing"
 import { useControls } from "leva"
+import React, { useMemo } from "react"
 
 export const EffectsTree = () => {
   const bloomConfig = useControls("bloom", {
@@ -15,14 +15,16 @@ export const EffectsTree = () => {
 
   const effectsTree = useMemo(() => {
     return (
-      <EffectComposer disableNormalPass multisampling={1} >
-        {bloomConfig.enabled && (
-          <Bloom
-            {...bloomConfig}
-            layers={[2]} // Especifica que apenas objetos na layer 2 receberão bloom
-          />
-        )}
-      </EffectComposer>
+<EffectComposer disableNormalPass multisampling={0}>
+  {bloomConfig.enabled && (
+    <Bloom
+      {...bloomConfig}
+      mipmapBlur={false}
+      kernelSize={2}
+      intensity={5}
+    />
+  )}
+</EffectComposer>
     )
   }, [bloomConfig])
 
