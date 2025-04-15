@@ -222,9 +222,9 @@ class AudioManager {
 
     audio.loop = false;
 
-    console.log(
-      `Registrando som: ${id}, loop: ${audio.loop}, volume: ${audio.volume}`
-    );
+    // console.log(
+    //   `Registrando som: ${id}, loop: ${audio.loop}, volume: ${audio.volume}`
+    // );
 
     this.sounds[id] = {
       audio: audio,
@@ -282,7 +282,7 @@ class AudioManager {
     if (playPromise !== undefined) {
       playPromise.catch((error) => {
         sound.isPlaying = false;
-        console.error(`Erro ao reproduzir o som ${id}:`, error);
+        // console.error(`Erro ao reproduzir o som ${id}:`, error);
       });
     }
   }
@@ -689,7 +689,7 @@ class AudioManager {
     if (playPromise !== undefined) {
       playPromise.catch((error) => {
         sound.isPlaying = false;
-        console.error(`Erro ao reproduzir o som ${id}:`, error);
+        // console.error(`Erro ao reproduzir o som ${id}:`, error);
       });
     }
   }

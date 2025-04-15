@@ -1,12 +1,11 @@
 import { CameraControls, useGLTF, useTexture } from "@react-three/drei"
 import { useFrame } from "@react-three/fiber"
 import { Select } from "@react-three/postprocessing"
+import { button, useControls } from "leva"
 import React, { Suspense, useEffect, useMemo, useRef, useState } from "react"
 import * as THREE from "three"
-import { useControls, button } from "leva"
 import {
   Color,
-  Group,
   DoubleSide,
   LinearFilter,
   MeshBasicMaterial,
@@ -14,7 +13,7 @@ import {
   MeshStandardMaterial,
   NearestFilter,
   NormalBlending,
-  VideoTexture,
+  VideoTexture
 } from "three"
 import FountainParticles from "../../components/FountainParticles"
 import RotateAxis from "../../components/helpers/RotateAxis"
@@ -1477,7 +1476,7 @@ const CastleModel = ({
           window.audioManager.sounds.pole.audio.volume = poleVolume
           // Iniciar reprodução se não estiver tocando
           if (!window.audioManager.sounds.pole.isPlaying) {
-            console.log("Iniciando som do pole")
+            // console.log("Iniciando som do pole")
             window.audioManager.play("pole")
           }
         } else {

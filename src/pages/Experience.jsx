@@ -1,4 +1,6 @@
-import React, { Suspense, useState, useEffect, useCallback } from "react"
+
+import { Perf } from "r3f-perf"
+import React, { Suspense, useState, useEffect, useCallback, useRef } from "react"
 import { useGLTF, Environment, Sparkles, useMask } from "@react-three/drei"
 import { Canvas, useThree } from "@react-three/fiber"
 import * as THREE from "three"
@@ -41,17 +43,15 @@ const useMobileDetection = () => {
   return isMobile
 }
 
-// Preload Models
-useGLTF.preload("/models/castleClouds.glb")
-useGLTF.preload("/models/Castle.glb")
-useGLTF.preload("/models/Castle.glb")
-
 // Canvas Configuration
-const CANVAS_CONFIG = isMobile => ({
-  dpr: 1,
+const getCanvasConfig = isMobile => ({
+  dpr: isMobile ? 1 : 1.5,
   gl: {
     antialias: false,
     powerPreference: isMobile ? "low-power" : "high-performance",
+    alpha: false,
+    depth: true,
+    stencil: true,
   },
   performance: { min: 0.1 },
   camera: {
@@ -60,7 +60,54 @@ const CANVAS_CONFIG = isMobile => ({
     far: 1000,
     position: [15.9, 6.8, -11.4],
   },
+  shadows: !isMobile,
 })
+
+// Preloader Component
+const AssetPreloader = ({ onLoaded }) => {
+  useEffect(() => {
+    // Preload all necessary models
+    const models = [
+      "/models/castleClouds.glb",
+      "/models/Castle.glb"
+    ]
+
+    let loadedCount = 0
+
+    const preloadModels = async () => {
+      try {
+        for (const url of models) {
+          await useGLTF.preload(url)
+          loadedCount++
+
+          // Update progress
+          console.log(`Loaded model ${loadedCount} of ${models.length}`)
+        }
+
+        // Signal that loading is complete
+        console.log('All models preloaded successfully')
+        onLoaded()
+
+        // Dispatch event for App.jsx to detect
+        window.dispatchEvent(new CustomEvent('scene-ready'))
+      } catch (error) {
+        console.error('Error preloading models:', error)
+        // Still consider it loaded to avoid blocking the experience
+        onLoaded()
+        window.dispatchEvent(new CustomEvent('scene-ready'))
+      }
+    }
+
+    preloadModels()
+
+    // Cleanup
+    return () => {
+      models.forEach(url => useGLTF.clear(url))
+    }
+  }, [onLoaded])
+
+  return null
+}
 
 // Cloud Mask Component
 const CloudMask = React.memo(() => {
@@ -181,7 +228,12 @@ const SceneController = React.memo(({ section, cameraRef }) => {
     }
   }, [camera])
 
-  return <EnvMapLoader />
+  return (
+    <>
+      <EnvMapLoader />
+      {process.env.NODE_ENV !== "production" && <Perf position="top-left" />}
+    </>
+  )
 })
 
 // Scene Content Components
@@ -190,6 +242,7 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
     <Environment
       files="/images/bg1.hdr"
       background
+      resolution={256}
       ground={{ height: 5, radius: 20, scale: 14 }}
     />
     <EffectsTree />
@@ -207,8 +260,8 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
 
 const SecondaryContent = React.memo(() => (
   <>
-    <CloudMask />
-    <CloudGroup
+   <CloudMask />
+   <CloudGroup
       commonProps={{
         concentration: 1.2,
         sizeAttenuation: false,
@@ -251,34 +304,65 @@ const SecondaryContent = React.memo(() => (
 const TertiaryContent = React.memo(() => <MirrorIframe />)
 
 // Scene Content Wrapper
-const SceneContent = React.memo(({ activeSection, onSectionChange }) => (
-  <>
-    <Sparkles
-      count={200}
-      size={4}
-      speed={0}
-      color="#f0a0ff"
-      opacity={0.7}
-      scale={[30, 8, 30]}
-      position={[0, 8, 0]}
-      noise={2}
-    />
-    <PrimaryContent
-      activeSection={activeSection}
-      onSectionChange={onSectionChange}
-    />
-    <SecondaryContent />
-    <TertiaryContent />
-  </>
-))
+const SceneContent = React.memo(({ activeSection, onSectionChange, onSceneLoaded }) => {
+  // Signal that the scene content is ready
+  useEffect(() => {
+    if (onSceneLoaded) {
+      onSceneLoaded()
+    }
+  }, [onSceneLoaded])
+
+  return (
+    <>
+      {/* <Sparkles
+        count={200}
+        size={4}
+        speed={0}
+        color="#f0a0ff"
+        opacity={0.7}
+        scale={[30, 8, 30]}
+        position={[0, 8, 0]}
+        noise={2}
+      /> */}
+      <PrimaryContent
+        activeSection={activeSection}
+        onSectionChange={onSectionChange}
+      />
+      <SecondaryContent />
+      <TertiaryContent />
+    </>
+  )
+})
 
 // Main Experience Component
-const Experience = () => {
+const Experience = ({ onSceneReady }) => {
   const [currentSection, setCurrentSection] = useState(0)
   const [activeSection, setActiveSection] = useState("intro")
-  const cameraRef = React.useRef(null)
+  const [assetsLoaded, setAssetsLoaded] = useState(false)
+  const [sceneLoaded, setSceneLoaded] = useState(false)
+  const cameraRef = useRef(null)
 
   const isMobile = useMobileDetection()
+  const canvasConfig = getCanvasConfig(isMobile)
+
+  const handleAssetsLoaded = useCallback(() => {
+    setAssetsLoaded(true)
+  }, [])
+
+  const handleSceneLoaded = useCallback(() => {
+    setSceneLoaded(true)
+
+    if (assetsLoaded && onSceneReady) {
+      onSceneReady()
+    }
+  }, [assetsLoaded, onSceneReady])
+
+
+  useEffect(() => {
+    if (assetsLoaded && sceneLoaded && onSceneReady) {
+      onSceneReady()
+    }
+  }, [assetsLoaded, sceneLoaded, onSceneReady])
 
   const handleSectionChange = useCallback((index, sectionName) => {
     setCurrentSection(index)
@@ -312,36 +396,40 @@ const Experience = () => {
 
   return (
     <div className="relative w-full h-screen">
-        <div className="absolute inset-0 z-0">
-          <Canvas {...CANVAS_CONFIG(isMobile)} className="w-full h-full" dpr={1}>
-            <Suspense fallback={<Canvasload />}>
-              <SceneController section={currentSection} cameraRef={cameraRef} />
-              <SceneContent
-                activeSection={activeSection}
-                onSectionChange={handleSectionChange}
-              />
-            </Suspense>
-          </Canvas>
-        </div>
+      <div className="absolute inset-0 z-0">
+        <Canvas {...canvasConfig} className="w-full h-full">
+          {/* Asset preloader - no visual component */}
+          <AssetPreloader onLoaded={handleAssetsLoaded} />
 
-        <div className="absolute inset-0 z-10 pointer-events-none">
-          <div className="w-full h-full">
-            <CastleUi
-              section={currentSection}
+          {/* Main scene content with loading fallback */}
+          <Suspense fallback={<Canvasload insideCanvas={true} />}>
+            <SceneController section={currentSection} cameraRef={cameraRef} />
+            <SceneContent
+              activeSection={activeSection}
               onSectionChange={handleSectionChange}
-              cameraRef={cameraRef.current}
-              className="pointer-events-auto"
+              onSceneLoaded={handleSceneLoaded}
             />
-            <AtmIframe
-              section={currentSection}
-              onSectionChange={handleSectionChange}
-              cameraRef={cameraRef.current}
-            />
-          </div>
+          </Suspense>
+        </Canvas>
+      </div>
+
+      <div className="absolute inset-0 z-10 pointer-events-none">
+        <div className="w-full h-full">
+          <CastleUi
+            section={currentSection}
+            onSectionChange={handleSectionChange}
+            cameraRef={cameraRef.current}
+            className="pointer-events-auto"
+          />
+          <AtmIframe
+            section={currentSection}
+            onSectionChange={handleSectionChange}
+            cameraRef={cameraRef.current}
+          />
         </div>
+      </div>
     </div>
   )
 }
 
 export default Experience
-
