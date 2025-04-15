@@ -12,33 +12,23 @@ export function Flowers(props) {
       clouds.mapping = THREE.EquirectangularReflectionMapping
     }
 
-    if (materials.FlowersBake) {
-      materials.FlowersBake.transparent = true
-      materials.FlowersBake.alphaTest = 0.2
-      materials.FlowersBake.side = THREE.DoubleSide
-      materials.FlowersBake.envMap = clouds
-      materials.FlowersBake.envMapIntensity = 1.3
-      materials.FlowersBake.needsUpdate = true
-    }
-
-    if (materials.leaf) {
-      materials.leaf.envMap = clouds
-      materials.leaf.envMapIntensity = 1.3
-      materials.leaf.needsUpdate = true
-    }
-
-    if (materials.flower) {
-      materials.flower.envMap = clouds
-      materials.flower.envMapIntensity = 1.3
-      materials.flower.needsUpdate = true
+    if (materials.Flowers_Baked) {
+      materials.Flowers_Baked.transparent = true
+      materials.Flowers_Baked.alphaTest = 0.2
+      materials.Flowers_Baked.side = THREE.DoubleSide
+      materials.Flowers_Baked.envMap = clouds
+      materials.Flowers_Baked.envMapIntensity = 1.3
+      materials.Flowers_Baked.needsUpdate = true
     }
   }, [materials, clouds])
 
   return (
     <group {...props} dispose={null}>
-      <group position={[0, 2.839, 0]}>
-        <mesh geometry={nodes.Mesh011.geometry} material={materials.leaf} />
-        <mesh geometry={nodes.Mesh011_1.geometry} material={materials.flower} />
+      <group position={[0, 2.841, 0]}>
+        <mesh
+          geometry={nodes.Flowers.geometry}
+          material={materials.Flowers_Baked}
+        />
       </group>
     </group>
   )
