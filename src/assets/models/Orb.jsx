@@ -10,7 +10,7 @@ import {
   Vector3,
 } from "three"
 import { useFrame } from "@react-three/fiber"
-
+import audioManager from "./AudioManager"
 // Constants
 const BLOOM_LAYER = new Layers()
 BLOOM_LAYER.set(1)
@@ -125,7 +125,9 @@ const OrbMesh = React.memo(({ isZoomed, setIsZoomed, onSectionChange }) => {
   }, [])
 
   const handleNavigation = (navigationSource = "direct") => {
+    audioManager.play("transition")
     if (navigationSource === "direct" && window.controls?.current) {
+
       try {
         const position = window.controls.current.getPosition()
         const target = window.controls.current.getTarget()

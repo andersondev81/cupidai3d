@@ -13,6 +13,7 @@ import {
   Brain,
   Zap,
 } from "lucide-react"
+import AudioManager from "./AudioManager"
 
 export const DownloadOverlay = ({ isVisible, onClose }) => {
   const [mounted, setMounted] = useState(false)
@@ -22,6 +23,7 @@ export const DownloadOverlay = ({ isVisible, onClose }) => {
       const timer = setTimeout(() => setMounted(true), 300)
       return () => clearTimeout(timer)
     } else {
+      AudioManager.play("transition")
       setMounted(false)
     }
   }, [isVisible])

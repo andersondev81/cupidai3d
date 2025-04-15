@@ -220,8 +220,12 @@ export function Pole({ onSectionChange, ...props }) {
           <mesh
             geometry={nodes.download.geometry}
             material={materialHearts}
-            onClick={createClickHandler(3, "download")}
-            {...pointerHandlers}
+            onClick={e => {
+              createClickHandler(3, "download")(e)
+              if (window.audioManager && window.audioManager.play) {
+                window.audioManager.play("transition")
+              }
+            }}
           />
         )}
 
@@ -229,8 +233,12 @@ export function Pole({ onSectionChange, ...props }) {
           <mesh
             geometry={nodes.about.geometry}
             material={materialHearts}
-            onClick={createClickHandler(1, "about")}
-            {...pointerHandlers}
+            onClick={e => {
+              createClickHandler(1, "about")(e)
+              if (window.audioManager && window.audioManager.play) {
+                window.audioManager.play("transition")
+              }
+            }}
           />
         )}
 

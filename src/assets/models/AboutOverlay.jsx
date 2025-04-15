@@ -2,15 +2,18 @@
 
 import { useState, useEffect } from "react"
 import { X, Heart } from "lucide-react"
+import audioManager from "./AudioManager"
 
 export const AboutOverlay = ({ isVisible, onClose }) => {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     if (isVisible) {
+
       const timer = setTimeout(() => setMounted(true), 300)
       return () => clearTimeout(timer)
     } else {
+      audioManager.play("transition")
       setMounted(false)
     }
   }, [isVisible])
