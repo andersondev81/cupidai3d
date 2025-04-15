@@ -1103,7 +1103,7 @@ const useHoofMaterial = () => {
 //atm Material
 const useAtmMaterial = () => {
   const textures = useTexture({
-    map: "/texture/atmColor.webp",
+    map: "/texture/atmBake.jpg",
     roughnessMap: "/texture/atmRoughness.webp",
     metalnessMap: "/texture/atmMetalness.webp",
     materialEmissive: "/texture/atmEmissive.webp",
@@ -1136,11 +1136,52 @@ const useAtmMaterial = () => {
         side: DoubleSide,
         blending: NormalBlending,
         metalness: 1,
-        roughness: 0.6,
+        roughness: 0,
         emissive: new Color(0xc4627d),
-        emissiveIntensity: 3.5,
+        emissiveIntensity: 4.8,
         envMap: clouds,
         envMapIntensity: 1.0,
+      }),
+    [textures, clouds]
+  )
+}
+
+//atm Metal Material
+const useAtmMetalMaterial = () => {
+  const textures = useTexture({
+    map: "/texture/atmBake.jpg",
+    // roughnessMap: "/texture/atmRoughness.webp",
+    // metalnessMap: "/texture/atmMetalness.webp",
+  })
+
+  const clouds = useTexture("/images/bg1.jpg")
+
+  useMemo(() => {
+    Object.values(textures).forEach(texture => {
+      if (texture) {
+        texture.flipY = true
+        texture.minFilter = texture.magFilter = NearestFilter
+      }
+    })
+
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [textures, clouds])
+
+  return useMemo(
+    () =>
+      new MeshPhysicalMaterial({
+        map: textures.map,
+
+        transparent: false,
+        alphaTest: 0.05,
+        side: DoubleSide,
+        blending: NormalBlending,
+        metalness: 1,
+        roughness: 0,
+        envMap: clouds,
+        envMapIntensity: 2.0,
       }),
     [textures, clouds]
   )
@@ -1291,6 +1332,7 @@ const CastleModel = ({
   const godsMaterial = useGodsMaterial()
   const hoofMaterial = useHoofMaterial()
   const atmMaterial = useAtmMaterial()
+  const AtmMetalMaterial = useAtmMetalMaterial()
   const scrollMaterial = useScrollMaterial()
   const portal = usePortalMaterial()
   const mirror = useMirrorMaterial()
@@ -1585,6 +1627,7 @@ const CastleModel = ({
         onClick={atmHandlers.handleClick}
         {...atmHandlers.pointerHandlers}
       />
+      <mesh geometry={nodes.atmMetal.geometry} material={AtmMetalMaterial} />
       <group position={[-0.056, 1.247, -2.117]}>
         <RotateAxis axis="y" speed={0.7} rotationType="euler">
           <mesh
