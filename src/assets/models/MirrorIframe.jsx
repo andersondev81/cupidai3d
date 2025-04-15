@@ -45,45 +45,63 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
 
   // Function to handle Back to Main button click
   const handleBackToMain = () => {
-    console.log("Botão de retorno clicado");
+    console.log("Botão de retorno clicado")
+
+    // Get the navigation source first
+    const source = window.navigationSystem &&
+                  window.navigationSystem.getNavigationSource ?
+                  window.navigationSystem.getNavigationSource('mirror') : 'direct'
+
+    console.log(`Mirror return button clicked, navigation source: ${source}`)
+
+    // FIXED CONDITION: Play transition sound for direct navigation
+    if (source === "direct") {
+      console.log("Tentando reproduzir som de transição para navegação direta...")
+
+      // Use timeout to ensure the sound plays
+      setTimeout(() => {
+        if (window.audioManager) {
+          window.audioManager.play("transition")
+          console.log("✓ Som de transição reproduzido")
+        } else {
+          console.log("✗ audioManager não disponível")
+        }
+      }, 50)
+    } else {
+      console.log("Sem som de transição para navegação via pole")
+    }
 
     // Primeiro, pare o som do mirror
     if (window.audioManager && window.audioManager.sounds.mirror) {
-      window.audioManager.stop('mirror');
-      console.log("Som do mirror parado (retorno ao main)");
+      window.audioManager.stop('mirror')
+      console.log("Som do mirror parado (retorno ao main)")
     }
 
     // Verificar se precisamos parar todos os sons
     if (window.audioManager && window.audioManager.stopAllAudio) {
-      window.audioManager.stopAllAudio();
-      console.log("Todos os sons parados");
+      window.audioManager.stopAllAudio()
+      console.log("Todos os sons parados")
     }
 
     // Hide content for a smooth transition
-    setShowContent(false);
-    setShowButtons(false);
-
-    // Get the navigation source from the system
-    const source = window.navigationSystem &&
-                  window.navigationSystem.getNavigationSource ?
-                  window.navigationSystem.getNavigationSource('mirror') : 'direct';
-
-    console.log(`MirrorIframe: Returning with source: ${source}`);
+    setShowContent(false)
+    setShowButtons(false)
 
     // Disparar evento personalizado
     if (typeof document !== 'undefined') {
-      document.dispatchEvent(new CustomEvent('returnToCastle'));
+      document.dispatchEvent(new CustomEvent('returnToCastle'))
     }
 
     // Wait a bit to ensure the fade-out animation is visible
     setTimeout(() => {
       // Call the callback function provided by parent component
       if (onReturnToMain) {
-        console.log(`Chamando onReturnToMain com source: ${source}`);
-        onReturnToMain(source);
+        console.log(`Chamando onReturnToMain com source: ${source}`)
+        onReturnToMain(source)
       }
-    }, 300);
-  };
+    }, 300)
+  }
+
 
   return (
     <group
