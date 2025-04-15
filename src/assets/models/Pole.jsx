@@ -192,7 +192,12 @@ export function Pole({ onSectionChange, ...props }) {
           <mesh
             geometry={nodes.aidatingcoach.geometry}
             material={materialHearts}
-            onClick={createClickHandler(2, "aidatingcoach")}
+            onClick={e => {
+              createClickHandler(2, "aidatingcoach")(e)
+              if (window.audioManager && window.audioManager.play) {
+                window.audioManager.play("transition")
+              }
+            }}
             {...pointerHandlers}
           />
         )}
@@ -201,7 +206,12 @@ export function Pole({ onSectionChange, ...props }) {
           <mesh
             geometry={nodes.roadmap.geometry}
             material={materialHearts}
-            onClick={createClickHandler(5, "roadmap")}
+            onClick={e => {
+            createClickHandler(5, "roadmap")(e)
+            if (window.audioManager && window.audioManager.play) {
+              window.audioManager.play("transition")
+            }
+          }}
             {...pointerHandlers}
           />
         )}
@@ -230,8 +240,12 @@ export function Pole({ onSectionChange, ...props }) {
               <mesh
                 geometry={nodes.token.geometry}
                 material={materialHearts}
-                onClick={createClickHandler(4, "token")}
-                {...pointerHandlers}
+                onClick={e => {
+                  createClickHandler(4, "token")(e)
+                  if (window.audioManager && window.audioManager.play) {
+                    window.audioManager.play("transition")
+                  }
+                }}
               />
             )}
           </RotateAxis>

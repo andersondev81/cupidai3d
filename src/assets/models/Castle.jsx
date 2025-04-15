@@ -127,6 +127,7 @@ const NavigationSystem = {
       // Store position for any interactive element
       storePosition: (elementId, position, target) => {
         NavigationSystem.positions[elementId] = { position, target }
+        audioManager.play("transition")
         console.log(
           `Stored camera position for ${elementId}:`,
           NavigationSystem.positions[elementId]
@@ -1236,10 +1237,9 @@ const usePortalMaterial = () => {
 const handleAtmClick = e => {
   e.stopPropagation()
   console.log("ATM clicked - navigating to token section")
-
   // Prevent navigation if ATM iframe is already active
   if (atmIframeActive) return
-
+  audioManager.play("transition")
   // Navigate to token section
   if (onCastleClick) {
     onCastleClick("token") // Uses the existing playTransition function
@@ -1694,7 +1694,7 @@ const CastleModel = ({
           setTimeout(() => {
             // Fecha o iframe
             setAtmiframeActive(false)
-
+            audioManager.play("transition")
             if (source === "pole") {
               console.log("ATM: Source is pole, returning to nav")
               onCastleClick("nav")
@@ -1824,7 +1824,7 @@ const Castle = ({ activeSection }) => {
     }
 
     // Reproduzir o som da transição
-    audioManager.play("transition")
+    // audioManager.play("transition")
 
     // Após um pequeno atraso, reproduzir o som da nova seção
     setTimeout(() => {

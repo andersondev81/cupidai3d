@@ -637,6 +637,50 @@ class AudioManager {
     }, 300); // Pequeno atraso para não sobrepor o som de transição
   }
 
+  play(id) {
+    // NOVA VERIFICAÇÃO: Se o som for de transição e estiver bloqueado globalmente, não tocar
+    if (id === "transition" && window.blockTransitionSound) {
+      console.log(`⚠️ Som de transição bloqueado por flag global: ${id}`);
+      return;
+    }
+
+    if (this.isMuted || !this.sounds[id]) return;
+
+    const sound = this.sounds[id];
+
+    // Garantir que loop esteja configurado corretamente antes de tocar
+    sound.audio.loop = sound.loop;
+
+    // Se já estiver tocando, não faça nada para evitar reinício
+    // Exceto para sons sem loop (transition, click, hover)
+    if (sound.isPlaying) {
+      if (!sound.loop) {
+        sound.audio.currentTime = 0;
+      } else {
+        // Já está tocando em loop, não faça nada
+        return;
+      }
+    }
+
+    // Marcar como tocando e iniciar a reprodução
+    sound.isPlaying = true;
+    sound.audio.volume = sound.volume;
+
+    // Log detalhado para sons de transição
+    if (id === "transition") {
+      console.log(`🔊 Tocando som de transição. Bloqueado: ${window.blockTransitionSound ? 'Sim' : 'Não'}`);
+    }
+
+    // Usar Promise para compatibilidade com diferentes navegadores
+    const playPromise = sound.audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((error) => {
+        sound.isPlaying = false;
+        console.error(`Erro ao reproduzir o som ${id}:`, error);
+      });
+    }
+  }
+
   // Método para atualizar sons espaciais com base na posição da câmera
   updateSpatialSounds = (cameraPosition) => {
     // Verificar se o audioManager está disponível
