@@ -24,7 +24,7 @@ class AudioManager {
     this.sounds = {};
     this.isMuted = false;
     this.volume = 0.5; // volume padrão (0-1)
-
+    this.loop = false; // loop padrão
     // Posições dos elementos para áudio espacial usando nossa classe Position
     this.positions = {
       orb: new Position(1.76, 1.155, -0.883),
@@ -213,14 +213,14 @@ class AudioManager {
     audio.volume = options.volume || this.volume;
 
     // Configurar loop explicitamente - por padrão, todos (exceto transição) em loop
-    const shouldLoop =
-      id === "transition" || id === "click" || id === "hover"
-        ? false
-        : options.loop !== undefined
-        ? options.loop
-        : true;
+    // const shouldLoop =
+    //   id === "transition" || id === "click" || id === "hover"
+    //     ? false
+    //     : options.loop !== undefined
+    //     ? options.loop
+    //     : true;
 
-    audio.loop = shouldLoop;
+    audio.loop = false;
 
     console.log(
       `Registrando som: ${id}, loop: ${audio.loop}, volume: ${audio.volume}`
@@ -230,7 +230,7 @@ class AudioManager {
       audio: audio,
       volume: options.volume || this.volume,
       isPlaying: false,
-      loop: shouldLoop,
+      loop: false,
     };
 
     // Configurar o evento de fim da reprodução
@@ -248,19 +248,30 @@ class AudioManager {
 
     const sound = this.sounds[id];
 
-    // Garantir que loop esteja configurado corretamente antes de tocar
-    sound.audio.loop = sound.loop;
+    // Se o som for "pole", garantir que ele toque em loop
+    // if (id === "pole") {
+    //   sound.audio.loop = true;
+    // } else {
+    //   // Para todos os outros sons, desativar o loop
+    //   sound.audio.loop = false;
+    // }
 
+
+
+    sound.audio.loop = false
+    if (id === "pole") {
+      sound.audio.loop = true;
+    }
     // Se já estiver tocando, não faça nada para evitar reinício
     // Exceto para sons sem loop (transition, click, hover)
-    if (sound.isPlaying) {
-      if (!sound.loop) {
-        sound.audio.currentTime = 0;
-      } else {
-        // Já está tocando em loop, não faça nada
-        return;
-      }
-    }
+    // if (sound.isPlaying) {
+    //   if (!sound.loop) {
+    //     sound.audio.currentTime = 0;
+    //   } else {
+    //     // Já está tocando em loop, não faça nada
+    //     return;
+    //   }
+    // }
 
     // Marcar como tocando e iniciar a reprodução
     sound.isPlaying = true;
@@ -649,8 +660,10 @@ class AudioManager {
     const sound = this.sounds[id];
 
     // Garantir que loop esteja configurado corretamente antes de tocar
-    sound.audio.loop = sound.loop;
-
+    sound.audio.loop = false;
+    if (id === "pole") {
+      sound.audio.loop = true;
+    }
     // Se já estiver tocando, não faça nada para evitar reinício
     // Exceto para sons sem loop (transition, click, hover)
     if (sound.isPlaying) {
