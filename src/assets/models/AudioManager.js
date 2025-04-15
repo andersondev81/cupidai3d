@@ -31,6 +31,7 @@ class AudioManager {
       fountain: new Position(0, 0.8, 2.406),
       portal: new Position(0, 1.247, -2.117),
       heart: new Position(0, 4.18, -0.006),
+      pole: new Position(0.2, -0.35, -0.2),
     };
 
     // Configurar categorias de sons
@@ -51,7 +52,7 @@ class AudioManager {
     // Definir categorias para os sons
     this.soundCategories = {
       // Sons de ambiente que sempre podem tocar em paralelo
-      ambient: ["ambient", "water", "fountain", "heartbeat", "portal", "orb"],
+      ambient: ["ambient", "water", "fountain", "heartbeat", "portal", "orb", "pole"],
 
       // Sons de transição que não são em loop
       transition: ["transition", "click", "hover"],
@@ -175,6 +176,11 @@ class AudioManager {
       loop: true,
       volume: 0.3,
     });
+
+    this.registerSound("pole", "../sounds/templeambiance.mp3", {
+      loop: true,
+      volume: 1,
+    });
   }
 
   // Verificar se o navegador permite reprodução automática de áudio
@@ -273,6 +279,12 @@ class AudioManager {
   // Parar um som específico
   stop(id) {
     if (!this.sounds[id]) return;
+
+    // Do not stop the "pole" sound
+    if (id === "pole") {
+      console.log(`Skipping stop for sound: ${id}`);
+      return;
+    }
 
     const sound = this.sounds[id];
     if (sound.isPlaying) {
@@ -477,6 +489,7 @@ class AudioManager {
       "water",
       "fountain",
       "orb",
+      "pole",
     ];
 
     Object.keys(this.sounds).forEach((id) => {
@@ -548,14 +561,19 @@ class AudioManager {
       this.stopSectionSounds(section);
     });
 
-    // Para sons adicionais que podem estar tocando
+    // Para sons adicionais que podem estar tocando, exceto "pole"
     ["transition", "mirror", "atm", "scroll", "coins", "paper"].forEach(
       (sound) => {
-        if (this.sounds[sound]) {
+        if (this.sounds[sound] && sound !== "pole") {
           this.stop(sound);
         }
       }
     );
+
+    // Garantir que "pole" continue tocando
+    if (this.sounds["pole"] && !this.sounds["pole"].isPlaying) {
+      this.play("pole");
+    }
   }
 
   // Método para pausar sons de uma categoria específica
@@ -687,6 +705,8 @@ class AudioManager {
       effectiveMaxDistance = 5; // Menor para sons mais sutis
     } else if (soundId === "fountain") {
       effectiveMaxDistance = 6; // Um pouco maior para a fonte
+    }else if (soundId === "pole") {
+      effectiveMaxDistance = 6; // Um pouco maior para a fonte
     }
 
     // Se estiver dentro do alcance, ajuste o volume e toque
@@ -747,9 +767,9 @@ class AudioManager {
   stopAllAudio() {
     console.log("Parando TODOS os sons do sistema");
 
-    // Para todos os sons registrados
+    // Para todos os sons registrados, exceto "pole"
     Object.keys(this.sounds).forEach((id) => {
-      if (this.sounds[id] && this.sounds[id].isPlaying) {
+      if (id !== "pole" && this.sounds[id] && this.sounds[id].isPlaying) {
         console.log(`Parando som: ${id}`);
 
         // Parar som imediatamente (sem fade)
@@ -760,7 +780,7 @@ class AudioManager {
     });
 
     // Garantir explicitamente que sons críticos estão parados
-    // (mesmo que não estejam marcados como 'isPlaying')
+    // (mesmo que não estejam marcados como 'isPlaying'), exceto "pole"
     const criticalSounds = [
       "orb",
       "fountain",
@@ -770,7 +790,7 @@ class AudioManager {
       "scroll",
     ];
     criticalSounds.forEach((id) => {
-      if (this.sounds[id]) {
+      if (id !== "pole" && this.sounds[id]) {
         this.sounds[id].audio.pause();
         this.sounds[id].audio.currentTime = 0;
         this.sounds[id].isPlaying = false;

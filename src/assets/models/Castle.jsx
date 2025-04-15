@@ -1409,8 +1409,51 @@ const CastleModel = ({
       }
     }
 
-    //----- GERENCIAMENTO DO SOM DA FONTE (FOUNTAIN) -----//
+    //----- GERENCIAMENTO DO SOM DO POLE (POLE) -----//
+    const polePosition = { x: 0.2, y: -0.35, z: -0.2 } // Posição do pole
 
+
+    // Cálculo de distância para o pole
+    const dxPole = cameraPosition.x - polePosition.x
+    const dyPole = cameraPosition.y - polePosition.y
+    const dzPole = cameraPosition.z - polePosition.z
+    const distToPole = Math.sqrt(
+      dxPole * dxPole + dyPole * dyPole + dzPole * dzPole
+    )
+
+    // Distância máxima para o pole
+    const maxPoleDistance = 12
+    // Gerenciar som do pole
+    if (window.audioManager.sounds.pole) {
+      // Verificar se está dentro do alcance
+      if (distToPole < maxPoleDistance) {
+        // Atenuação cúbica para o pole
+        const attenuationPole = 1 - Math.pow(distToPole / maxPoleDistance, 3)
+        const poleVolume = Math.max(0, 0.2 * attenuationPole)
+        // Aplicar volume apenas se for significativo
+        if (poleVolume > 0.05) {
+          window.audioManager.sounds.pole.audio.volume = poleVolume
+          // Iniciar reprodução se não estiver tocando
+          if (!window.audioManager.sounds.pole.isPlaying) {
+            console.log("Iniciando som do pole")
+            window.audioManager.play("pole")
+          }
+        } else {
+          // Volume muito baixo, parar o som
+          if (window.audioManager.sounds.pole.isPlaying) {
+            window.audioManager.stop("pole")
+          }
+        }
+      } else {
+        // Fora do alcance, parar o som
+        if (window.audioManager.sounds.pole.isPlaying) {
+          console.log("Parando som do pole - fora de alcance")
+          window.audioManager.stop("pole")
+        }
+      }
+
+    }
+    //----- GERENCIAMENTO DO SOM DA FONTE (FOUNTAIN) -----//
     // Cálculo de distância para a fonte
     const dxFountain = cameraPosition.x - fountainPosition.x
     const dyFountain = cameraPosition.y - fountainPosition.y
@@ -1742,12 +1785,17 @@ const Castle = ({ activeSection }) => {
   const [cameraLocked, setCameraLocked] = useState(true)
   const [clipboardMessage, setClipboardMessage] = useState("")
 
+
+
+
   // Reset function for iframes
   window.resetIframes = () => {
     setAtmiframeActive(false)
     setMirrorIframeActive(false)
     setScrollIframeActive(false)
   }
+
+
 
   const getCameraPosition = section => {
     const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD
