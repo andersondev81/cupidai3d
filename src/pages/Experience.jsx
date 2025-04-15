@@ -311,18 +311,37 @@ const Experience = () => {
   }, [handleSectionChange, handleCustomCameraPosition])
 
   return (
-    <div className="experience-container">
-      <Canvas {...CANVAS_CONFIG(isMobile)}>
-        <Suspense fallback={<Canvasload />}>
-          <SceneContent
-            activeSection={activeSection}
-            onSectionChange={handleSectionChange}
-          />
-          <SceneController section={currentSection} cameraRef={cameraRef} />
-        </Suspense>
-      </Canvas>
+    <div className="relative w-full h-screen">
+        <div className="absolute inset-0 z-0">
+          <Canvas {...CANVAS_CONFIG(isMobile)} className="w-full h-full" dpr={1}>
+            <Suspense fallback={<Canvasload />}>
+              <SceneController section={currentSection} cameraRef={cameraRef} />
+              <SceneContent
+                activeSection={activeSection}
+                onSectionChange={handleSectionChange}
+              />
+            </Suspense>
+          </Canvas>
+        </div>
+
+        <div className="absolute inset-0 z-10 pointer-events-none">
+          <div className="w-full h-full">
+            <CastleUi
+              section={currentSection}
+              onSectionChange={handleSectionChange}
+              cameraRef={cameraRef.current}
+              className="pointer-events-auto"
+            />
+            <AtmIframe
+              section={currentSection}
+              onSectionChange={handleSectionChange}
+              cameraRef={cameraRef.current}
+            />
+          </div>
+        </div>
     </div>
   )
 }
 
 export default Experience
+
