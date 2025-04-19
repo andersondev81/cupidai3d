@@ -126,6 +126,7 @@ const NavigationSystem = {
       // Store position for any interactive element
       storePosition: (elementId, position, target) => {
         NavigationSystem.positions[elementId] = { position, target }
+        audioManager.play("transition")
         console.log(
           `Stored camera position for ${elementId}:`,
           NavigationSystem.positions[elementId]
@@ -432,10 +433,7 @@ const useVideoTexture = videoPath => {
     video.loop = true
     video.muted = true
     video.playsInline = true
-    // Adicione essas duas linhas:
     video.autoplay = true
-    // video.play()
-    // video.load()
 
     videoRef.current = video
 
@@ -463,14 +461,10 @@ const useVideoTexture = videoPath => {
 
   return { texture, playVideo }
 }
-// Castle materials
-const useCastleMaterial = (
-  materialType = "standard",
-  metalness = 1,
-  roughness = 1.6,
-  emissiveIntensity = 0,
-  emissiveColor = "#000"
-) => {
+// ---------------- Castle materials ----------------
+
+// Castle Texture
+const useCastleMaterial = () => {
   const textures = useTexture({
     map: "/texture/castle_Base_ColorAO.webp",
     metalnessMap: "/texture/castle_Metallic.webp",
@@ -493,52 +487,24 @@ const useCastleMaterial = (
   }, [textures, clouds])
 
   return useMemo(() => {
-    // Propriedades base compartilhadas por todos os materiais
-    const commonProps = {
+    return new MeshStandardMaterial({
       map: textures.map,
       side: DoubleSide,
       transparent: false,
       alphaTest: 0.05,
-    }
-
-    // Propriedades específicas para materiais que suportam PBR
-    const pbrProps = {
-      ...commonProps,
       roughnessMap: textures.roughnessMap,
-      roughness: roughness,
-      metalness: metalness,
-      emissiveMap: textures.emissiveMap,
-      emissive: new Color(emissiveColor),
-      emissiveIntensity: emissiveIntensity,
+      roughness: 1.6,
+      metalness: 1,
+      emissive: new Color("#000"),
+      emissiveIntensity: 0,
       blending: NormalBlending,
       envMap: clouds,
       envMapIntensity: 1.0,
-    }
-
-    // Criar o material baseado no tipo selecionado
-    switch (materialType) {
-      case "physical":
-        return new MeshPhysicalMaterial(pbrProps)
-      case "basic":
-        return new MeshBasicMaterial({
-          ...commonProps,
-          color: new Color(0xffffff),
-        })
-      case "standard":
-      default:
-        return new MeshStandardMaterial(pbrProps)
-    }
-  }, [
-    textures,
-    materialType,
-    metalness,
-    roughness,
-    emissiveIntensity,
-    emissiveColor,
-    clouds, // Adicionado clouds como dependência
-  ])
+    })
+  }, [textures, clouds])
 }
 
+// Heart Back Wall texure
 const useCastleHeartMaterial = (
   metalness = 1.4,
   roughness = 0,
@@ -600,24 +566,27 @@ const useCastleHeartMaskMaterial = () => {
   )
 }
 
+
+// Heart Lights Material
 const useCastleLightsMaterial = () => {
   const { emissiveMap } = useTexture({
     emissiveMap: "/texture/castleLights_Emissive.webp",
   })
 
-  return new MeshStandardMaterial({
-    emissive: new Color("#fff"),
-    emissiveIntensity: 2,
-    emissiveMap: emissiveMap,
-    side: DoubleSide,
-  })
+  return useMemo(
+    () =>
+      new MeshStandardMaterial({
+        emissive: new Color("#fff"),
+        emissiveIntensity: 2,
+        emissiveMap: emissiveMap,
+        side: DoubleSide,
+      }),
+    [emissiveMap]
+  )
 }
 
-const usecastleGodsWallsMaterial = (
-  materialType = "standard",
-  metalness = 1,
-  roughness = 1.6
-) => {
+// Gods Walls Material
+const usecastleGodsWallsMaterial = (metalness = 1, roughness = 1.6) => {
   const textures = useTexture({
     map: "/texture/castleGodsWall_Base_color.webp",
     roughnessMap: "/texture/castleGodsWall_Roughness.webp",
@@ -639,46 +608,23 @@ const usecastleGodsWallsMaterial = (
   }, [textures, clouds])
 
   return useMemo(() => {
-    // Propriedades base compartilhadas por todos os materiais
-    const commonProps = {
+    return new MeshStandardMaterial({
       map: textures.map,
       side: DoubleSide,
       transparent: false,
       alphaTest: 0.05,
-    }
-
-    // Propriedades específicas para materiais que suportam PBR
-    const pbrProps = {
-      ...commonProps,
       roughnessMap: textures.roughnessMap,
-      roughness: roughness,
-      metalness: metalness,
+      roughness: 0.6,
+      metalness: 1,
       blending: NormalBlending,
       envMap: clouds,
       envMapIntensity: 1.0,
-    }
-
-    // Criar o material baseado no tipo selecionado
-    switch (materialType) {
-      case "physical":
-        return new MeshPhysicalMaterial(pbrProps)
-      case "basic":
-        return new MeshBasicMaterial({
-          ...commonProps,
-          color: new Color(0xffffff),
-        })
-      case "standard":
-      default:
-        return new MeshStandardMaterial(pbrProps)
-    }
-  }, [textures, materialType, metalness, roughness, clouds])
+    })
+  }, [textures, metalness, roughness, clouds])
 }
 
-const useCastleWallsMaterial = (
-  materialType = "standard",
-  metalness = 0,
-  roughness = 0.3
-) => {
+// Castle Walls Material
+const useCastleWallsMaterial = (metalness = 0, roughness = 0.3) => {
   const textures = useTexture({
     map: "/texture/castleWalls_Base_color.webp",
     roughnessMap: "/texture/castleWalls_Roughness.webp",
@@ -700,46 +646,23 @@ const useCastleWallsMaterial = (
   }, [textures, clouds])
 
   return useMemo(() => {
-    // Propriedades base compartilhadas por todos os materiais
-    const commonProps = {
+    return new MeshStandardMaterial({
       map: textures.map,
       side: DoubleSide,
       transparent: false,
       alphaTest: 0.05,
-    }
-
-    // Propriedades específicas para materiais que suportam PBR
-    const pbrProps = {
-      ...commonProps,
       roughnessMap: textures.roughnessMap,
-      roughness: roughness,
-      metalness: metalness,
+      roughness: 0.3,
+      metalness: 0,
       blending: NormalBlending,
       envMap: clouds,
       envMapIntensity: 1.0,
-    }
-
-    // Criar o material baseado no tipo selecionado
-    switch (materialType) {
-      case "physical":
-        return new MeshPhysicalMaterial(pbrProps)
-      case "basic":
-        return new MeshBasicMaterial({
-          ...commonProps,
-          color: new Color(0xffffff),
-        })
-      case "standard":
-      default:
-        return new MeshStandardMaterial(pbrProps)
-    }
-  }, [textures, materialType, metalness, roughness, clouds])
+    })
+  }, [textures, metalness, roughness, clouds])
 }
 
-const useCastlePilarsMaterial = (
-  materialType = "standard",
-  metalness = 0,
-  roughness = 1
-) => {
+// Castle Pilars Material
+const useCastlePilarsMaterial = (metalness = 0, roughness = 1) => {
   const textures = useTexture({
     map: "/texture/castlePilars_Base_color.webp",
     roughnessMap: "/texture/castlePilars_Roughness.webp",
@@ -763,50 +686,27 @@ const useCastlePilarsMaterial = (
   }, [textures, clouds])
 
   return useMemo(() => {
-    // Propriedades base compartilhadas por todos os materiais
-    const commonProps = {
+    return new MeshStandardMaterial({
       map: textures.map,
-      side: DoubleSide,
-      transparent: false,
-      alphaTest: 0.05,
-    }
-
-    // Propriedades específicas para materiais que suportam PBR
-    const pbrProps = {
-      ...commonProps,
       roughnessMap: textures.roughnessMap,
       metalnessMap: textures.metalnessMap,
       emissiveMap: textures.emissiveMap,
-      emissive: new Color(0xffffff), // Cor base para a emissão
-      emissiveIntensity: 2.0, // Intensidade da emissão
+      emissive: new Color(0xffffff),
+      emissiveIntensity: 1.3,
       roughness: roughness,
       metalness: metalness,
       blending: NormalBlending,
       envMap: clouds,
       envMapIntensity: 1.0,
-    }
-
-    // Criar o material baseado no tipo selecionado
-    switch (materialType) {
-      case "physical":
-        return new MeshPhysicalMaterial(pbrProps)
-      case "basic":
-        return new MeshBasicMaterial({
-          ...commonProps,
-          color: new Color(0xffffff),
-        })
-      case "standard":
-      default:
-        return new MeshStandardMaterial(pbrProps)
-    }
-  }, [textures, materialType, metalness, roughness, clouds])
+      side: DoubleSide,
+      transparent: false,
+      alphaTest: 0.05,
+    })
+  }, [textures, clouds])
 }
+
 // Floor Material
-const useFloorMaterial = (
-  materialType = "physical", // "standard", "physical", ou "basic"
-  metalness = 0,
-  roughness = 1
-) => {
+const useFloorMaterial = (metalness = 0, roughness = 1) => {
   const textures = useTexture({
     map: "/texture/floor_Base_colorAO.jpg",
     roughnessMap: "/texture/floor_Roughness.webp",
@@ -829,47 +729,75 @@ const useFloorMaterial = (
   }, [textures, clouds])
 
   return useMemo(() => {
-    // Propriedades base compartilhadas por todos os materiais
-    const commonProps = {
+    return new MeshPhysicalMaterial({
       map: textures.map,
-      side: DoubleSide,
-      transparent: false,
-      alphaTest: 0.05,
-    }
-
-    // Propriedades específicas para materiais que suportam PBR
-    const pbrProps = {
-      ...commonProps,
       roughnessMap: textures.roughnessMap,
-      roughness: roughness,
-      metalness: metalness,
+      metalnessMap: textures.metalnessMap,
+      roughness: 0.2,
+      metalness: 1,
       blending: NormalBlending,
       envMap: clouds,
       envMapIntensity: 1.0,
-    }
-
-    // Criar o material baseado no tipo selecionado
-    switch (materialType) {
-      case "physical":
-        return new MeshPhysicalMaterial(pbrProps)
-      case "basic":
-        return new MeshBasicMaterial({
-          ...commonProps,
-          color: new Color(0xffffff),
-        })
-      case "standard":
-      default:
-        return new MeshStandardMaterial(pbrProps)
-    }
-  }, [textures, materialType, metalness, roughness, clouds])
+      side: DoubleSide,
+      transparent: false,
+      alphaTest: 0.05,
+    })
+  }, [textures, clouds])
 }
 
-const useFloorHeartMaterial = (
-  metalness = 1,
-  roughness = 0.2,
-  emissiveIntensity = 1.5,
-  emissiveColor = "#fff"
-) => {
+//MirrorFrame Material
+const useMirrorFrameMaterial = () => {
+  const clouds = useTexture("/images/studio.jpg")
+
+  useEffect(() => {
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [clouds])
+
+  return useMemo(
+    () =>
+      new THREE.MeshPhysicalMaterial({
+        // BASE MATERIAL PROPERTIES
+        color: new THREE.Color("#E8B84E"), // Primary gold color (warm golden hue)
+        transparent: false, // Material is completely opaque
+        alphaTest: 0.05, // Alpha cutoff threshold (for transparency effects)
+        side: THREE.DoubleSide, // Renders both front and back faces of polygons
+        blending: THREE.NormalBlending, // Standard blending mode for transparency
+
+        // SURFACE CHARACTERISTICS
+        roughness: 0, // Perfectly smooth surface (0 = mirror-like)
+        metalness: 1, // Fully metallic material (1 = pure metal)
+
+        // ENVIRONMENT REFLECTIONS
+        envMap: clouds, // Environment map texture for realistic reflections
+        envMapIntensity: 1.3, // Reflection strength (higher = more reflective)
+
+        // EMISSIVE PROPERTIES
+        emissive: new THREE.Color("#F0D060"), // Secondary gold color for self-illumination
+        emissiveIntensity: 0.08, // Subtle glow effect intensity
+
+        // CLEARCOAT LAYER (simulates lacquer/coating)
+        clearcoat: 0.5, // Clearcoat layer intensity (0-1)
+        clearcoatRoughness: 0.2, // Micro-surface roughness of clearcoat layer
+
+        // SHEEN PROPERTIES (for soft anisotropic highlights)
+        sheen: 0.3, // Sheen effect intensity (fabrics/brushed metals)
+        sheenColor: new THREE.Color("#F0D060"), // Tint color for sheen highlights
+        sheenRoughness: 0.3, // Spread of sheen effect (lower = sharper)
+
+        // OPTIONAL ADVANCED PARAMETERS (uncomment if needed)
+        // ior: 1.5, // Index of refraction (glass-like: 1.5)
+        // transmission: 1, // Light transmission through material
+        // specularIntensity: 0.5, // Intensity of specular highlights
+        // specularColor: new Color("#FFFFFF"), // Color of specular highlights
+      }),
+    [clouds] // Adicionado como dependência
+  )
+}
+
+// Arc Heart Material
+const useFloorHeartMaterial = () => {
   const textures = useTexture({
     map: "/texture/castleHeart_Base_colorAO.webp",
     roughnessMap: "/texture/floorHeart_Roughness.webp",
@@ -899,22 +827,25 @@ const useFloorHeartMaterial = (
       metalnessMap: textures.metalnessMap,
       emissiveMap: textures.emissiveMap,
       side: DoubleSide,
-      roughness: roughness,
-      metalness: metalness,
-      emissive: new Color(emissiveColor),
-      emissiveIntensity: emissiveIntensity,
+      roughness: 0.2,
+      metalness: 1,
+      emissive: new Color("#578fd7"),
+      emissiveIntensity: 2.5,
       transparent: false,
       blending: NormalBlending,
       envMap: clouds,
-      envMapIntensity: 1.0,
+      envMapIntensity: 1,
     })
-  }, [textures, metalness, roughness, emissiveIntensity, emissiveColor, clouds])
+  }, [textures, clouds])
 }
+
 //wings Material
 const useWingsMaterial = () => {
   const textures = useTexture({
     map: "/texture/WingsColorAO.webp",
   })
+
+  const clouds = useTexture("/images/bg1.jpg") // envMap
 
   useMemo(() => {
     Object.values(textures).forEach(texture => {
@@ -923,7 +854,11 @@ const useWingsMaterial = () => {
         texture.minFilter = texture.magFilter = NearestFilter
       }
     })
-  }, [textures])
+
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [textures, clouds]) // Atualize as dependências
 
   return useMemo(
     () =>
@@ -932,13 +867,23 @@ const useWingsMaterial = () => {
         roughness: 0.6,
         metalness: 1,
         side: DoubleSide,
+        envMap: clouds, // Adicione isso
+        envMapIntensity: 1.6, // Adicione isso
       }),
-    [textures]
+    [textures, clouds] // Atualize as dependências
   )
 }
 
 //Logo Material
 const useLogoMaterial = () => {
+  const clouds = useTexture("/images/bg1.jpg")
+
+  useEffect(() => {
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [clouds])
+
   return useMemo(
     () =>
       new MeshPhysicalMaterial({
@@ -949,27 +894,47 @@ const useLogoMaterial = () => {
         blending: NormalBlending,
         roughness: 0.3,
         metalness: 1,
+        envMap: clouds, // Adicionado
+        envMapIntensity: 1.0, // Adicionado
       }),
-    []
+    [clouds] // Adicione clouds como dependência
   )
 }
 
 //Decor Material
 const useDecorMaterial = () => {
+  const clouds = useTexture("/images/studio.jpg")
+
+  useEffect(() => {
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [clouds])
+
   return useMemo(
     () =>
       new MeshPhysicalMaterial({
-        color: new Color("#DABB46"),
+        color: new Color("#E8B84E"), // Dourado mais quente
         transparent: false,
         alphaTest: 0.05,
         side: DoubleSide,
         blending: NormalBlending,
-        roughness: 0,
-        metalness: 1,
+        roughness: 0.15, // Rugosidade ligeiramente aumentada
+        metalness: 1, // Metalness ajustado
+        envMap: clouds,
+        envMapIntensity: 1.8, // Reflexos mais intensos
+        emissive: new Color("#F0D060"), // Cor de emissão mais quente
+        emissiveIntensity: 0.08, // Brilho sutil
+        clearcoat: 0.5, // Camada extra de brilho
+        clearcoatRoughness: 0.2, // Rugosidade da camada de clearcoat
+        sheen: 0.3, // Efeito de brilho difuso
+        sheenColor: new Color("#FFE080"), // Cor do sheen
+        sheenRoughness: 0.3,
       }),
-    []
+    [clouds]
   )
 }
+
 //MirrorMaterial
 const useMirrorMaterial = () => {
   const clouds = useTexture("/images/clouds.jpg")
@@ -999,18 +964,43 @@ const useMirrorMaterial = () => {
 
 //Hallos Material
 const useHallosMaterial = () => {
+  // Load environment map texture
+  const clouds = useTexture("/images/studio.jpg")
+
+  // Configure environment map
+  useEffect(() => {
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+      clouds.encoding = THREE.sRGBEncoding // Proper color space for HDR
+    }
+  }, [clouds])
+
   return useMemo(
     () =>
-      new MeshPhysicalMaterial({
-        color: new Color("#DABB46"),
-        transparent: false,
-        alphaTest: 0.05,
-        side: DoubleSide,
-        blending: NormalBlending,
-        roughness: 0,
-        metalness: 2,
+      new THREE.MeshPhysicalMaterial({
+        // Base Properties
+        color: new THREE.Color("#DABB46"), // Golden yellow color
+        transparent: false, // Opaque material
+        alphaTest: 0.05, // Alpha cutoff threshold
+        side: THREE.DoubleSide, // Render both sides of geometry
+        blending: THREE.NormalBlending, // Standard blending mode
+
+        // Surface Characteristics
+        roughness: 0, // Perfectly smooth surface (mirror-like)
+        metalness: 2, // Hyper-metallic effect (values >1 intensify reflections)
+
+        // Reflection Properties
+        envMap: clouds, // Environment map for realistic reflections
+        envMapIntensity: 2, // Strong reflection intensity
+        reflectivity: 0.9, // Base reflectivity coefficient
+
+        // Advanced Effects
+        emissive: new THREE.Color("#DABB46").multiplyScalar(0.3), // Subtle glow
+        emissiveIntensity: 0.15, // Controlled self-illumination
+        clearcoat: 0.8, // Protective clear coat layer
+        clearcoatRoughness: 0.1, // Slightly rough clear coat
       }),
-    []
+    [clouds] // Recreate material when envMap updates
   )
 }
 
@@ -1038,18 +1028,20 @@ const useGodsMaterial = () => {
         alphaTest: 0.5,
         side: DoubleSide,
         blending: NormalBlending,
-        roughness: 0.2,
-        metalness: 1,
       }),
     [textures]
   )
 }
+
 // Hoof Material
 const useHoofMaterial = () => {
   const textures = useTexture({
     map: "/texture/hoofGlassColorBAO.webp",
     emissiveMap: "/texture/hoofGlassEmissiveV2.webp",
   })
+
+  // Carrega o environment map (igual aos outros materiais)
+  const clouds = useTexture("/images/bg1.jpg")
 
   useMemo(() => {
     Object.values(textures).forEach(texture => {
@@ -1058,7 +1050,12 @@ const useHoofMaterial = () => {
         texture.minFilter = texture.magFilter = NearestFilter
       }
     })
-  }, [textures])
+
+    // Configura o envMap
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [textures, clouds])
 
   return useMemo(
     () =>
@@ -1066,20 +1063,24 @@ const useHoofMaterial = () => {
         map: textures.map,
         emissiveMap: textures.emissiveMap,
         emissive: new Color(0x578fd7),
-        emissiveIntensity: 3.6,
+        emissiveIntensity: 14,
         transparent: false,
         side: DoubleSide,
         blending: NormalBlending,
         roughness: 0.2,
         metalness: 1,
+        envMap: clouds,
+        envMapIntensity: 1.0,
+        reflectivity: 0.5,
       }),
-    [textures]
+    [textures, clouds] // Adicione clouds como dependência
   )
 }
+
 //atm Material
 const useAtmMaterial = () => {
   const textures = useTexture({
-    map: "/texture/atmColor.webp",
+    map: "/texture/atmBake.jpg",
     roughnessMap: "/texture/atmRoughness.webp",
     metalnessMap: "/texture/atmMetalness.webp",
     materialEmissive: "/texture/atmEmissive.webp",
@@ -1112,56 +1113,111 @@ const useAtmMaterial = () => {
         side: DoubleSide,
         blending: NormalBlending,
         metalness: 1,
-        roughness: 0.6,
+        roughness: 0,
         emissive: new Color(0xc4627d),
-        emissiveIntensity: 3.5,
+        emissiveIntensity: 4.8,
         envMap: clouds,
         envMapIntensity: 1.0,
       }),
-    [textures, clouds] // Added clouds to dependencies
+    [textures, clouds]
+  )
+}
+
+//atm Metal Material
+const useAtmMetalMaterial = () => {
+  const textures = useTexture({
+    map: "/texture/atmBake.jpg",
+    // roughnessMap: "/texture/atmRoughness.webp",
+    // metalnessMap: "/texture/atmMetalness.webp",
+  })
+
+  const clouds = useTexture("/images/bg1.jpg")
+
+  useMemo(() => {
+    Object.values(textures).forEach(texture => {
+      if (texture) {
+        texture.flipY = true
+        texture.minFilter = texture.magFilter = NearestFilter
+      }
+    })
+
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [textures, clouds])
+
+  return useMemo(
+    () =>
+      new MeshPhysicalMaterial({
+        map: textures.map,
+
+        transparent: false,
+        alphaTest: 0.05,
+        side: DoubleSide,
+        blending: NormalBlending,
+        metalness: 1,
+        roughness: 0,
+        envMap: clouds,
+        envMapIntensity: 2.0,
+      }),
+    [textures, clouds]
   )
 }
 
 //Scroll Material
 const useScrollMaterial = () => {
-  // Try to load the texture, fallback to a basic material if it fails
-  try {
-    const textures = useTexture({
-      map: "./texture/ScrollColor.webp",
-    })
+  const [hasError, setHasError] = useState(false)
 
-    useMemo(() => {
-      Object.values(textures).forEach(texture => {
-        if (texture) {
-          texture.flipY = true
-          texture.minFilter = texture.magFilter = NearestFilter
+  const textures = useTexture(
+    hasError
+      ? {} // Load nothing if error
+      : {
+          map: "/texture/ScrollColor.png",
         }
-      })
-    }, [textures])
+  )
 
+  const clouds = useTexture("/images/bg1.jpg")
+
+  useEffect(() => {
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [clouds])
+
+  useEffect(() => {
+    if (!textures.map || textures.map.image === undefined) {
+      console.warn("Scroll texture not found. Using fallback material.")
+      setHasError(true)
+    }
+  }, [textures.map])
+
+  if (hasError) {
     return useMemo(
       () =>
         new MeshStandardMaterial({
-          map: textures.map,
+          color: "#f0e6d2",
           roughness: 0.7,
           metalness: 0.0,
           side: DoubleSide,
+          envMap: clouds,
+          envMapIntensity: 0.3,
         }),
-      [textures]
-    )
-  } catch (error) {
-    console.warn("Failed to load ScrollColor texture, using fallback")
-    return useMemo(
-      () =>
-        new MeshStandardMaterial({
-          color: "#f0e6d2", // Scroll-like color
-          roughness: 0.7,
-          metalness: 0.0,
-          side: DoubleSide,
-        }),
-      []
+      [clouds]
     )
   }
+
+  return useMemo(
+    () =>
+      new MeshStandardMaterial({
+        map: textures.map,
+        roughness: 0.7,
+        metalness: 0.0,
+        side: DoubleSide,
+        envMap: clouds,
+        envMapIntensity: 1.8,
+      }),
+    [textures, clouds]
+  )
 }
 
 //Portal Material
@@ -1173,31 +1229,34 @@ const usePortalMaterial = () => {
     video.muted = true
     video.playsInline = true
     video.autoplay = true
-    video.play()
+    video.play().catch(e => console.error("Video play failed:", e))
 
-    const videoTexture = new VideoTexture(video)
-    videoTexture.minFilter = LinearFilter
-    videoTexture.magFilter = LinearFilter
-    videoTexture.flipY = true
+    const videoTexture = new THREE.VideoTexture(video)
+    videoTexture.minFilter = THREE.LinearFilter // Filtro básico
+    videoTexture.magFilter = THREE.LinearFilter // Sem suavização adicional
+    videoTexture.flipY = true // Corrige orientação
+    videoTexture.encoding = THREE.sRGBEncoding // Mantém cores originais
 
-    return new MeshBasicMaterial({
+    return new THREE.MeshBasicMaterial({
       map: videoTexture,
-      side: DoubleSide,
+      side: THREE.DoubleSide,
+      toneMapped: false, // Desativa mapeamento tonal
+      fog: false, // Desativa efeito de neblina
+      transparent: false, // Totalmente opaco
+      alphaTest: 0, // Sem descarte de pixels
+      color: new THREE.Color(0xffffff), // Cor base branca neutra
     })
   }, [])
 }
-
-// Fontaine Water Material
 
 // Components
 
 const handleAtmClick = e => {
   e.stopPropagation()
   console.log("ATM clicked - navigating to token section")
-
   // Prevent navigation if ATM iframe is already active
   if (atmIframeActive) return
-
+  audioManager.play("transition")
   // Navigate to token section
   if (onCastleClick) {
     onCastleClick("token") // Uses the existing playTransition function
@@ -1222,51 +1281,34 @@ const handlePointerLeave = e => {
 }
 
 const CastleModel = ({
-  controls,
   onCastleClick,
   hasInteracted,
-  onPortalPlay,
-  onWaterPlay,
   atmIframeActive,
   mirrorIframeActive,
   scrollIframeActive,
-  castleMaterialType,
-  castleMetalness,
-  castleRoughness,
-  castleEmissiveIntensity,
-  floorMaterialType,
-  floorMetalness,
-  floorRoughness,
-  floorEmissiveIntensity,
   setAtmiframeActive,
   setMirrorIframeActive,
   setScrollIframeActive,
+  onPortalPlay,
+  onWaterPlay,
 }) => {
   const { nodes } = useGLTF("/models/Castle.glb")
-  const material = useCastleMaterial(
-    castleMaterialType,
-    castleMetalness,
-    castleRoughness,
-    castleEmissiveIntensity
-  )
+  const material = useCastleMaterial()
   const castleHeart = useCastleHeartMaterial()
   const castleHeartMask = useCastleHeartMaskMaterial()
   const castleLights = useCastleLightsMaterial()
   const castleGodsWalls = usecastleGodsWallsMaterial()
   const castleWalls = useCastleWallsMaterial()
   const castlePilars = useCastlePilarsMaterial()
-  const floorMaterial = useFloorMaterial(
-    floorMaterialType,
-    floorMetalness,
-    floorRoughness,
-    floorEmissiveIntensity
-  )
+  const floorMaterial = useFloorMaterial()
+  const mirrorFrame = useMirrorFrameMaterial()
   const floorHeart = useFloorHeartMaterial()
   const logoMaterial = useLogoMaterial()
   const decorMaterial = useDecorMaterial()
   const godsMaterial = useGodsMaterial()
   const hoofMaterial = useHoofMaterial()
   const atmMaterial = useAtmMaterial()
+  const AtmMetalMaterial = useAtmMetalMaterial()
   const scrollMaterial = useScrollMaterial()
   const portal = usePortalMaterial()
   const mirror = useMirrorMaterial()
@@ -1321,18 +1363,17 @@ const CastleModel = ({
   const waterMaterial = useMemo(
     () =>
       waterTexture
-        ? new MeshPhysicalMaterial({
+        ? new MeshBasicMaterial({
             map: waterTexture,
-            transparent: false,
-            roughness: 0.2,
-            metalness: 1,
             side: DoubleSide,
-            emissive: new Color(0xffa6f3),
-            emissiveIntensity: 1,
+            toneMapped: false,
+            fog: false,
+            transparent: false,
+            alphaTest: 0,
+            color: new Color(0xffffff),
           })
-        : new MeshPhysicalMaterial({
-            emissive: new Color(0xffa6f3),
-            emissiveIntensity: 1,
+        : new MeshBasicMaterial({
+            color: 0x000000,
             side: DoubleSide,
           }),
     [waterTexture]
@@ -1386,8 +1427,51 @@ const CastleModel = ({
       }
     }
 
-    //----- GERENCIAMENTO DO SOM DA FONTE (FOUNTAIN) -----//
+    //----- GERENCIAMENTO DO SOM DO POLE (POLE) -----//
+    const polePosition = { x: 0.2, y: -0.35, z: -0.2 } // Posição do pole
 
+
+    // Cálculo de distância para o pole
+    const dxPole = cameraPosition.x - polePosition.x
+    const dyPole = cameraPosition.y - polePosition.y
+    const dzPole = cameraPosition.z - polePosition.z
+    const distToPole = Math.sqrt(
+      dxPole * dxPole + dyPole * dyPole + dzPole * dzPole
+    )
+
+    // Distância máxima para o pole
+    const maxPoleDistance = 12
+    // Gerenciar som do pole
+    if (window.audioManager.sounds.pole) {
+      // Verificar se está dentro do alcance
+      if (distToPole < maxPoleDistance) {
+        // Atenuação cúbica para o pole
+        const attenuationPole = 1 - Math.pow(distToPole / maxPoleDistance, 3)
+        const poleVolume = Math.max(0, 0.2 * attenuationPole)
+        // Aplicar volume apenas se for significativo
+        if (poleVolume > 0.05) {
+          window.audioManager.sounds.pole.audio.volume = poleVolume
+          // Iniciar reprodução se não estiver tocando
+          if (!window.audioManager.sounds.pole.isPlaying) {
+            // console.log("Iniciando som do pole")
+            window.audioManager.play("pole")
+          }
+        } else {
+          // Volume muito baixo, parar o som
+          if (window.audioManager.sounds.pole.isPlaying) {
+            window.audioManager.stop("pole")
+          }
+        }
+      } else {
+        // Fora do alcance, parar o som
+        if (window.audioManager.sounds.pole.isPlaying) {
+          console.log("Parando som do pole - fora de alcance")
+          window.audioManager.stop("pole")
+        }
+      }
+
+    }
+    //----- GERENCIAMENTO DO SOM DA FONTE (FOUNTAIN) -----//
     // Cálculo de distância para a fonte
     const dxFountain = cameraPosition.x - fountainPosition.x
     const dyFountain = cameraPosition.y - fountainPosition.y
@@ -1491,8 +1575,6 @@ const CastleModel = ({
     if (hasInteracted) {
       playPortal()
       playWater()
-      if (onPortalPlay) onPortalPlay()
-      if (onWaterPlay) onWaterPlay()
     }
   }, [hasInteracted, onPortalPlay])
 
@@ -1538,7 +1620,7 @@ const CastleModel = ({
         layers-enable={1}
       />
       <mesh geometry={nodes.floorHeart.geometry} material={floorHeart} />
-      <mesh geometry={nodes.MirrorFrame.geometry} material={decorMaterial} />
+      <mesh geometry={nodes.MirrorFrame.geometry} material={mirrorFrame} />
       <mesh
         geometry={nodes.Mirror.geometry}
         material={mirror}
@@ -1564,6 +1646,7 @@ const CastleModel = ({
         onClick={atmHandlers.handleClick}
         {...atmHandlers.pointerHandlers}
       />
+      <mesh geometry={nodes.atmMetal.geometry} material={AtmMetalMaterial} />
       <group position={[-0.056, 1.247, -2.117]}>
         <RotateAxis axis="y" speed={0.7} rotationType="euler">
           <mesh
@@ -1626,29 +1709,26 @@ const CastleModel = ({
         position={[1.675, 1.185, 0.86]}
         rotation={[1.47, 0.194, -1.088]}
         onReturnToMain={source => {
-          // Close the iframe first for better visual feedback
-          setAtmiframeActive(false)
-
-          // Short delay to let the UI update first
+          // Adiar a atualização do estado para evitar conflito com Suspense
           setTimeout(() => {
+            // Fecha o iframe
+            setAtmiframeActive(false)
+            audioManager.play("transition")
             if (source === "pole") {
-              // If coming from pole, go back to nav section
               console.log("ATM: Source is pole, returning to nav")
               onCastleClick("nav")
             } else {
-              // Check for stored position and use it if available
               const storedPosition = window.navigationSystem.getPosition("atm")
               if (storedPosition) {
                 const { position, target } = storedPosition
                 smoothCameraReturn(position, target)
                 console.log("Returning to stored ATM position")
               } else {
-                // Fallback to nav if no stored position
                 console.log("No stored position for ATM, going to nav")
                 onCastleClick("nav")
               }
             }
-          }, 100)
+          }, 0) // ⬅ 0ms já resolve o conflito de render
         }}
         isActive={atmIframeActive}
       />
@@ -1713,8 +1793,7 @@ const CastleModel = ({
     </group>
   )
 }
-// Main Component
-// Main Component
+
 // Navigation system to handle all interactive elements
 
 const Castle = ({ activeSection }) => {
@@ -1725,12 +1804,17 @@ const Castle = ({ activeSection }) => {
   const [cameraLocked, setCameraLocked] = useState(true)
   const [clipboardMessage, setClipboardMessage] = useState("")
 
+
+
+
   // Reset function for iframes
   window.resetIframes = () => {
     setAtmiframeActive(false)
     setMirrorIframeActive(false)
     setScrollIframeActive(false)
   }
+
+
 
   const getCameraPosition = section => {
     const isSmallScreen = window.innerWidth < SMALL_SCREEN_THRESHOLD
@@ -1759,7 +1843,7 @@ const Castle = ({ activeSection }) => {
     }
 
     // Reproduzir o som da transição
-    audioManager.play("transition")
+    // audioManager.play("transition")
 
     // Após um pequeno atraso, reproduzir o som da nova seção
     setTimeout(() => {
@@ -1946,8 +2030,8 @@ const Castle = ({ activeSection }) => {
     if (cameraLocked) {
       controls.current.minPolarAngle = Math.PI * 0.4
       controls.current.maxPolarAngle = Math.PI * 0.5
-      controls.current.minDistance = 5
-      controls.current.maxDistance = 10
+      controls.current.minDistance = 0
+      controls.current.maxDistance = 100
       controls.current.boundaryFriction = 1
       controls.current.boundaryEnclosesCamera = true
       controls.current.dollyToCursor = false
@@ -1977,43 +2061,7 @@ const Castle = ({ activeSection }) => {
         label: "Lock Camera",
         onChange: locked => {
           setCameraLocked(locked)
-
-          if (!controls.current) return
-
-          if (locked) {
-            // Quando travada, aplicar restrições
-            controls.current.minPolarAngle = Math.PI * 0.4
-            controls.current.maxPolarAngle = Math.PI * 0.5
-            controls.current.minDistance = 5.08
-            controls.current.maxDistance = 10
-            controls.current.boundaryFriction = 1
-            controls.current.boundaryEnclosesCamera = true
-            controls.current.dollyToCursor = false
-            controls.current.minY = 1
-            controls.current.maxY = 5
-
-            // Retornar para a posição da seção atual
-            const targetPosition = getCameraPosition(activeSection || "nav")
-            if (targetPosition) {
-              controls.current.setLookAt(...targetPosition, true)
-            }
-
-            // Desabilitar controle contínuo
-            controls.current.enabled = activeSection === "nav"
-          } else {
-            // Quando destravada, remover todas as restrições
-            controls.current.minPolarAngle = 0
-            controls.current.maxPolarAngle = Math.PI
-            controls.current.minDistance = 0.1
-            controls.current.maxDistance = 100
-            controls.current.boundaryFriction = 0
-            controls.current.boundaryEnclosesCamera = false
-            controls.current.minY = null
-            controls.current.maxY = null
-
-            // Habilitar controle contínuo
-            controls.current.enabled = true
-          }
+          // ... restante da lógica
         },
       },
       getLookAt: button(() => {
@@ -2021,7 +2069,6 @@ const Castle = ({ activeSection }) => {
       }),
       resetCamera: button(() => {
         if (!controls.current) return
-
         const targetPosition = getCameraPosition(activeSection || "nav")
         if (targetPosition) {
           controls.current.setLookAt(...targetPosition, true)
@@ -2109,76 +2156,6 @@ const Castle = ({ activeSection }) => {
     }
   }, [clipboardMessage])
 
-  const materialControls = useControls(
-    "Materials",
-    {
-      // Castle controls
-      castleMaterialType: {
-        options: ["standard", "physical", "basic", "lambert", "phong"],
-        value: "standard",
-        label: "Castle Material Type",
-      },
-      castleMetalness: {
-        value: 1,
-        min: 0,
-        max: 2,
-        step: 0.01,
-        label: "Castle Metalness",
-      },
-      castleRoughness: {
-        value: 1.6,
-        min: 0,
-        max: 2,
-        step: 0.01,
-        label: "Castle Roughness",
-      },
-      castleEmissiveColor: {
-        value: "#f6d8fc",
-        label: "Castle Emissive Color",
-      },
-      castleEmissiveIntensity: {
-        value: 2,
-        min: 0,
-        max: 5,
-        step: 0.1,
-        label: "Castle Emissive",
-      },
-
-      // Floor controls
-      floorMaterialType: {
-        options: ["standard", "physical", "basic", "lambert", "phong"],
-        value: "physical",
-        label: "Floor Material Type",
-      },
-      floorMetalness: {
-        value: 1,
-        min: 0,
-        max: 2,
-        step: 0.01,
-        label: "Floor Metalness",
-      },
-      floorRoughness: {
-        value: 0.2,
-        min: 0,
-        max: 2,
-        step: 0.01,
-        label: "Floor Roughness",
-      },
-      floorEmissiveColor: {
-        value: "#22bcff",
-        label: "Floor Emissive Color",
-      },
-      floorEmissiveIntensity: {
-        value: 2.2,
-        min: 0,
-        max: 5,
-        step: 0.1,
-        label: "Floor Emissive",
-      },
-    },
-    { collapsed: false }
-  )
-
   return (
     <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
       <CameraControls
@@ -2194,24 +2171,16 @@ const Castle = ({ activeSection }) => {
 
       <Suspense>
         <CastleModel
-          controls={controls}
           onCastleClick={playTransition}
           atmIframeActive={atmiframeActive}
           mirrorIframeActive={mirrorIframeActive}
           scrollIframeActive={scrollIframeActive}
           hasInteracted={true}
-          onReturnToMain={handleReturnToMain}
-          castleMaterialType={materialControls.castleMaterialType}
-          castleMetalness={materialControls.castleMetalness}
-          castleRoughness={materialControls.castleRoughness}
-          castleEmissiveIntensity={materialControls.castleEmissiveIntensity}
-          floorMaterialType={materialControls.floorMaterialType}
-          floorMetalness={materialControls.floorMetalness}
-          floorRoughness={materialControls.floorRoughness}
-          floorEmissiveIntensity={materialControls.floorEmissiveIntensity}
           setAtmiframeActive={setAtmiframeActive}
           setMirrorIframeActive={setMirrorIframeActive}
           setScrollIframeActive={setScrollIframeActive}
+          onPortalPlay={() => console.log("Portal played")}
+          onWaterPlay={() => console.log("Water played")}
         />
       </Suspense>
     </group>

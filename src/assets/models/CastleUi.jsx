@@ -90,32 +90,78 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
   };
 
   // Special handlers for specific sections
-  const handleBackFromAbout = (e) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
 
-    console.log("Direct handler: Back from About section");
+ const handleBackFromAbout = (e) => {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
 
-    // Close the About overlay immediately
-    setShowAboutOverlay(false);
+  console.log("Direct handler: Back from About section");
 
-    // Use a direct navigation approach
-    if (cameraRef && cameraRef.goToHome) {
-      cameraRef.goToHome();
-    }
+  // Feche o About overlay imediatamente
+  setShowAboutOverlay(false);
 
-    // Force section change after a small delay
-    setTimeout(() => {
+  // Obtenha a fonte de navegação para o orb
+  const source = window.navigationSystem && window.navigationSystem.getNavigationSource
+    ? window.navigationSystem.getNavigationSource("orb")
+    : "direct";
+
+  console.log(`About return button clicked, navigation source: ${source}`);
+
+  // Toque som de transição para navegação direta
+  if (source === "direct" && window.audioManager) {
+    window.audioManager.play("transition");
+  }
+
+  // Para navegação via pole, sempre limpe qualquer posição armazenada
+  if (source === "pole" && window.navigationSystem && window.navigationSystem.clearPositionForElement) {
+    window.navigationSystem.clearPositionForElement("orb");
+    console.log("Navegação via pole: posição anterior do orb limpa");
+  }
+
+  // Manipule a navegação com base na fonte
+  setTimeout(() => {
+    if (source === "pole") {
+      // Se vier do pole, volte para a seção nav
+      console.log("About: Source is pole, returning to nav");
       onSectionChange(0, "nav");
-
-      // Try global navigation as a backup
       if (window.globalNavigation && window.globalNavigation.navigateTo) {
         window.globalNavigation.navigateTo("nav");
       }
-    }, 100);
-  };
+    } else {
+      // Verifique se há uma posição armazenada
+      const storedPosition = window.navigationSystem && window.navigationSystem.getPosition
+        ? window.navigationSystem.getPosition("orb")
+        : null;
+
+      if (storedPosition) {
+        // Retorne para a posição armazenada
+        const { position, target } = storedPosition;
+        console.log("Returning to stored Orb position:", position, target);
+
+        if (window.smoothCameraReturn) {
+          window.smoothCameraReturn(position, target);
+        }
+
+        // Ainda atualize a seção ativa
+        onSectionChange(0, "nav");
+      } else {
+        // Volte para nav se não houver posição armazenada
+        console.log("No stored position for Orb, going to nav");
+        onSectionChange(0, "nav");
+        if (window.globalNavigation && window.globalNavigation.navigateTo) {
+          window.globalNavigation.navigateTo("nav");
+        }
+      }
+    }
+  }, 100);
+
+  // Use a referência da câmera apenas para navegação pelo pole
+  if (cameraRef && cameraRef.goToHome && source === "pole") {
+    cameraRef.goToHome();
+  }
+};
 
   // Special handler for Download section
   const handleBackFromDownload = (e) => {
