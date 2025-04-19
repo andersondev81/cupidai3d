@@ -135,6 +135,8 @@ export function Pole({ onSectionChange, ...props }) {
           ? "atm"
           : sectionName === "roadmap"
           ? "scroll"
+          : sectionName === "about"
+          ? "orb"  // Adicionado este caso
           : null
 
       if (elementId) {
