@@ -1,6 +1,11 @@
-
 import { Perf } from "r3f-perf"
-import React, { Suspense, useState, useEffect, useCallback, useRef } from "react"
+import React, {
+  Suspense,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react"
 import { useGLTF, Environment, Sparkles, useMask } from "@react-three/drei"
 import { Canvas, useThree } from "@react-three/fiber"
 import * as THREE from "three"
@@ -67,10 +72,7 @@ const getCanvasConfig = isMobile => ({
 const AssetPreloader = ({ onLoaded }) => {
   useEffect(() => {
     // Preload all necessary models
-    const models = [
-      "/models/castleClouds.glb",
-      "/models/Castle.glb"
-    ]
+    const models = ["/models/castleClouds.glb", "/models/Castle.glb"]
 
     let loadedCount = 0
 
@@ -85,16 +87,16 @@ const AssetPreloader = ({ onLoaded }) => {
         }
 
         // Signal that loading is complete
-        console.log('All models preloaded successfully')
+        console.log("All models preloaded successfully")
         onLoaded()
 
         // Dispatch event for App.jsx to detect
-        window.dispatchEvent(new CustomEvent('scene-ready'))
+        window.dispatchEvent(new CustomEvent("scene-ready"))
       } catch (error) {
-        console.error('Error preloading models:', error)
+        console.error("Error preloading models:", error)
         // Still consider it loaded to avoid blocking the experience
         onLoaded()
-        window.dispatchEvent(new CustomEvent('scene-ready'))
+        window.dispatchEvent(new CustomEvent("scene-ready"))
       }
     }
 
@@ -239,12 +241,14 @@ const SceneController = React.memo(({ section, cameraRef }) => {
 // Scene Content Components
 const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
   <>
+    <ambientLight intensity={1} color="#ffffff" />
     <Environment
       files="/images/bg1.hdr"
       background
       resolution={256}
       ground={{ height: 5, radius: 20, scale: 14 }}
     />
+
     <EffectsTree />
     <Castle activeSection={activeSection} scale={[2, 1.6, 2]} />
     <Flowers />
@@ -260,8 +264,8 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange }) => (
 
 const SecondaryContent = React.memo(() => (
   <>
-   <CloudMask />
-   <CloudGroup
+    <CloudMask />
+    <CloudGroup
       commonProps={{
         concentration: 1.2,
         sizeAttenuation: false,
@@ -304,17 +308,18 @@ const SecondaryContent = React.memo(() => (
 const TertiaryContent = React.memo(() => <MirrorIframe />)
 
 // Scene Content Wrapper
-const SceneContent = React.memo(({ activeSection, onSectionChange, onSceneLoaded }) => {
-  // Signal that the scene content is ready
-  useEffect(() => {
-    if (onSceneLoaded) {
-      onSceneLoaded()
-    }
-  }, [onSceneLoaded])
+const SceneContent = React.memo(
+  ({ activeSection, onSectionChange, onSceneLoaded }) => {
+    // Signal that the scene content is ready
+    useEffect(() => {
+      if (onSceneLoaded) {
+        onSceneLoaded()
+      }
+    }, [onSceneLoaded])
 
-  return (
-    <>
-      {/* <Sparkles
+    return (
+      <>
+        {/* <Sparkles
         count={200}
         size={4}
         speed={0}
@@ -324,15 +329,16 @@ const SceneContent = React.memo(({ activeSection, onSectionChange, onSceneLoaded
         position={[0, 8, 0]}
         noise={2}
       /> */}
-      <PrimaryContent
-        activeSection={activeSection}
-        onSectionChange={onSectionChange}
-      />
-      <SecondaryContent />
-      <TertiaryContent />
-    </>
-  )
-})
+        <PrimaryContent
+          activeSection={activeSection}
+          onSectionChange={onSectionChange}
+        />
+        <SecondaryContent />
+        <TertiaryContent />
+      </>
+    )
+  }
+)
 
 // Main Experience Component
 const Experience = ({ onSceneReady }) => {
@@ -356,7 +362,6 @@ const Experience = ({ onSceneReady }) => {
       onSceneReady()
     }
   }, [assetsLoaded, onSceneReady])
-
 
   useEffect(() => {
     if (assetsLoaded && sceneLoaded && onSceneReady) {
