@@ -119,7 +119,7 @@ const CloudMask = React.memo(({ loadedAssets }) => {
 
   useEffect(() => {
     if (!scene) return
-    
+
     scene.traverse(obj => {
       if (obj.isMesh) {
         obj.material = new THREE.MeshBasicMaterial({
@@ -236,7 +236,7 @@ const SceneController = React.memo(({ section, cameraRef }) => {
   return (
     <>
       <EnvMapLoader />
-      {process.env.NODE_ENV !== "production" && <Perf position="top-left" />}
+      {process.env.NODE_ENV !== "development" && <Perf position="top-left" />}
     </>
   )
 })
@@ -253,9 +253,9 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange, loadedAsset
     />
 
     <EffectsTree />
-    <Castle 
-      activeSection={activeSection} 
-      scale={[2, 1.6, 2]} 
+    <Castle
+      activeSection={activeSection}
+      scale={[2, 1.6, 2]}
       loadedAssets={loadedAssets}
     />
     <Flowers />

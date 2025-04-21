@@ -116,12 +116,10 @@ class AudioManager {
         //   loop: false,
         //   volume: 0.1,
         // });
-    this.registerSound("about", "../sounds/nav.mp3");
     this.registerSound("aidatingcoach", "../sounds/daingcoachmirror.MP3", {
       loop: true,
       volume: 0.1,
     });
-    this.registerSound("download", "../sounds/download.mp3");
     this.registerSound("token", "../sounds/atmambiance.mp3", {
       loop: true,
       volume: 0.1,
@@ -131,9 +129,6 @@ class AudioManager {
       volume: 0.1,
     });
 
-    this.registerSound("click", "/sounds/click.mp3");
-    this.registerSound("hover", "/sounds/hover.mp3");
-
     this.registerSound("ambient", "../sounds/templeambiance.mp3", {
       loop: true,
       volume: 1,
@@ -142,39 +137,14 @@ class AudioManager {
       loop: true,
       volume: 0.3,
     });
-    this.registerSound("water", "../sounds/water.mp3", {
-      loop: true,
-      volume: 0.3,
-    });
     this.registerSound("fountain", "../sounds/fountain.mp3", {
       loop: true,
       volume: 0.3,
     });
-    this.registerSound("portal", "../sounds/portal.mp3", {
-      loop: true,
-      volume: 0.3,
-    });
-    this.registerSound("heartbeat", "/sounds/heartbeat.mp3", {
-      loop: true,
-      volume: 0.2,
-    });
-
-    this.registerSound("mirror", "../sounds/mirror.mp3", {
-      loop: true,
-      volume: 0.4,
-    });
     this.registerSound("atm", "../sounds/atm.mp3", { loop: true, volume: 0.4 });
-    this.registerSound("coins", "../sounds/coins.mp3", {
-      loop: true,
-      volume: 0.3,
-    });
     this.registerSound("scroll", "/sounds/scroll.mp3", {
       loop: true,
       volume: 0.4,
-    });
-    this.registerSound("paper", "/sounds/paper.mp3", {
-      loop: true,
-      volume: 0.3,
     });
 
     this.registerSound("pole", "../sounds/templeambiance.mp3", {
@@ -199,9 +169,6 @@ class AudioManager {
         })
         .catch((error) => {
           this.canAutoplay = false;
-          console.log(
-            "Reprodução automática de áudio não permitida pelo navegador"
-          );
         });
     }
   }
@@ -293,7 +260,6 @@ class AudioManager {
 
     // Do not stop the "pole" sound
     if (id === "pole") {
-      console.log(`Skipping stop for sound: ${id}`);
       return;
     }
 
@@ -312,9 +278,6 @@ class AudioManager {
     const sound = this.sounds[id];
     if (sound.isPlaying) {
       sound.audio.pause();
-      // Mantém isPlaying como true para sabermos que o som estava tocando
-      // mas foi apenas pausado, não completamente parado
-      console.log(`Som ${id} pausado`);
     }
   }
 
@@ -353,7 +316,6 @@ class AudioManager {
               }
             }, stepDuration);
 
-            console.log(`Som ${id} retomado com fade-in`);
           })
           .catch((error) => {
             console.error(`Erro ao retomar o som ${id}:`, error);
@@ -650,7 +612,6 @@ class AudioManager {
   play(id) {
     // NOVA VERIFICAÇÃO: Se o som for de transição e estiver bloqueado globalmente, não tocar
     if (id === "transition" && window.blockTransitionSound) {
-      console.log(`⚠️ Som de transição bloqueado por flag global: ${id}`);
       return;
     }
 
@@ -790,9 +751,6 @@ class AudioManager {
     } else {
       // Se estiver fora do alcance, pare o som
       if (this.sounds[soundId] && this.sounds[soundId].isPlaying) {
-        console.log(
-          `Parando som ${soundId} - fora de alcance: ${distance.toFixed(2)}`
-        );
         this.stop(soundId);
       }
     }
@@ -820,7 +778,6 @@ class AudioManager {
     // Para todos os sons registrados, exceto "pole"
     Object.keys(this.sounds).forEach((id) => {
       if (id !== "pole" && this.sounds[id] && this.sounds[id].isPlaying) {
-        console.log(`Parando som: ${id}`);
 
         // Parar som imediatamente (sem fade)
         this.sounds[id].audio.pause();
