@@ -1829,7 +1829,7 @@ const Castle = ({ activeSection }) => {
         })
         .finally(() => {
           controls.current.enabled = sectionName === "nav"
-          console.log(`Transition to ${sectionName} complete`)
+          // console.log(`Transition to ${sectionName} complete`)
         })
     }
   }

@@ -2,7 +2,7 @@ import { CameraControls, useGLTF, useTexture } from "@react-three/drei"
 import { useFrame } from "@react-three/fiber"
 import { Select } from "@react-three/postprocessing"
 import { button, useControls } from "leva"
-import React, { Suspense, useEffect, useMemo, useRef, useState } from "react"
+import React, { Suspense, useEffect, useMemo, useRef, useState, useCallback } from "react"
 import * as THREE from "three"
 import {
   Color,
@@ -32,7 +32,7 @@ function smoothCameraReturn(position, target) {
     return
   }
 
-  console.log("Smooth transition to position:", position, "target:", target)
+  // console.log("Smooth transition to position:", position, "target:", target)
 
   window.controls.current.enabled = true
 
@@ -63,7 +63,7 @@ window.smoothCameraReturn = function (position, target) {
     return
   }
 
-  console.log("Smooth transition to position:", position, "target:", target)
+  // console.log("Smooth transition to position:", position, "target:", target)
 
   window.controls.current.enabled = true // Important - enable controls first
 
@@ -136,7 +136,6 @@ const NavigationSystem = {
       // NEW: Track navigation source
       setNavigationSource: (elementId, source) => {
         NavigationSystem.navigationSources[elementId] = source
-        console.log(`Set navigation source for ${elementId} to ${source}`)
       },
 
       // NEW: Get navigation source
@@ -243,7 +242,6 @@ const NavigationSystem = {
             targetArray
           )
 
-          // NEW: Set navigation source to 'direct' for direct clicks
           window.navigationSystem.setNavigationSource(elementId, "direct")
         } catch (err) {
           console.error(
@@ -423,9 +421,11 @@ const cameraConfig = {
   },
 }
 
+// Improved useVideoTexture hook
 const useVideoTexture = videoPath => {
   const [texture, setTexture] = useState(null)
   const videoRef = useRef(null)
+  const playAttemptedRef = useRef(false)
 
   useEffect(() => {
     const video = document.createElement("video")
@@ -433,8 +433,6 @@ const useVideoTexture = videoPath => {
     video.loop = true
     video.muted = true
     video.playsInline = true
-    video.autoplay = true
-
     videoRef.current = video
 
     const videoTexture = new VideoTexture(video)
@@ -446,18 +444,60 @@ const useVideoTexture = videoPath => {
 
     // Cleanup
     return () => {
-      video.pause()
+      // Only call pause if the video is actually playing
+      if (!video.paused) {
+        video.pause()
+      }
       video.src = ""
+      videoRef.current = null
+      playAttemptedRef.current = false
     }
   }, [videoPath])
 
-  const playVideo = () => {
-    if (videoRef.current) {
-      videoRef.current.play().catch(err => {
-        console.warn("Could not play video:", err)
-      })
-    }
-  }
+  const playVideo = useCallback(() => {
+    // If no video or already attempted to play, do nothing
+    if (!videoRef.current || playAttemptedRef.current) return
+
+    // Mark that we've attempted to play to avoid multiple attempts
+    playAttemptedRef.current = true
+
+    // Use a promise-based approach to handle play() properly
+    const playPromise = videoRef.current.play()
+
+    // Handle the promise to prevent uncaught promise errors
+    // if (playPromise !== undefined) {
+    //   playPromise
+    //     // .then(() => {
+    //     //   console.log("Video playback started successfully")
+    //     // })
+    //     .catch(err => {
+    //       // Reset the attempt flag on error so we can try again
+    //       playAttemptedRef.current = false
+    //       console.warn("Could not play video:", err)
+
+    //       // If the error is about user interaction, try again after user interaction
+    //       if (err.name === "NotAllowedError") {
+    //         const handleUserInteraction = () => {
+    //           if (videoRef.current && !videoRef.current.paused) return
+
+    //           if (videoRef.current) {
+    //             videoRef.current.play()
+    //               .then(() => {
+    //                 // Remove event listeners once we succeed
+    //                 document.removeEventListener('click', handleUserInteraction)
+    //                 document.removeEventListener('touchstart', handleUserInteraction)
+    //               })
+    //               .catch(e => console.warn("Still couldn't play video:", e))
+    //           }
+    //         }
+
+    //         // Add event listeners for user interaction
+    //         document.addEventListener('click', handleUserInteraction, { once: true })
+    //         document.addEventListener('touchstart', handleUserInteraction, { once: true })
+    //       }
+    //     })
+    // }
+  }, [])
 
   return { texture, playVideo }
 }
@@ -509,7 +549,7 @@ const useCastleHeartMaterial = (
   metalness = 1.4,
   roughness = 0,
   emissiveIntensity = 0,
-  emissiveColor = "#0000000"
+  emissiveColor = "#000000" // Fixed: Corrected hex color from "#0000000" to "#000000"
 ) => {
   const textures = useTexture({
     map: "/texture/castleHeart_Base_colorAO.webp",
@@ -536,12 +576,14 @@ const useCastleHeartMaterial = (
       side: DoubleSide,
       transparent: false,
       alphaTest: 0.05,
-      roughnessMap: textures.roughnessMap,
+      // Only include roughnessMap if it exists in textures
+      ...(textures.roughnessMap && { roughnessMap: textures.roughnessMap }),
       roughness: roughness,
       metalness: metalness,
-      metalnessMap: textures.metalnessMap,
-      emissiveMap: textures.emissiveMap,
-
+      // Only include metalnessMap if it exists in textures
+      ...(textures.metalnessMap && { metalnessMap: textures.metalnessMap }),
+      // Only include emissiveMap if it exists in textures
+      ...(textures.emissiveMap && { emissiveMap: textures.emissiveMap }),
       emissive: new Color(emissiveColor),
       emissiveIntensity: emissiveIntensity,
       blending: NormalBlending,
@@ -731,8 +773,9 @@ const useFloorMaterial = (metalness = 0, roughness = 1) => {
   return useMemo(() => {
     return new MeshPhysicalMaterial({
       map: textures.map,
-      roughnessMap: textures.roughnessMap,
-      metalnessMap: textures.metalnessMap,
+      // Only include maps if they exist
+      ...(textures.roughnessMap && { roughnessMap: textures.roughnessMap }),
+      ...(textures.metalnessMap && { metalnessMap: textures.metalnessMap }),
       roughness: 0.2,
       metalness: 1,
       blending: NormalBlending,
@@ -971,7 +1014,6 @@ const useHallosMaterial = () => {
   useEffect(() => {
     if (clouds) {
       clouds.mapping = THREE.EquirectangularReflectionMapping
-      clouds.encoding = THREE.sRGBEncoding // Proper color space for HDR
     }
   }, [clouds])
 
@@ -1229,7 +1271,7 @@ const usePortalMaterial = () => {
     video.muted = true
     video.playsInline = true
     video.autoplay = true
-    video.play().catch(e => console.error("Video play failed:", e))
+    // video.play().catch(e => console.error("Video play failed:", e))
 
     const videoTexture = new THREE.VideoTexture(video)
     videoTexture.minFilter = THREE.LinearFilter // Filtro básico
@@ -1835,7 +1877,6 @@ const Castle = ({ activeSection }) => {
     //   window.audioManager.startAmbient();
     // }
 
-    console.log(`Playing transition to section: ${sectionName}`)
 
     // Parar sons da seção anterior
     if (activeSection && activeSection !== sectionName) {
@@ -1914,7 +1955,7 @@ const Castle = ({ activeSection }) => {
         })
         .finally(() => {
           controls.current.enabled = sectionName === "nav"
-          console.log(`Transition to ${sectionName} complete`)
+          // console.log(`Transition to ${sectionName} complete`)
         })
     }
   }
@@ -2179,8 +2220,8 @@ const Castle = ({ activeSection }) => {
           setAtmiframeActive={setAtmiframeActive}
           setMirrorIframeActive={setMirrorIframeActive}
           setScrollIframeActive={setScrollIframeActive}
-          onPortalPlay={() => console.log("Portal played")}
-          onWaterPlay={() => console.log("Water played")}
+          // onPortalPlay={() => console.log("Portal played")}
+          // onWaterPlay={() => console.log("Water played")}
         />
       </Suspense>
     </group>

@@ -234,12 +234,12 @@ class AudioManager {
     };
 
     // Configurar o evento de fim da reprodução
-    audio.addEventListener("ended", () => {
-      // Se não for loop, marcar como não tocando mais
-      if (!shouldLoop) {
-        this.sounds[id].isPlaying = false;
-      }
-    });
+    // audio.addEventListener("ended", () => {
+    //   // Se não for loop, marcar como não tocando mais
+    //   if (!shouldLoop) {
+    //     this.sounds[id].isPlaying = false;
+    //   }
+    // });
   }
 
   // Reproduzir um som específico
@@ -299,7 +299,6 @@ class AudioManager {
 
     const sound = this.sounds[id];
     if (sound.isPlaying) {
-      console.log(`STOPPING SOUND: ${id} - Called from:`, new Error().stack);
       sound.audio.pause();
       sound.audio.currentTime = 0;
       sound.isPlaying = false;
@@ -679,11 +678,6 @@ class AudioManager {
     sound.isPlaying = true;
     sound.audio.volume = sound.volume;
 
-    // Log detalhado para sons de transição
-    if (id === "transition") {
-      console.log(`🔊 Tocando som de transição. Bloqueado: ${window.blockTransitionSound ? 'Sim' : 'Não'}`);
-    }
-
     // Usar Promise para compatibilidade com diferentes navegadores
     const playPromise = sound.audio.play();
     if (playPromise !== undefined) {
@@ -822,7 +816,6 @@ class AudioManager {
   }
 
   stopAllAudio() {
-    console.log("Parando TODOS os sons do sistema");
 
     // Para todos os sons registrados, exceto "pole"
     Object.keys(this.sounds).forEach((id) => {

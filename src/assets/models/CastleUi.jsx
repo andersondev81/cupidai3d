@@ -36,11 +36,6 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
 
   const currentSectionKey = sections[section];
 
-  // Debug logging
-  useEffect(() => {
-    console.log(`CastleUI: Current section changed to ${currentSectionKey}`);
-  }, [currentSectionKey]);
-
   // Show overlay after camera animation is complete
   useEffect(() => {
     if (currentSectionKey === "about") {
@@ -97,8 +92,6 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
     e.stopPropagation();
   }
 
-  console.log("Direct handler: Back from About section");
-
   // Feche o About overlay imediatamente
   setShowAboutOverlay(false);
 
@@ -117,7 +110,7 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
   // Para navegação via pole, sempre limpe qualquer posição armazenada
   if (source === "pole" && window.navigationSystem && window.navigationSystem.clearPositionForElement) {
     window.navigationSystem.clearPositionForElement("orb");
-    console.log("Navegação via pole: posição anterior do orb limpa");
+    // console.log("Navegação via pole: posição anterior do orb limpa");
   }
 
   // Manipule a navegação com base na fonte
@@ -169,8 +162,6 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
       e.preventDefault();
       e.stopPropagation();
     }
-
-    console.log("Direct handler: Back from Download section");
 
     // Close the overlay immediately
     setShowDownloadOverlay(false);

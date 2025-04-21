@@ -78,7 +78,6 @@ export default function ScrollIframe({
     // Verificar se precisamos parar todos os sons
     if (window.audioManager && window.audioManager.stopAllAudio) {
       window.audioManager.stopAllAudio()
-      console.log("Todos os sons parados")
     }
 
     console.log(`ScrollIframe: Returning with source: ${source}`)

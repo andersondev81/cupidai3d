@@ -79,13 +79,7 @@ const AssetPreloader = ({ onLoaded }) => {
         for (const url of models) {
           await useGLTF.preload(url)
           loadedCount++
-
-          // Update progress
-          console.log(`Loaded model ${loadedCount} of ${models.length}`)
         }
-
-        // Signal that loading is complete
-        console.log('All models preloaded successfully')
         onLoaded()
 
         // Dispatch event for App.jsx to detect
@@ -423,8 +417,6 @@ const Experience = ({ onSceneReady }) => {
           />
           <AtmIframe
             section={currentSection}
-            onSectionChange={handleSectionChange}
-            cameraRef={cameraRef.current}
           />
         </div>
       </div>
