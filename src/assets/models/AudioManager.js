@@ -141,12 +141,6 @@ class AudioManager {
       loop: true,
       volume: 0.3,
     });
-    this.registerSound("atm", "../sounds/atm.mp3", { loop: true, volume: 0.4 });
-    this.registerSound("scroll", "/sounds/scroll.mp3", {
-      loop: true,
-      volume: 0.4,
-    });
-
     this.registerSound("pole", "../sounds/templeambiance.mp3", {
       loop: true,
       volume: 1,
