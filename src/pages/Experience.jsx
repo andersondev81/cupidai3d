@@ -68,47 +68,68 @@ const getCanvasConfig = isMobile => ({
   shadows: !isMobile,
 })
 
-// Preloader Component - Mantido da main mas adaptado para usar loadedAssets quando disponível
 const AssetPreloader = ({ onLoaded }) => {
   useEffect(() => {
+    // Configure o DRACO loader primeiro - isso é crucial
+    const dracoLoader = new DRACOLoader();
+    // Use o CDN do Google para o decoder
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+    // Defina o tipo como 'js'
+    dracoLoader.setDecoderConfig({ type: 'js' });
+
+    // Configure o GLTFLoader para usar o DRACO
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.setDRACOLoader(dracoLoader);
+
     // Preload all necessary models
     const models = ["/models/castleClouds.glb", "/models/Castle.glb"]
-
-    let loadedCount = 0
+    let loadedCount = 0;
 
     const preloadModels = async () => {
       try {
         for (const url of models) {
-          await useGLTF.preload(url)
-          loadedCount++
-
-          // Update progress
-          console.log(`Loaded model ${loadedCount} of ${models.length}`)
+          // Use o loader configurado manualmente
+          await new Promise((resolve, reject) => {
+            gltfLoader.load(
+              url,
+              (gltf) => {
+                // Armazene o modelo no cache do useGLTF
+                const key = url.startsWith('./') ? url.slice(2) : url;
+                useGLTF.cache.set(key, gltf);
+                loadedCount++;
+                console.log(`Loaded model ${loadedCount} of ${models.length}`);
+                resolve(gltf);
+              },
+              undefined,
+              reject
+            );
+          });
         }
 
         // Signal that loading is complete
-        console.log("All models preloaded successfully")
-        onLoaded()
+        console.log("All models preloaded successfully");
+        onLoaded();
 
         // Dispatch event for App.jsx to detect
-        window.dispatchEvent(new CustomEvent("scene-ready"))
+        window.dispatchEvent(new CustomEvent("scene-ready"));
       } catch (error) {
-        console.error("Error preloading models:", error)
+        console.error("Error preloading models:", error);
         // Still consider it loaded to avoid blocking the experience
-        onLoaded()
-        window.dispatchEvent(new CustomEvent("scene-ready"))
+        onLoaded();
+        window.dispatchEvent(new CustomEvent("scene-ready"));
       }
     }
 
-    preloadModels()
+    preloadModels();
 
     // Cleanup
     return () => {
-      models.forEach(url => useGLTF.clear(url))
+      dracoLoader.dispose();
+      models.forEach(url => useGLTF.clear(url));
     }
-  }, [onLoaded])
+  }, [onLoaded]);
 
-  return null
+  return null;
 }
 
 // Cloud Mask Component - Modificado para suportar loadedAssets
@@ -119,7 +140,7 @@ const CloudMask = React.memo(({ loadedAssets }) => {
 
   useEffect(() => {
     if (!scene) return
-    
+
     scene.traverse(obj => {
       if (obj.isMesh) {
         obj.material = new THREE.MeshBasicMaterial({
@@ -253,9 +274,9 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange, loadedAsset
     />
 
     <EffectsTree />
-    <Castle 
-      activeSection={activeSection} 
-      scale={[2, 1.6, 2]} 
+    <Castle
+      activeSection={activeSection}
+      scale={[2, 1.6, 2]}
       loadedAssets={loadedAssets}
     />
     <Flowers />

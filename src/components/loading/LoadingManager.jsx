@@ -1,4 +1,4 @@
-// LoadingManager.js - Versão simplificada apenas para modelos
+// LoadingManager.js - Versão corrigida para o Vercel
 import { LoadingManager } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
@@ -78,11 +78,19 @@ class AssetsLoadingManager {
       if (this.onError) this.onError(url);
     };
 
-    // GLTF + DRACO para compressão
+    // GLTF sem DRACO - vamos evitar usar o DRACO para simplificar
     this.gltfLoader = new GLTFLoader(this.manager);
-    this.dracoLoader = new DRACOLoader();
-    this.dracoLoader.setDecoderPath('/draco/');
-    this.gltfLoader.setDRACOLoader(this.dracoLoader);
+
+    // Se quiser usar DRACO de forma segura, use o CDN:
+    const dracoLoader = new DRACOLoader();
+
+    // Use o CDN do three.js para carregar os arquivos do DRACO
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+
+    // Importante: definir o tipo de worker
+    dracoLoader.setDecoderConfig({ type: 'js' });
+
+    this.gltfLoader.setDRACOLoader(dracoLoader);
   }
 
   // Registro de modelos para carregamento
@@ -99,6 +107,16 @@ class AssetsLoadingManager {
     const loadingScreen = document.getElementById('loading-screen');
     if (loadingScreen) {
       loadingScreen.style.display = 'flex';
+    }
+
+    // Se não há modelos para carregar, considere como carregado
+    if (this.assets.models.length === 0) {
+      setTimeout(() => {
+        this.loaded = true;
+        window.dispatchEvent(new CustomEvent('loading-complete'));
+        if (this.onLoad) this.onLoad();
+      }, 500);
+      return;
     }
 
     // Carrega todos os modelos
