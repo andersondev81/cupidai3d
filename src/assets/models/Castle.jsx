@@ -127,10 +127,6 @@ const NavigationSystem = {
       storePosition: (elementId, position, target) => {
         NavigationSystem.positions[elementId] = { position, target }
         audioManager.play("transition")
-        console.log(
-          `Stored camera position for ${elementId}:`,
-          NavigationSystem.positions[elementId]
-        )
       },
 
       // NEW: Track navigation source
@@ -164,7 +160,6 @@ const NavigationSystem = {
         // NEW: Also clear navigation source
         if (NavigationSystem.navigationSources[elementId]) {
           delete NavigationSystem.navigationSources[elementId]
-          console.log(`Cleared navigation source for ${elementId}`)
         }
       },
 
@@ -177,7 +172,6 @@ const NavigationSystem = {
 
         // If source is pole, we should return to the pole section
         if (source === "pole") {
-          console.log("Source is pole, returning to nav section")
           if (window.globalNavigation && window.globalNavigation.navigateTo) {
             window.globalNavigation.navigateTo("nav")
             return true
@@ -188,7 +182,6 @@ const NavigationSystem = {
         if (storedPosition && source === "direct") {
           const { position, target } = storedPosition
           if (window.controls && window.controls.current) {
-            console.log(`Returning to stored position for ${elementId}`)
             // Return camera to stored position
             window.controls.current
               .setLookAt(
@@ -216,7 +209,6 @@ const NavigationSystem = {
   createElementHandlers: (elementId, navigateTo, setActive, isActive) => {
     const handleElementClick = e => {
       e.stopPropagation()
-      console.log(`${elementId} clicked - navigating to section`)
 
       // Prevent navigation if already active
       if (isActive) return
@@ -529,7 +521,6 @@ const useCastleMaterial = () => {
     return new MeshStandardMaterial({
       map: textures.map,
       roughnessMap: textures.roughnessMap,
-      metalnessMap: textures.metalnessMap,
       roughness: 0.2,
       blending: NormalBlending,
       envMap: clouds,
@@ -945,7 +936,6 @@ const useWingsMaterial = () => {
       new MeshStandardMaterial({
         map: textures.map,
         roughnessMap: textures.roughnessMap,
-        metalnessMap: textures.metalnessMap,
         roughness: 0.2,
         blending: NormalBlending,
         envMap: clouds,
@@ -1337,7 +1327,6 @@ const usePortalMaterial = () => {
 
 const handleAtmClick = e => {
   e.stopPropagation()
-  console.log("ATM clicked - navigating to token section")
   // Prevent navigation if ATM iframe is already active
   if (atmIframeActive) return
   audioManager.play("transition")
@@ -1496,7 +1485,6 @@ const CastleModel = ({
           window.audioManager.sounds.orb.audio.volume = orbVolume
 
           if (!window.audioManager.sounds.orb.isPlaying) {
-            console.log("Iniciando som da orb")
             window.audioManager.play("orb")
           }
         } else {
@@ -1536,7 +1524,6 @@ const CastleModel = ({
           window.audioManager.sounds.pole.audio.volume = poleVolume
           // Iniciar reprodução se não estiver tocando
           if (!window.audioManager.sounds.pole.isPlaying) {
-            // console.log("Iniciando som do pole")
             window.audioManager.play("pole")
           }
         } else {
@@ -1548,7 +1535,6 @@ const CastleModel = ({
       } else {
         // Fora do alcance, parar o som
         if (window.audioManager.sounds.pole.isPlaying) {
-          console.log("Parando som do pole - fora de alcance")
           window.audioManager.stop("pole")
         }
       }
@@ -1585,7 +1571,6 @@ const CastleModel = ({
 
           // Iniciar reprodução se não estiver tocando
           if (!window.audioManager.sounds.fountain.isPlaying) {
-            console.log("Iniciando som da fonte")
             window.audioManager.play("fountain")
           }
         } else {
@@ -1597,7 +1582,6 @@ const CastleModel = ({
       } else {
         // Fora do alcance, parar o som
         if (window.audioManager.sounds.fountain.isPlaying) {
-          console.log("Parando som da fonte - fora de alcance")
           window.audioManager.stop("fountain")
         }
       }
@@ -1797,16 +1781,13 @@ const CastleModel = ({
             setAtmiframeActive(false)
             audioManager.play("transition")
             if (source === "pole") {
-              console.log("ATM: Source is pole, returning to nav")
               onCastleClick("nav")
             } else {
               const storedPosition = window.navigationSystem.getPosition("atm")
               if (storedPosition) {
                 const { position, target } = storedPosition
                 smoothCameraReturn(position, target)
-                console.log("Returning to stored ATM position")
               } else {
-                console.log("No stored position for ATM, going to nav")
                 onCastleClick("nav")
               }
             }
@@ -1824,7 +1805,6 @@ const CastleModel = ({
           setTimeout(() => {
             if (source === "pole") {
               // If coming from pole, go back to nav section
-              console.log("Mirror: Source is pole, returning to nav")
               onCastleClick("nav")
             } else {
               const storedPosition =
@@ -1832,10 +1812,8 @@ const CastleModel = ({
               if (storedPosition) {
                 const { position, target } = storedPosition
                 smoothCameraReturn(position, target)
-                console.log("Returning to stored Mirror position")
               } else {
                 // Fallback to nav if no stored position
-                console.log("No stored position for Mirror, going to nav")
                 onCastleClick("nav")
               }
             }
@@ -1853,7 +1831,6 @@ const CastleModel = ({
           setTimeout(() => {
             if (source === "pole") {
               // If coming from pole, go back to nav section
-              console.log("Scroll: Source is pole, returning to nav")
               onCastleClick("nav")
             } else {
               const storedPosition =
@@ -1861,10 +1838,8 @@ const CastleModel = ({
               if (storedPosition) {
                 const { position, target } = storedPosition
                 smoothCameraReturn(position, target)
-                console.log("Returning to stored Scroll position")
               } else {
                 // Fallback to nav if no stored position
-                console.log("No stored position for Scroll, going to nav")
                 onCastleClick("nav")
               }
             }

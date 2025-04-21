@@ -61,7 +61,6 @@ const LoadingUI = ({ onAnimationComplete }) => {
   useEffect(() => {
     const handleLoadingStart = (e) => {
       const { itemsTotal } = e.detail;
-      console.log(`Iniciando carregamento com ${itemsTotal} itens.`);
     };
 
     const handleLoadingProgress = (e) => {
@@ -75,7 +74,6 @@ const LoadingUI = ({ onAnimationComplete }) => {
     };
 
     const handleLoadingComplete = () => {
-      console.log('Carregamento concluído.');
       targetProgressRef.current = 100;
     };
 

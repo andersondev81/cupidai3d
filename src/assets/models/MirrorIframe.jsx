@@ -8,7 +8,6 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
 
   useEffect(() => {
     if (isActive) {
-      console.log("MirrorIframe: Ativando conteúdo e sons");
       if (window.audioManager && window.audioManager.sounds.mirror) {
         window.audioManager.play('mirror');
       }
@@ -41,30 +40,21 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
 
   // Function to handle Back to Main button click
   const handleBackToMain = () => {
-    console.log("Botão de retorno clicado")
 
     // Get the navigation source first
     const source = window.navigationSystem &&
                   window.navigationSystem.getNavigationSource ?
                   window.navigationSystem.getNavigationSource('mirror') : 'direct'
 
-    console.log(`Mirror return button clicked, navigation source: ${source}`)
-
-    // FIXED CONDITION: Play transition sound for direct navigation
     if (source === "direct") {
-      console.log("Tentando reproduzir som de transição para navegação direta...")
-
       // Use timeout to ensure the sound plays
       setTimeout(() => {
         if (window.audioManager) {
           window.audioManager.play("transition")
-          console.log("✓ Som de transição reproduzido")
         } else {
           console.log("✗ audioManager não disponível")
         }
       }, 50)
-    } else {
-      console.log("Sem som de transição para navegação via pole")
     }
 
     // Primeiro, pare o som do mirror
@@ -90,7 +80,6 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
     setTimeout(() => {
       // Call the callback function provided by parent component
       if (onReturnToMain) {
-        console.log(`Chamando onReturnToMain com source: ${source}`)
         onReturnToMain(source)
       }
     }, 300)

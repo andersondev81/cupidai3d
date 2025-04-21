@@ -43,44 +43,30 @@ export default function ScrollIframe({
     setShowButtons(false)
     setShowContent(false)
 
-    console.log("Botão de retorno clicado")
-
     // Get the navigation source from the system
     const source = window.navigationSystem &&
                   window.navigationSystem.getNavigationSource ?
                   window.navigationSystem.getNavigationSource('scroll') : 'direct'
 
-    console.log(`Scroll return button clicked, navigation source: ${source}`)
-
     // FIXED CONDITION: Play transition sound for direct navigation
     if (source === "direct") {
-      console.log("Tentando reproduzir som de transição para navegação direta...")
-
       // Use timeout to ensure the sound plays
       setTimeout(() => {
         if (window.audioManager) {
           window.audioManager.play("transition")
-          console.log("✓ Som de transição reproduzido")
-        } else {
-          console.log("✗ audioManager não disponível")
         }
       }, 50)
-    } else {
-      console.log("Sem som de transição para navegação via pole")
     }
 
     // Stop current sounds
     if (window.audioManager && window.audioManager.sounds.scroll) {
       window.audioManager.stop('scroll')
-      console.log("Som do scroll parado")
     }
 
     // Verificar se precisamos parar todos os sons
     if (window.audioManager && window.audioManager.stopAllAudio) {
       window.audioManager.stopAllAudio()
     }
-
-    console.log(`ScrollIframe: Returning with source: ${source}`)
 
     // Short delay to let the UI update first
     setTimeout(() => {
