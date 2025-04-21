@@ -34,7 +34,6 @@ class AssetsLoadingManager {
   setupLoaders() {
     // Configura os callbacks do LoadingManager
     this.manager.onStart = (url, itemsLoaded, itemsTotal) => {
-      console.log(`Iniciando carregamento: ${url}`);
       this.itemsTotal = itemsTotal;
 
       // Dispatcha evento para a UI
@@ -59,9 +58,7 @@ class AssetsLoadingManager {
 
     this.manager.onLoad = () => {
       this.loaded = true;
-      console.log('Carregamento completo!');
 
-      // Dispatcha evento para a UI
       window.dispatchEvent(new CustomEvent('loading-complete'));
 
       if (this.onLoad) this.onLoad();
@@ -70,7 +67,6 @@ class AssetsLoadingManager {
     this.manager.onError = (url) => {
       console.error(`Erro ao carregar: ${url}`);
 
-      // Dispatcha evento para a UI
       window.dispatchEvent(new CustomEvent('loading-error', {
         detail: { url }
       }));
@@ -78,38 +74,29 @@ class AssetsLoadingManager {
       if (this.onError) this.onError(url);
     };
 
-    // GLTF sem DRACO - vamos evitar usar o DRACO para simplificar
     this.gltfLoader = new GLTFLoader(this.manager);
 
-    // Se quiser usar DRACO de forma segura, use o CDN:
     const dracoLoader = new DRACOLoader();
 
-    // Use o CDN do three.js para carregar os arquivos do DRACO
     dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
 
-    // Importante: definir o tipo de worker
     dracoLoader.setDecoderConfig({ type: 'js' });
 
     this.gltfLoader.setDRACOLoader(dracoLoader);
   }
 
-  // Registro de modelos para carregamento
   addModel(url, name) {
     this.assets.models.push({ url, name });
     return this;
   }
 
-  // Método principal para iniciar o carregamento
   startLoading() {
-    console.log('Iniciando carregamento de modelos...');
 
-    // Mostra a tela de loading se existir
     const loadingScreen = document.getElementById('loading-screen');
     if (loadingScreen) {
       loadingScreen.style.display = 'flex';
     }
 
-    // Se não há modelos para carregar, considere como carregado
     if (this.assets.models.length === 0) {
       setTimeout(() => {
         this.loaded = true;
@@ -130,7 +117,6 @@ class AssetsLoadingManager {
         (xhr) => {
           if (xhr.lengthComputable) {
             const percentComplete = (xhr.loaded / xhr.total) * 100;
-            console.log(`${model.name}: ${Math.round(percentComplete)}% carregado`);
           }
         },
         // Callback de erro
@@ -151,15 +137,13 @@ class AssetsLoadingManager {
 
         if (this.onLoad) this.onLoad();
       }
-    }, 10000); // 10 segundos
+    }, 10000);
   }
 
-  // Métodos de acesso aos modelos carregados
   getModel(name) {
     return this.loadedAssets.models[name];
   }
 
-  // Método para verificar se tudo está carregado
   isLoaded() {
     return this.loaded;
   }

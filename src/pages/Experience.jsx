@@ -10,7 +10,6 @@ import { useGLTF, Environment, Sparkles, useMask } from "@react-three/drei"
 import { Canvas, useThree } from "@react-three/fiber"
 import * as THREE from "three"
 
-// Assets & Models
 import Castle from "../assets/models/Castle"
 import { CastleUi } from "../assets/models/CastleUi"
 import { Flowers } from "../assets/models/Flowers"
@@ -21,13 +20,11 @@ import AtmIframe from "../assets/models/AtmIframe"
 import MirrorIframe from "../assets/models/MirrorIframe"
 import Orb from "../assets/models/Orb"
 
-// Helpers & Configs
 import { CAMERA_CONFIG } from "../components/cameraConfig"
 import { EffectsTree } from "../components/helpers/EffectsTree"
 import EnvMapLoader from "../components/helpers/EnvMapLoader"
 import Canvasload from "../components/helpers/Canvasload"
 
-// Mobile Detection Hook
 const useMobileDetection = () => {
   const [isMobile, setIsMobile] = useState(false)
 
@@ -70,30 +67,23 @@ const getCanvasConfig = isMobile => ({
 
 const AssetPreloader = ({ onLoaded }) => {
   useEffect(() => {
-    // Configure o DRACO loader primeiro - isso é crucial
     const dracoLoader = new DRACOLoader();
-    // Use o CDN do Google para o decoder
     dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
-    // Defina o tipo como 'js'
     dracoLoader.setDecoderConfig({ type: 'js' });
 
-    // Configure o GLTFLoader para usar o DRACO
     const gltfLoader = new GLTFLoader();
     gltfLoader.setDRACOLoader(dracoLoader);
 
-    // Preload all necessary models
     const models = ["/models/castleClouds.glb", "/models/Castle.glb"]
     let loadedCount = 0;
 
     const preloadModels = async () => {
       try {
         for (const url of models) {
-          // Use o loader configurado manualmente
           await new Promise((resolve, reject) => {
             gltfLoader.load(
               url,
               (gltf) => {
-                // Armazene o modelo no cache do useGLTF
                 const key = url.startsWith('./') ? url.slice(2) : url;
                 useGLTF.cache.set(key, gltf);
                 loadedCount++;
@@ -106,15 +96,12 @@ const AssetPreloader = ({ onLoaded }) => {
           });
         }
 
-        // Signal that loading is complete
         console.log("All models preloaded successfully");
         onLoaded();
 
-        // Dispatch event for App.jsx to detect
         window.dispatchEvent(new CustomEvent("scene-ready"));
       } catch (error) {
         console.error("Error preloading models:", error);
-        // Still consider it loaded to avoid blocking the experience
         onLoaded();
         window.dispatchEvent(new CustomEvent("scene-ready"));
       }
@@ -369,8 +356,6 @@ const Experience = ({ onSceneReady, loadedAssets, isReady }) => {
   const isMobile = useMobileDetection()
   const canvasConfig = getCanvasConfig(isMobile)
 
-  // Se temos loadedAssets pré-carregados do novo sistema, use-os
-  // Caso contrário, carregue modelos diretamente (compatibilidade)
   const handleAssetsLoaded = useCallback(() => {
     setAssetsLoaded(true)
   }, [])
@@ -426,7 +411,7 @@ const Experience = ({ onSceneReady, loadedAssets, isReady }) => {
           {!loadedAssets && <AssetPreloader onLoaded={handleAssetsLoaded} />}
 
           {/* Main scene content with loading fallback */}
-          <Suspense fallback={<Canvasload insideCanvas={true} />}>
+          <Suspense>
             <SceneController section={currentSection} cameraRef={cameraRef} />
             <SceneContent
               activeSection={activeSection}

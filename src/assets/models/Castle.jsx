@@ -529,7 +529,6 @@ const useCastleMaterial = () => {
     return new MeshStandardMaterial({
       map: textures.map,
       roughnessMap: textures.roughnessMap,
-      metalnessMap: textures.metalnessMap,
       roughness: 0.2,
       blending: NormalBlending,
       envMap: clouds,
@@ -945,7 +944,6 @@ const useWingsMaterial = () => {
       new MeshStandardMaterial({
         map: textures.map,
         roughnessMap: textures.roughnessMap,
-        metalnessMap: textures.metalnessMap,
         roughness: 0.2,
         blending: NormalBlending,
         envMap: clouds,
@@ -1496,7 +1494,6 @@ const CastleModel = ({
           window.audioManager.sounds.orb.audio.volume = orbVolume
 
           if (!window.audioManager.sounds.orb.isPlaying) {
-            console.log("Iniciando som da orb")
             window.audioManager.play("orb")
           }
         } else {
@@ -1536,7 +1533,6 @@ const CastleModel = ({
           window.audioManager.sounds.pole.audio.volume = poleVolume
           // Iniciar reprodução se não estiver tocando
           if (!window.audioManager.sounds.pole.isPlaying) {
-            // console.log("Iniciando som do pole")
             window.audioManager.play("pole")
           }
         } else {
@@ -1585,7 +1581,6 @@ const CastleModel = ({
 
           // Iniciar reprodução se não estiver tocando
           if (!window.audioManager.sounds.fountain.isPlaying) {
-            console.log("Iniciando som da fonte")
             window.audioManager.play("fountain")
           }
         } else {
