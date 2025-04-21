@@ -116,12 +116,10 @@ class AudioManager {
         //   loop: false,
         //   volume: 0.1,
         // });
-    this.registerSound("about", "../sounds/nav.mp3");
     this.registerSound("aidatingcoach", "../sounds/daingcoachmirror.MP3", {
       loop: true,
       volume: 0.1,
     });
-    this.registerSound("download", "../sounds/download.mp3");
     this.registerSound("token", "../sounds/atmambiance.mp3", {
       loop: true,
       volume: 0.1,
@@ -131,9 +129,6 @@ class AudioManager {
       volume: 0.1,
     });
 
-    this.registerSound("click", "/sounds/click.mp3");
-    this.registerSound("hover", "/sounds/hover.mp3");
-
     this.registerSound("ambient", "../sounds/templeambiance.mp3", {
       loop: true,
       volume: 1,
@@ -142,39 +137,14 @@ class AudioManager {
       loop: true,
       volume: 0.3,
     });
-    this.registerSound("water", "../sounds/water.mp3", {
-      loop: true,
-      volume: 0.3,
-    });
     this.registerSound("fountain", "../sounds/fountain.mp3", {
       loop: true,
       volume: 0.3,
     });
-    this.registerSound("portal", "../sounds/portal.mp3", {
-      loop: true,
-      volume: 0.3,
-    });
-    this.registerSound("heartbeat", "/sounds/heartbeat.mp3", {
-      loop: true,
-      volume: 0.2,
-    });
-
-    this.registerSound("mirror", "../sounds/mirror.mp3", {
-      loop: true,
-      volume: 0.4,
-    });
     this.registerSound("atm", "../sounds/atm.mp3", { loop: true, volume: 0.4 });
-    this.registerSound("coins", "../sounds/coins.mp3", {
-      loop: true,
-      volume: 0.3,
-    });
     this.registerSound("scroll", "/sounds/scroll.mp3", {
       loop: true,
       volume: 0.4,
-    });
-    this.registerSound("paper", "/sounds/paper.mp3", {
-      loop: true,
-      volume: 0.3,
     });
 
     this.registerSound("pole", "../sounds/templeambiance.mp3", {

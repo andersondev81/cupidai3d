@@ -244,7 +244,7 @@ const SceneController = React.memo(({ section, cameraRef }) => {
   return (
     <>
       <EnvMapLoader />
-      {process.env.NODE_ENV !== "production" && <Perf position="top-left" />}
+      {process.env.NODE_ENV !== "development" && <Perf position="top-left" />}
     </>
   )
 })
