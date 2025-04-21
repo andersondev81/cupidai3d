@@ -123,7 +123,7 @@ export function Pole({ onSectionChange, ...props }) {
   const materialFlowers = useFlowersMaterial()
   const createClickHandler = (sectionIndex, sectionName) => e => {
     e.stopPropagation()
-    console.log(`Pole: Clicked on section ${sectionName}`)
+    // console.log(`Pole: Clicked on section ${sectionName}`)
 
     // Tag this navigation as coming from the pole
     if (window.navigationSystem) {
@@ -140,10 +140,8 @@ export function Pole({ onSectionChange, ...props }) {
           : null
 
       if (elementId) {
-        // NEW: Set navigation source to 'pole'
         if (window.navigationSystem.setNavigationSource) {
           window.navigationSystem.setNavigationSource(elementId, "pole")
-          console.log(`Pole: Set navigation source for ${elementId} to 'pole'`)
         }
 
         // Clear any stored position to ensure we don't return to a specific camera position
@@ -154,18 +152,18 @@ export function Pole({ onSectionChange, ...props }) {
     }
 
     if (onSectionChange && typeof onSectionChange === "function") {
-      console.log(`Pole: Using onSectionChange callback for ${sectionName}`)
+      // console.log(`Pole: Using onSectionChange callback for ${sectionName}`)
       onSectionChange(sectionIndex, sectionName)
     }
 
     if (window.globalNavigation && window.globalNavigation.navigateTo) {
-      console.log(`Pole: Using global navigation for ${sectionName}`)
+      // console.log(`Pole: Using global navigation for ${sectionName}`)
       window.globalNavigation.navigateTo(sectionName)
     }
 
-    console.log(
-      `Pole: Navigation to ${sectionName} attempted. Check if camera moved.`
-    )
+    // console.log(
+    //   `Pole: Navigation to ${sectionName} attempted. Check if camera moved.`
+    // )
   }
 
   const pointerHandlers = {

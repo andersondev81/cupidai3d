@@ -66,7 +66,6 @@ const AtmIframe = ({ onReturnToMain, isActive, ...props }) => {
     // Verificar se precisamos parar todos os sons
     if (window.audioManager && window.audioManager.stopAllAudio) {
       window.audioManager.stopAllAudio()
-      console.log("Todos os sons parados")
     }
 
     // Hide content after a short delay
@@ -82,7 +81,6 @@ const AtmIframe = ({ onReturnToMain, isActive, ...props }) => {
       }, 100)
     }, 100)
   }
-
 
   const containerStyle = {
     width: "100%",

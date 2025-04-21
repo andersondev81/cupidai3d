@@ -131,7 +131,7 @@ const OrbMesh = React.memo(({ isZoomed, setIsZoomed, onSectionChange }) => {
     if (navigationSource === "pole") {
       if (window.navigationSystem?.clearPositionForElement) {
         window.navigationSystem.clearPositionForElement("orb")
-        console.log("Navegação via pole: posição anterior do orb limpa")
+        // console.log("Navegação via pole: posição anterior do orb limpa")
       }
     }
     // Somente armazene a posição se for navegação direta

@@ -11,7 +11,6 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
       console.log("MirrorIframe: Ativando conteúdo e sons");
       if (window.audioManager && window.audioManager.sounds.mirror) {
         window.audioManager.play('mirror');
-        console.log("Som do mirror iniciado");
       }
 
       const timer = setTimeout(() => {
@@ -24,10 +23,8 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
 
       return () => {
         clearTimeout(timer);
-        // Parar o som do mirror quando o componente é desmontado
         if (window.audioManager && window.audioManager.sounds.mirror) {
           window.audioManager.stop('mirror');
-          console.log("Som do mirror parado (desmontagem)");
         }
       };
     } else {
@@ -38,7 +35,6 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
       // Parar o som quando o componente fica inativo
       if (window.audioManager && window.audioManager.sounds.mirror) {
         window.audioManager.stop('mirror');
-        console.log("Som do mirror parado (inativação)");
       }
     }
   }, [isActive]);
@@ -74,13 +70,11 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
     // Primeiro, pare o som do mirror
     if (window.audioManager && window.audioManager.sounds.mirror) {
       window.audioManager.stop('mirror')
-      console.log("Som do mirror parado (retorno ao main)")
     }
 
     // Verificar se precisamos parar todos os sons
     if (window.audioManager && window.audioManager.stopAllAudio) {
       window.audioManager.stopAllAudio()
-      console.log("Todos os sons parados")
     }
 
     // Hide content for a smooth transition
