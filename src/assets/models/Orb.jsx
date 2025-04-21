@@ -127,14 +127,11 @@ const OrbMesh = React.memo(({ isZoomed, setIsZoomed, onSectionChange }) => {
   const handleNavigation = (navigationSource = "direct") => {
     audioManager.play("transition")
 
-    // Se a navegação for via pole, limpe qualquer posição armazenada anterior
     if (navigationSource === "pole") {
       if (window.navigationSystem?.clearPositionForElement) {
         window.navigationSystem.clearPositionForElement("orb")
-        // console.log("Navegação via pole: posição anterior do orb limpa")
       }
     }
-    // Somente armazene a posição se for navegação direta
     else if (navigationSource === "direct" && window.controls?.current) {
       try {
         const position = window.controls.current.getPosition()
@@ -146,7 +143,6 @@ const OrbMesh = React.memo(({ isZoomed, setIsZoomed, onSectionChange }) => {
             [position.x, position.y, position.z],
             [target.x, target.y, target.z]
           )
-          console.log("Posição da câmera armazenada para o orb (navegação direta)")
         }
       } catch (err) {
         console.error("Failed to store camera position:", err)

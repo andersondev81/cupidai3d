@@ -642,7 +642,6 @@ class AudioManager {
   play(id) {
     // NOVA VERIFICAÇÃO: Se o som for de transição e estiver bloqueado globalmente, não tocar
     if (id === "transition" && window.blockTransitionSound) {
-      console.log(`⚠️ Som de transição bloqueado por flag global: ${id}`);
       return;
     }
 

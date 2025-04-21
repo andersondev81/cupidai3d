@@ -39,16 +39,13 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
   // Show overlay after camera animation is complete
   useEffect(() => {
     if (currentSectionKey === "about") {
-      console.log("About section active, preparing to show overlay");
       // Make sure we're waiting enough time for the animation
       const timer = setTimeout(() => {
-        console.log("Showing AboutOverlay now");
         setShowAboutOverlay(true);
       }, 1200); // Reduced slightly from 1500ms
       return () => clearTimeout(timer);
     }
     else if (currentSectionKey === "download") {
-      console.log("Download section active, preparing to show overlay");
       const timer = setTimeout(() => {
         setShowDownloadOverlay(true);
       }, 1200);
@@ -65,7 +62,6 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
   useEffect(() => {
     const handleOrbNavigation = (event) => {
       if (event.detail && event.detail.section === "about") {
-        console.log("Detected orb navigation to about section");
         // Force section change if needed
         if (currentSectionKey !== "about") {
           onSectionChange(1, "about");
@@ -92,46 +88,35 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
     e.stopPropagation();
   }
 
-  // Feche o About overlay imediatamente
   setShowAboutOverlay(false);
 
-  // Obtenha a fonte de navegação para o orb
   const source = window.navigationSystem && window.navigationSystem.getNavigationSource
     ? window.navigationSystem.getNavigationSource("orb")
     : "direct";
 
-  console.log(`About return button clicked, navigation source: ${source}`);
-
-  // Toque som de transição para navegação direta
   if (source === "direct" && window.audioManager) {
     window.audioManager.play("transition");
   }
 
-  // Para navegação via pole, sempre limpe qualquer posição armazenada
   if (source === "pole" && window.navigationSystem && window.navigationSystem.clearPositionForElement) {
     window.navigationSystem.clearPositionForElement("orb");
-    // console.log("Navegação via pole: posição anterior do orb limpa");
   }
 
   // Manipule a navegação com base na fonte
   setTimeout(() => {
     if (source === "pole") {
       // Se vier do pole, volte para a seção nav
-      console.log("About: Source is pole, returning to nav");
       onSectionChange(0, "nav");
       if (window.globalNavigation && window.globalNavigation.navigateTo) {
         window.globalNavigation.navigateTo("nav");
       }
     } else {
-      // Verifique se há uma posição armazenada
       const storedPosition = window.navigationSystem && window.navigationSystem.getPosition
         ? window.navigationSystem.getPosition("orb")
         : null;
 
       if (storedPosition) {
-        // Retorne para a posição armazenada
         const { position, target } = storedPosition;
-        console.log("Returning to stored Orb position:", position, target);
 
         if (window.smoothCameraReturn) {
           window.smoothCameraReturn(position, target);
@@ -140,8 +125,6 @@ export const CastleUi = ({ section = 0, onSectionChange, cameraRef }) => {
         // Ainda atualize a seção ativa
         onSectionChange(0, "nav");
       } else {
-        // Volte para nav se não houver posição armazenada
-        console.log("No stored position for Orb, going to nav");
         onSectionChange(0, "nav");
         if (window.globalNavigation && window.globalNavigation.navigateTo) {
           window.globalNavigation.navigateTo("nav");
