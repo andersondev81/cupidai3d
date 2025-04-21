@@ -1,5 +1,11 @@
 import { Perf } from "r3f-perf"
-import React, { Suspense, useState, useEffect, useCallback, useRef } from "react"
+import React, {
+  Suspense,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react"
 import { useGLTF, Environment, Sparkles, useMask } from "@react-three/drei"
 import { Canvas, useThree } from "@react-three/fiber"
 import * as THREE from "three"
@@ -62,16 +68,59 @@ const getCanvasConfig = isMobile => ({
   shadows: !isMobile,
 })
 
-// Cloud Mask Component that uses loaded assets
+// Preloader Component - Mantido da main mas adaptado para usar loadedAssets quando disponível
+const AssetPreloader = ({ onLoaded }) => {
+  useEffect(() => {
+    // Preload all necessary models
+    const models = ["/models/castleClouds.glb", "/models/Castle.glb"]
+
+    let loadedCount = 0
+
+    const preloadModels = async () => {
+      try {
+        for (const url of models) {
+          await useGLTF.preload(url)
+          loadedCount++
+
+          // Update progress
+          console.log(`Loaded model ${loadedCount} of ${models.length}`)
+        }
+
+        // Signal that loading is complete
+        console.log("All models preloaded successfully")
+        onLoaded()
+
+        // Dispatch event for App.jsx to detect
+        window.dispatchEvent(new CustomEvent("scene-ready"))
+      } catch (error) {
+        console.error("Error preloading models:", error)
+        // Still consider it loaded to avoid blocking the experience
+        onLoaded()
+        window.dispatchEvent(new CustomEvent("scene-ready"))
+      }
+    }
+
+    preloadModels()
+
+    // Cleanup
+    return () => {
+      models.forEach(url => useGLTF.clear(url))
+    }
+  }, [onLoaded])
+
+  return null
+}
+
+// Cloud Mask Component - Modificado para suportar loadedAssets
 const CloudMask = React.memo(({ loadedAssets }) => {
   const stencil = useMask(1, true)
-  // Use pre-loaded model if available
-  const cloudModel = loadedAssets?.models?.clouds?.scene || useGLTF("/models/castleClouds.glb").scene
+  // Use pre-loaded model if available, otherwise load directly
+  const { scene } = loadedAssets?.models?.clouds || useGLTF("/models/castleClouds.glb")
 
   useEffect(() => {
-    if (!cloudModel) return
-
-    cloudModel.traverse(obj => {
+    if (!scene) return
+    
+    scene.traverse(obj => {
       if (obj.isMesh) {
         obj.material = new THREE.MeshBasicMaterial({
           ...stencil,
@@ -79,12 +128,10 @@ const CloudMask = React.memo(({ loadedAssets }) => {
         })
       }
     })
-  }, [cloudModel, stencil])
-
-  if (!cloudModel) return null
+  }, [scene, stencil])
 
   return (
-    <primitive object={cloudModel.clone()} position={[0, 0, 0]} scale={1} visible={false} />
+    <primitive object={scene} position={[0, 0, 0]} scale={1} visible={false} />
   )
 })
 
@@ -194,19 +241,21 @@ const SceneController = React.memo(({ section, cameraRef }) => {
   )
 })
 
-// Scene Content Components with loaded assets
+// Scene Content Components
 const PrimaryContent = React.memo(({ activeSection, onSectionChange, loadedAssets }) => (
   <>
+    <ambientLight intensity={1} color="#ffffff" />
     <Environment
       files="/images/bg1.hdr"
       background
       resolution={256}
       ground={{ height: 5, radius: 20, scale: 14 }}
     />
+
     <EffectsTree />
-    <Castle
-      activeSection={activeSection}
-      scale={[2, 1.6, 2]}
+    <Castle 
+      activeSection={activeSection} 
+      scale={[2, 1.6, 2]} 
       loadedAssets={loadedAssets}
     />
     <Flowers />
@@ -222,8 +271,8 @@ const PrimaryContent = React.memo(({ activeSection, onSectionChange, loadedAsset
 
 const SecondaryContent = React.memo(({ loadedAssets }) => (
   <>
-   <CloudMask loadedAssets={loadedAssets} />
-   <CloudGroup
+    <CloudMask loadedAssets={loadedAssets} />
+    <CloudGroup
       commonProps={{
         concentration: 1.2,
         sizeAttenuation: false,
@@ -265,50 +314,58 @@ const SecondaryContent = React.memo(({ loadedAssets }) => (
 const TertiaryContent = React.memo(() => <MirrorIframe />)
 
 // Scene Content Wrapper
-const SceneContent = React.memo(({
-  activeSection,
-  onSectionChange,
-  onSceneLoaded,
-  loadedAssets
-}) => {
-  useEffect(() => {
-    if (onSceneLoaded) {
-      onSceneLoaded()
-    }
-  }, [onSceneLoaded])
+const SceneContent = React.memo(
+  ({ activeSection, onSectionChange, onSceneLoaded, loadedAssets }) => {
+    // Signal that the scene content is ready
+    useEffect(() => {
+      if (onSceneLoaded) {
+        onSceneLoaded()
+      }
+    }, [onSceneLoaded])
 
-  return (
-    <>
-      <PrimaryContent
-        activeSection={activeSection}
-        onSectionChange={onSectionChange}
-        loadedAssets={loadedAssets}
-      />
-      <SecondaryContent loadedAssets={loadedAssets} />
-      <TertiaryContent />
-    </>
-  )
-})
+    return (
+      <>
+        <PrimaryContent
+          activeSection={activeSection}
+          onSectionChange={onSectionChange}
+          loadedAssets={loadedAssets}
+        />
+        <SecondaryContent loadedAssets={loadedAssets} />
+        <TertiaryContent />
+      </>
+    )
+  }
+)
 
-// Main Experience Component - Modified for loading system
+// Main Experience Component - Com suporte para sistema de loading
 const Experience = ({ onSceneReady, loadedAssets, isReady }) => {
   const [currentSection, setCurrentSection] = useState(0)
   const [activeSection, setActiveSection] = useState("intro")
+  const [assetsLoaded, setAssetsLoaded] = useState(false)
   const [sceneLoaded, setSceneLoaded] = useState(false)
   const cameraRef = useRef(null)
 
   const isMobile = useMobileDetection()
   const canvasConfig = getCanvasConfig(isMobile)
 
+  // Se temos loadedAssets pré-carregados do novo sistema, use-os
+  // Caso contrário, carregue modelos diretamente (compatibilidade)
+  const handleAssetsLoaded = useCallback(() => {
+    setAssetsLoaded(true)
+  }, [])
+
   const handleSceneLoaded = useCallback(() => {
     setSceneLoaded(true)
     if (onSceneReady) {
       onSceneReady()
     }
-
-    // Dispatch scene-ready event
-    window.dispatchEvent(new CustomEvent('scene-ready'))
   }, [onSceneReady])
+
+  useEffect(() => {
+    if (assetsLoaded && sceneLoaded && onSceneReady) {
+      onSceneReady()
+    }
+  }, [assetsLoaded, sceneLoaded, onSceneReady])
 
   const handleSectionChange = useCallback((index, sectionName) => {
     setCurrentSection(index)
@@ -344,6 +401,9 @@ const Experience = ({ onSceneReady, loadedAssets, isReady }) => {
     <div className="relative w-full h-screen">
       <div className="absolute inset-0 z-0">
         <Canvas {...canvasConfig} className="w-full h-full">
+          {/* Use AssetPreloader apenas se não tivermos loadedAssets */}
+          {!loadedAssets && <AssetPreloader onLoaded={handleAssetsLoaded} />}
+
           {/* Main scene content with loading fallback */}
           <Suspense fallback={<Canvasload insideCanvas={true} />}>
             <SceneController section={currentSection} cameraRef={cameraRef} />
