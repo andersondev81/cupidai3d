@@ -216,7 +216,6 @@ const NavigationSystem = {
   createElementHandlers: (elementId, navigateTo, setActive, isActive) => {
     const handleElementClick = e => {
       e.stopPropagation()
-      console.log(`${elementId} clicked - navigating to section`)
 
       // Prevent navigation if already active
       if (isActive) return
@@ -1193,7 +1192,6 @@ const usePortalMaterial = () => {
 
 const handleAtmClick = e => {
   e.stopPropagation()
-  console.log("ATM clicked - navigating to token section")
 
   // Prevent navigation if ATM iframe is already active
   if (atmIframeActive) return

@@ -80,8 +80,6 @@ export default function ScrollIframe({
       window.audioManager.stopAllAudio()
     }
 
-    console.log(`ScrollIframe: Returning with source: ${source}`)
-
     // Short delay to let the UI update first
     setTimeout(() => {
       if (onReturnToMain) {

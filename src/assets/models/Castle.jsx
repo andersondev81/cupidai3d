@@ -1335,7 +1335,6 @@ const usePortalMaterial = () => {
 
 const handleAtmClick = e => {
   e.stopPropagation()
-  console.log("ATM clicked - navigating to token section")
   // Prevent navigation if ATM iframe is already active
   if (atmIframeActive) return
   audioManager.play("transition")
@@ -1544,7 +1543,6 @@ const CastleModel = ({
       } else {
         // Fora do alcance, parar o som
         if (window.audioManager.sounds.pole.isPlaying) {
-          console.log("Parando som do pole - fora de alcance")
           window.audioManager.stop("pole")
         }
       }
@@ -1592,7 +1590,6 @@ const CastleModel = ({
       } else {
         // Fora do alcance, parar o som
         if (window.audioManager.sounds.fountain.isPlaying) {
-          console.log("Parando som da fonte - fora de alcance")
           window.audioManager.stop("fountain")
         }
       }
