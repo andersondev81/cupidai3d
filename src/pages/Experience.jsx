@@ -67,15 +67,17 @@ const getCanvasConfig = isMobile => ({
 
 const AssetPreloader = ({ onLoaded }) => {
   useEffect(() => {
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
-    dracoLoader.setDecoderConfig({ type: 'js' });
+    const dracoLoader = new DRACOLoader()
+    dracoLoader.setDecoderPath(
+      "https://www.gstatic.com/draco/versioned/decoders/1.5.6/"
+    )
+    dracoLoader.setDecoderConfig({ type: "js" })
 
-    const gltfLoader = new GLTFLoader();
-    gltfLoader.setDRACOLoader(dracoLoader);
+    const gltfLoader = new GLTFLoader()
+    gltfLoader.setDRACOLoader(dracoLoader)
 
     const models = ["/models/castleClouds.glb", "/models/Castle.glb"]
-    let loadedCount = 0;
+    let loadedCount = 0
 
     const preloadModels = async () => {
       try {
@@ -83,47 +85,48 @@ const AssetPreloader = ({ onLoaded }) => {
           await new Promise((resolve, reject) => {
             gltfLoader.load(
               url,
-              (gltf) => {
-                const key = url.startsWith('./') ? url.slice(2) : url;
-                useGLTF.cache.set(key, gltf);
-                loadedCount++;
-                console.log(`Loaded model ${loadedCount} of ${models.length}`);
-                resolve(gltf);
+              gltf => {
+                const key = url.startsWith("./") ? url.slice(2) : url
+                useGLTF.cache.set(key, gltf)
+                loadedCount++
+                console.log(`Loaded model ${loadedCount} of ${models.length}`)
+                resolve(gltf)
               },
               undefined,
               reject
-            );
-          });
+            )
+          })
         }
 
-        console.log("All models preloaded successfully");
-        onLoaded();
+        console.log("All models preloaded successfully")
+        onLoaded()
 
-        window.dispatchEvent(new CustomEvent("scene-ready"));
+        window.dispatchEvent(new CustomEvent("scene-ready"))
       } catch (error) {
-        console.error("Error preloading models:", error);
-        onLoaded();
-        window.dispatchEvent(new CustomEvent("scene-ready"));
+        console.error("Error preloading models:", error)
+        onLoaded()
+        window.dispatchEvent(new CustomEvent("scene-ready"))
       }
     }
 
-    preloadModels();
+    preloadModels()
 
     // Cleanup
     return () => {
-      dracoLoader.dispose();
-      models.forEach(url => useGLTF.clear(url));
+      dracoLoader.dispose()
+      models.forEach(url => useGLTF.clear(url))
     }
-  }, [onLoaded]);
+  }, [onLoaded])
 
-  return null;
+  return null
 }
 
 // Cloud Mask Component - Modificado para suportar loadedAssets
 const CloudMask = React.memo(({ loadedAssets }) => {
   const stencil = useMask(1, true)
   // Use pre-loaded model if available, otherwise load directly
-  const { scene } = loadedAssets?.models?.clouds || useGLTF("/models/castleClouds.glb")
+  const { scene } =
+    loadedAssets?.models?.clouds || useGLTF("/models/castleClouds.glb")
 
   useEffect(() => {
     if (!scene) return
@@ -250,35 +253,37 @@ const SceneController = React.memo(({ section, cameraRef }) => {
 })
 
 // Scene Content Components
-const PrimaryContent = React.memo(({ activeSection, onSectionChange, loadedAssets }) => (
-  <>
-    <ambientLight intensity={1} color="#ffffff" />
-    <Environment
-      files="/images/bg1.hdr"
-      background
-      resolution={256}
-      ground={{ height: 5, radius: 20, scale: 14 }}
-    />
+const PrimaryContent = React.memo(
+  ({ activeSection, onSectionChange, loadedAssets }) => (
+    <>
+      <Environment
+        files="/images/bg1.hdr"
+        background
+        resolution={256}
+        ground={{ height: 5, radius: 20, scale: 14 }}
+      />
 
-    <EffectsTree />
-    <Castle
-      activeSection={activeSection}
-      scale={[2, 1.6, 2]}
-      loadedAssets={loadedAssets}
-    />
-    <Flowers />
-    <Stairs />
-    <Orb loadedAssets={loadedAssets} />
-    <Pole
-      position={[-0.8, 0, 5.8]}
-      scale={[0.6, 0.6, 0.6]}
-      onSectionChange={onSectionChange}
-    />
-  </>
-))
+      <EffectsTree />
+      <Castle
+        activeSection={activeSection}
+        scale={[2, 1.6, 2]}
+        loadedAssets={loadedAssets}
+      />
+      <Flowers />
+      <Stairs />
+      <Orb loadedAssets={loadedAssets} />
+      <Pole
+        position={[-0.8, 0, 5.8]}
+        scale={[0.6, 0.6, 0.6]}
+        onSectionChange={onSectionChange}
+      />
+    </>
+  )
+)
 
 const SecondaryContent = React.memo(({ loadedAssets }) => (
   <>
+    <ambientLight intensity={1.5} color="#ffffff" />
     <CloudMask loadedAssets={loadedAssets} />
     <CloudGroup
       commonProps={{
@@ -431,9 +436,7 @@ const Experience = ({ onSceneReady, loadedAssets, isReady }) => {
             cameraRef={cameraRef.current}
             className="pointer-events-auto"
           />
-          <AtmIframe
-            section={currentSection}
-          />
+          <AtmIframe section={currentSection} />
         </div>
       </div>
     </div>

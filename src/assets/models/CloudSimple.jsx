@@ -73,7 +73,7 @@ const CloudSimple = React.memo(
         color: new THREE.Color(color),
         transparent: true,
         opacity: Math.min(opacity, 0.8),
-        roughness: 0,
+        roughness: 0.2, // Ajustado para melhor resposta à luz
         metalness: 0,
         side: THREE.DoubleSide,
       })
@@ -113,9 +113,9 @@ const CloudSimple = React.memo(
             color={color}
             fade={fade}
             castShadow={i === 0 && castShadow}
-            material={cloudMaterial} // Usa o mesmo material para todas as camadas
+            material={cloudMaterial}
             position={layerPosition}
-            bounds={[9, 1, 1]} //{/* Added bounds prop for horizontal stretch */}
+            bounds={[9, 1, 1]}
           />
         )
       })
@@ -143,6 +143,9 @@ const CloudSimple = React.memo(
         scale={normalizedScale}
         {...rest}
       >
+        {/* Luzes adicionadas aqui */}
+        {/* <ambientLight intensity={0.2} color="#ffffff" /> */}
+
         {renderCloudLayers}
       </group>
     )
