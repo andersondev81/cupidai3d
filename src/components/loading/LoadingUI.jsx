@@ -87,12 +87,25 @@ const LoadingUI = ({ onAnimationComplete }) => {
     window.addEventListener('loading-complete', handleLoadingComplete);
     window.addEventListener('loading-error', handleLoadingError);
 
+    const blockAudioDuringLoading = () => {
+      if (window.audioManager) {
+
+        if (typeof window.audioManager.stopAllAudio === 'function') {
+          window.audioManager.stopAllAudio();
+        }
+      }
+    };
+
+    blockAudioDuringLoading();
+    const blockInterval = setInterval(blockAudioDuringLoading, 500);
+
     return () => {
-      // Remove os ouvintes ao desmontar
       window.removeEventListener('loading-start', handleLoadingStart);
       window.removeEventListener('loading-progress', handleLoadingProgress);
       window.removeEventListener('loading-complete', handleLoadingComplete);
       window.removeEventListener('loading-error', handleLoadingError);
+
+      clearInterval(blockInterval);
     };
   }, []);
 
@@ -102,6 +115,13 @@ const LoadingUI = ({ onAnimationComplete }) => {
     const loadingScreen = document.getElementById('loading-screen');
     if (loadingScreen) {
       loadingScreen.classList.add('loaded');
+
+      if (window.audioManager) {
+        if (typeof window.audioManager.notifyLoadingComplete === 'function') {
+          window.audioManager.notifyLoadingComplete();
+        }
+
+      }
 
       // Chama o callback após a animação terminar
       setTimeout(() => {
@@ -122,10 +142,6 @@ const LoadingUI = ({ onAnimationComplete }) => {
             <div className="base"></div>
           </div> */}
         </div>
-{/*
-        <h1 className="loading-title">
-          <span className="loading-title-text">Entering in the 3D world</span>
-        </h1> */}
 
         <div className="progress-container">
           <div className="progress-bar">
