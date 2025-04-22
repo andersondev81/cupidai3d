@@ -65,59 +65,59 @@ const getCanvasConfig = isMobile => ({
   shadows: !isMobile,
 })
 
-const AssetPreloader = ({ onLoaded }) => {
-  useEffect(() => {
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
-    dracoLoader.setDecoderConfig({ type: 'js' });
+// const AssetPreloader = ({ onLoaded }) => {
+//   useEffect(() => {
+//     const dracoLoader = new DRACOLoader();
+//     dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+//     dracoLoader.setDecoderConfig({ type: 'js' });
 
-    const gltfLoader = new GLTFLoader();
-    gltfLoader.setDRACOLoader(dracoLoader);
+//     const gltfLoader = new GLTFLoader();
+//     gltfLoader.setDRACOLoader(dracoLoader);
 
-    const models = ["/models/castleClouds.glb", "/models/Castle.glb"]
-    let loadedCount = 0;
+//     const models = ["/models/castleClouds.glb", "/models/Castle.glb"]
+//     let loadedCount = 0;
 
-    const preloadModels = async () => {
-      try {
-        for (const url of models) {
-          await new Promise((resolve, reject) => {
-            gltfLoader.load(
-              url,
-              (gltf) => {
-                const key = url.startsWith('./') ? url.slice(2) : url;
-                useGLTF.cache.set(key, gltf);
-                loadedCount++;
-                console.log(`Loaded model ${loadedCount} of ${models.length}`);
-                resolve(gltf);
-              },
-              undefined,
-              reject
-            );
-          });
-        }
+//     const preloadModels = async () => {
+//       try {
+//         for (const url of models) {
+//           await new Promise((resolve, reject) => {
+//             gltfLoader.load(
+//               url,
+//               (gltf) => {
+//                 const key = url.startsWith('./') ? url.slice(2) : url;
+//                 useGLTF.cache.set(key, gltf);
+//                 loadedCount++;
+//                 console.log(`Loaded model ${loadedCount} of ${models.length}`);
+//                 resolve(gltf);
+//               },
+//               undefined,
+//               reject
+//             );
+//           });
+//         }
 
-        console.log("All models preloaded successfully");
-        onLoaded();
+//         console.log("All models preloaded successfully");
+//         onLoaded();
 
-        window.dispatchEvent(new CustomEvent("scene-ready"));
-      } catch (error) {
-        console.error("Error preloading models:", error);
-        onLoaded();
-        window.dispatchEvent(new CustomEvent("scene-ready"));
-      }
-    }
+//         window.dispatchEvent(new CustomEvent("scene-ready"));
+//       } catch (error) {
+//         console.error("Error preloading models:", error);
+//         onLoaded();
+//         window.dispatchEvent(new CustomEvent("scene-ready"));
+//       }
+//     }
 
-    preloadModels();
+//     preloadModels();
 
-    // Cleanup
-    return () => {
-      dracoLoader.dispose();
-      models.forEach(url => useGLTF.clear(url));
-    }
-  }, [onLoaded]);
+//     // Cleanup
+//     return () => {
+//       dracoLoader.dispose();
+//       models.forEach(url => useGLTF.clear(url));
+//     }
+//   }, [onLoaded]);
 
-  return null;
-}
+//   return null;
+// }
 
 // Cloud Mask Component - Modificado para suportar loadedAssets
 const CloudMask = React.memo(({ loadedAssets }) => {
@@ -408,7 +408,7 @@ const Experience = ({ onSceneReady, loadedAssets, isReady }) => {
       <div className="absolute inset-0 z-0">
         <Canvas {...canvasConfig} className="w-full h-full">
           {/* Use AssetPreloader apenas se não tivermos loadedAssets */}
-          {!loadedAssets && <AssetPreloader onLoaded={handleAssetsLoaded} />}
+          {/* {!loadedAssets && <AssetPreloader onLoaded={handleAssetsLoaded} />} */}
 
           {/* Main scene content with loading fallback */}
           <Suspense>
