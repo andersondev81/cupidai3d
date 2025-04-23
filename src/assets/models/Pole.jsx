@@ -76,11 +76,9 @@ const useHeartsMaterial = () => {
         envMap,
         side: DoubleSide,
         emissive: new THREE.Color(0x00bdff),
-        emissiveIntensity: 6.8,
-        metalness: 1.1,
+        emissiveIntensity: 6,
+        metalness: 1.5,
         roughness: 0.6,
-        clearcoat: 0.5,
-        clearcoatRoughness: 0.2,
         envMapIntensity: 1.4,
       }),
     [textures, envMap]
@@ -108,10 +106,10 @@ const useFlowersMaterial = () => {
       new MeshStandardMaterial({
         ...textures,
         envMap,
-        envMapIntensity: 1.3,
+        envMapIntensity: 1,
         side: DoubleSide,
         roughness: 1,
-        metalness: 0,
+        metalness: 0.5,
       }),
     [textures, envMap]
   )
