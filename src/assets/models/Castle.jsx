@@ -543,7 +543,7 @@ const useCastleMaterial = () => {
 
 // Heart Back Wall texure
 const useCastleHeartMaterial = (
-  metalness = 1.4,
+  metalness = 1.1,
   roughness = 0,
   emissiveIntensity = 0,
   emissiveColor = "#000000" // Fixed: Corrected hex color from "#0000000" to "#000000"
@@ -606,10 +606,10 @@ const useCastleHeartMaskMaterial = () => {
         alphaTest: 0.05,
         side: DoubleSide,
         blending: NormalBlending,
-        roughness: 0.19, // Rugosidade ligeiramente aumentada
-        metalness: 1.5, // Metalness ajustado
+        roughness: 0.26, // Rugosidade ligeiramente aumentada
+        metalness: 1.9, // Metalness ajustado
         envMap: clouds,
-        envMapIntensity: 1.3, // Reflexos mais intensos
+        envMapIntensity: 1.5, // Reflexos mais intensos
         emissive: new Color("#F0D060"), // Cor de emissão mais quente
         emissiveIntensity: 0.08, // Brilho sutil
         clearcoat: 0.5, // Camada extra de brilho
@@ -683,7 +683,7 @@ const usecastleGodsWallsMaterial = (
       metalness: metalness,
       blending: NormalBlending,
       envMap: clouds,
-      envMapIntensity: 1.6,
+      envMapIntensity: 1.8,
     }
 
     // Criar o material baseado no tipo selecionado
