@@ -1,5 +1,5 @@
 import { Html, useGLTF } from "@react-three/drei";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import RoadmapPage from "../../components/iframes/Roadmap";
 import audioManager from "./AudioManager";
 
@@ -11,69 +11,94 @@ export default function ScrollIframe({
   const { nodes } = useGLTF("/models/scrollframe.glb");
   const [showContent, setShowContent] = useState(false);
   const [showButtons, setShowButtons] = useState(false);
+  const [opacity, setOpacity] = useState(0);
+  const containerRef = useRef(null);
 
-  // Monitor changes in isActive state
   useEffect(() => {
     if (isActive) {
-      // When component becomes active, show content with a small delay
-      const timer = setTimeout(() => {
-        setShowContent(true);
-        // Show buttons after a delay to ensure content has loaded
-        setTimeout(() => {
-          setShowButtons(true);
-        }, 500);
-      }, 300);
+      setShowContent(true);
 
-      return () => clearTimeout(timer);
+      if (window.audioManager && window.audioManager.sounds.scroll) {
+        window.audioManager.play('scroll');
+      }
+      if (window.audioManager && window.audioManager.sounds.paper) {
+        window.audioManager.play('paper');
+      }
+
+      const fadeInTimer = setTimeout(() => {
+        setOpacity(1);
+
+        const buttonTimer = setTimeout(() => {
+          setShowButtons(true);
+        }, 600);
+
+        return () => clearTimeout(buttonTimer);
+      }, 800);
+
+      return () => {
+        clearTimeout(fadeInTimer);
+        if (window.audioManager && window.audioManager.sounds.scroll) {
+          window.audioManager.stop('scroll');
+        }
+        if (window.audioManager && window.audioManager.sounds.paper) {
+          window.audioManager.stop('paper');
+        }
+      };
     } else {
-      // When component becomes inactive, hide content
+      setOpacity(0);
       setShowButtons(false);
-      setShowContent(false);
+      if (window.audioManager && window.audioManager.sounds.scroll) {
+        window.audioManager.stop('scroll');
+      }
+      if (window.audioManager && window.audioManager.sounds.paper) {
+        window.audioManager.stop('paper');
+      }
+
+      const hideTimer = setTimeout(() => {
+        setShowContent(false);
+      }, 500);
+
+      return () => clearTimeout(hideTimer);
     }
   }, [isActive]);
 
-  // Check navigation source when handling return
   const handleBackToMain = (e) => {
     if (e) {
-      e.preventDefault()
-      e.stopPropagation()
+      e.preventDefault();
+      e.stopPropagation();
     }
 
-    // Hide UI for visual feedback
-    setShowButtons(false)
-    setShowContent(false)
+    setShowButtons(false);
 
-    // Get the navigation source from the system
+    setOpacity(0);
+
     const source = window.navigationSystem &&
                   window.navigationSystem.getNavigationSource ?
-                  window.navigationSystem.getNavigationSource('scroll') : 'direct'
+                  window.navigationSystem.getNavigationSource('scroll') : 'direct';
 
-    // FIXED CONDITION: Play transition sound for direct navigation
     if (source === "direct") {
-      // Use timeout to ensure the sound plays
       setTimeout(() => {
         if (window.audioManager) {
-          window.audioManager.play("transition")
+          window.audioManager.play("transition");
         }
-      }, 50)
+      }, 50);
     }
 
-    // Stop current sounds
     if (window.audioManager && window.audioManager.sounds.scroll) {
-      window.audioManager.stop('scroll')
+      window.audioManager.stop('scroll');
     }
 
-    // Verificar se precisamos parar todos os sons
     if (window.audioManager && window.audioManager.stopAllAudio) {
-      window.audioManager.stopAllAudio()
+      window.audioManager.stopAllAudio();
     }
 
-    // Short delay to let the UI update first
     setTimeout(() => {
+      setShowContent(false);
+
       if (onReturnToMain) {
-        onReturnToMain(source)
+        onReturnToMain(source);
       }
-    }, 300)
+    }, 500);
   };
 
   return (
@@ -82,9 +107,9 @@ export default function ScrollIframe({
       rotation={[-3.142, 1.051, -1.568]}
       {...props}
     >
-      {/* HTML content - only shown when isActive is true */}
       {showContent && (
         <Html
+          ref={containerRef}
           transform
           scale={0.01}
           position={[0, 0, 0]}
@@ -99,11 +124,10 @@ export default function ScrollIframe({
               height: "1160px",
               overflow: "hidden",
               position: "relative",
-              transition: "opacity 0.3s ease",
-              opacity: showContent ? 1 : 0,
+              transition: "opacity 0.8s ease-in-out",
+              opacity: opacity,
             }}
           >
-            {/* Scrollable container */}
             <div
               style={{
                 position: "absolute",
@@ -116,7 +140,6 @@ export default function ScrollIframe({
                 WebkitOverflowScrolling: "touch",
               }}
             >
-              {/* Content container */}
               <div
                 style={{
                   width: "100%",
@@ -129,55 +152,52 @@ export default function ScrollIframe({
                 <RoadmapPage />
               </div>
 
-              {/* Space for the fixed button */}
               <div style={{ height: "100px" }}></div>
             </div>
 
-            {/* Button with text that changes based on navigation source */}
-            {showButtons && (
-              <div
+            <div
+              style={{
+                position: "absolute",
+                bottom: "20px",
+                left: 0,
+                right: 0,
+                textAlign: "center",
+                zIndex: 10,
+                opacity: showButtons ? 1 : 0,
+                transition: "opacity 0.5s ease-in-out",
+              }}
+            >
+              <button
+                onClick={handleBackToMain}
                 style={{
-                  position: "absolute",
-                  bottom: "20px",
-                  left: 0,
-                  right: 0,
-                  textAlign: "center",
-                  zIndex: 10,
+                  padding: "16px 32px",
+                  fontSize: "18px",
+                  backgroundColor: "#ec4899",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "9999px",
+                  fontWeight: "bold",
+                  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  zIndex: 20,
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = "#db2777";
+                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(236, 72, 153, 0.4)";
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = "#ec4899";
+                  e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
                 }}
               >
-                <button
-                  onClick={handleBackToMain}
-                  style={{
-                    padding: "16px 32px",
-                    fontSize: "18px",
-                    backgroundColor: "#ec4899",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "9999px",
-                    fontWeight: "bold",
-                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                    cursor: "pointer",
-                    transition: "all 0.3s ease",
-                    zIndex: 20,
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.backgroundColor = "#db2777";
-                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(236, 72, 153, 0.4)";
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.backgroundColor = "#ec4899";
-                    e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
-                  }}
-                >
-                  {window.navigationSystem &&
-                   window.navigationSystem.getNavigationSource &&
-                  //  audioManager.play("transition") &&
-                   window.navigationSystem.getNavigationSource('scroll') === 'pole'
-                    ? "Return to Cupid's Church"
-                    : "Return to Castle"}
-                </button>
-              </div>
-            )}
+                {window.navigationSystem &&
+                 window.navigationSystem.getNavigationSource &&
+                 window.navigationSystem.getNavigationSource('scroll') === 'pole'
+                  ? "Return to Cupid's Church"
+                  : "Return to Castle"}
+              </button>
+            </div>
           </div>
         </Html>
       )}

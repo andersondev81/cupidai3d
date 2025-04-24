@@ -3,72 +3,83 @@ import React, { useEffect, useRef, useState } from "react"
 import TokenPage from "../../components/iframes/Token"
 
 const AtmIframe = ({ onReturnToMain, isActive, ...props }) => {
-  const [showContent, setShowContent] = useState(false)
-  const [showButtons, setShowButtons] = useState(false)
-  const containerRef = useRef(null)
+  const [showContent, setShowContent] = useState(false);
+  const [showButtons, setShowButtons] = useState(false);
+  const [opacity, setOpacity] = useState(0);
+  const containerRef = useRef(null);
 
-  // Monitor changes in isActive state
   useEffect(() => {
     if (isActive) {
-      // When component becomes active, show content with a small delay
-      const timer = setTimeout(() => {
-        setShowContent(true)
-        // Show buttons after a delay to ensure content has loaded
-        setTimeout(() => {
-          setShowButtons(true)
-        }, 500)
-      }, 300)
+      setShowContent(true);
 
-      return () => clearTimeout(timer)
+      if (window.audioManager && window.audioManager.sounds.atm) {
+        window.audioManager.play('atm');
+      }
+
+      const fadeInTimer = setTimeout(() => {
+        setOpacity(1);
+
+        const buttonTimer = setTimeout(() => {
+          setShowButtons(true);
+        }, 600);
+
+        return () => clearTimeout(buttonTimer);
+      }, 800);
+
+      return () => {
+        clearTimeout(fadeInTimer);
+        if (window.audioManager && window.audioManager.sounds.atm) {
+          window.audioManager.stop('atm');
+        }
+      };
     } else {
-      // When component becomes inactive, hide content
-      setShowContent(false)
-      setShowButtons(false)
+      setOpacity(0);
+      setShowButtons(false);
+
+      if (window.audioManager && window.audioManager.sounds.atm) {
+        window.audioManager.stop('atm');
+      }
+
+      const hideTimer = setTimeout(() => {
+        setShowContent(false);
+      }, 500);
+
+      return () => clearTimeout(hideTimer);
     }
-  }, [isActive])
+  }, [isActive]);
 
-  // Handle navigation back to main menu with navigation source
   const handleHomeNavigation = () => {
-    // First hide buttons for visual feedback
-    setShowButtons(false)
+    setShowButtons(false);
+    setOpacity(0);
 
-    // Get the navigation source
     const source = window.navigationSystem && window.navigationSystem.getNavigationSource
       ? window.navigationSystem.getNavigationSource("atm")
-      : "direct"
+      : "direct";
 
     if (source === "direct") {
-      // Use timeout to ensure the sound plays
       setTimeout(() => {
         if (window.audioManager) {
-          window.audioManager.play("transition")
+          window.audioManager.play("transition");
         }
-      }, 50)
+      }, 50);
     }
 
-    // Stop current audio
     if (window.audioManager && window.audioManager.sounds.atm) {
-      window.audioManager.stop("atm")
+      window.audioManager.stop("atm");
     }
 
-    // Verificar se precisamos parar todos os sons
     if (window.audioManager && window.audioManager.stopAllAudio) {
-      window.audioManager.stopAllAudio()
+      window.audioManager.stopAllAudio();
     }
 
-    // Hide content after a short delay
     setTimeout(() => {
-      setShowContent(false)
+      setShowContent(false);
 
-      // Additional delay to complete visual transitions
-      setTimeout(() => {
-        // Call the callback function provided by parent component
-        if (onReturnToMain) {
-          onReturnToMain(source)
-        }
-      }, 100)
-    }, 100)
-  }
+      if (onReturnToMain) {
+        onReturnToMain(source);
+      }
+    }, 500);
+  };
 
   const containerStyle = {
     width: "100%",
@@ -76,7 +87,9 @@ const AtmIframe = ({ onReturnToMain, isActive, ...props }) => {
     position: "relative",
     pointerEvents: showContent ? "auto" : "none",
     backgroundColor: "transparent",
-  }
+    opacity: opacity,
+    transition: "opacity 0.8s ease-in-out",
+  };
 
   const contentStyle = {
     width: "100%",
@@ -85,7 +98,7 @@ const AtmIframe = ({ onReturnToMain, isActive, ...props }) => {
     borderRadius: "8px",
     overflow: "hidden",
     backgroundColor: "transparent",
-  }
+  };
 
   const buttonContainerStyle = {
     position: "absolute",
@@ -94,7 +107,9 @@ const AtmIframe = ({ onReturnToMain, isActive, ...props }) => {
     display: "flex",
     justifyContent: "center",
     zIndex: 1000,
-  }
+    opacity: showButtons ? 1 : 0,
+    transition: "opacity 0.5s ease-in-out",
+  };
 
   return (
     <group
@@ -102,7 +117,6 @@ const AtmIframe = ({ onReturnToMain, isActive, ...props }) => {
       rotation={[1.47, 0.194, -1.088]}
       {...props}
     >
-      {/* HTML content - only shown when isActive is true */}
       {showContent && (
         <Html
           ref={containerRef}
@@ -117,37 +131,33 @@ const AtmIframe = ({ onReturnToMain, isActive, ...props }) => {
           }}
         >
           <div style={containerStyle}>
-            {/* Token page content */}
             <div style={contentStyle}>
               <TokenPage />
             </div>
 
-            {/* Navigation buttons - exact styling from original */}
-            {showButtons && (
-              <div
-                className="flex flex-col items-center gap-6"
-                style={buttonContainerStyle}
-              >
-                <div className="flex gap-4">
-                  <button
-                    onClick={handleHomeNavigation}
-                    className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto flex items-center justify-center rounded-md px-6 py-3 transition-all"
-                  >
-                    {window.navigationSystem &&
-                    window.navigationSystem.getNavigationSource &&
-                    window.navigationSystem.getNavigationSource("atm") ===
-                      "pole"
-                      ? "Return to Cupid's Church"
-                      : "Return to Castle"}
-                  </button>
-                </div>
+            <div
+              className="flex flex-col items-center gap-6"
+              style={buttonContainerStyle}
+            >
+              <div className="flex gap-4">
+                <button
+                  onClick={handleHomeNavigation}
+                  className="bg-gray-500 hover:bg-gray-600 text-white pointer-events-auto flex items-center justify-center rounded-md px-6 py-3 transition-all"
+                >
+                  {window.navigationSystem &&
+                  window.navigationSystem.getNavigationSource &&
+                  window.navigationSystem.getNavigationSource("atm") ===
+                    "pole"
+                    ? "Return to Cupid's Church"
+                    : "Return to Castle"}
+                </button>
               </div>
-            )}
+            </div>
           </div>
         </Html>
       )}
     </group>
-  )
-}
+  );
+};
 
-export default AtmIframe
+export default AtmIframe;
