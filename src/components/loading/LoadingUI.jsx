@@ -1,4 +1,4 @@
-// LoadingUI.jsx
+// LoadingUI.jsx - Corrigido
 import React, { useEffect, useState, useRef } from 'react';
 import './LoadingUI.css';
 
@@ -87,6 +87,11 @@ const LoadingUI = ({ onAnimationComplete }) => {
     window.addEventListener('loading-complete', handleLoadingComplete);
     window.addEventListener('loading-error', handleLoadingError);
 
+    // Bloqueia áudio durante o carregamento
+    if (window.audioManager && typeof window.audioManager.stopAllAudio === 'function') {
+      window.audioManager.stopAllAudio();
+    }
+
     return () => {
       // Remove os ouvintes ao desmontar
       window.removeEventListener('loading-start', handleLoadingStart);
@@ -98,6 +103,27 @@ const LoadingUI = ({ onAnimationComplete }) => {
 
   // Manipula o clique no botão iniciar
   const handleStartClick = () => {
+    // CORREÇÃO: Garante que o canvas está visível antes de esconder a tela de loading
+    try {
+      const canvas = document.querySelector('canvas');
+      if (canvas) {
+        canvas.style.display = 'block';
+        canvas.style.visibility = 'visible';
+        canvas.style.opacity = '1';
+      }
+    } catch (e) {
+      console.error('Erro ao ajustar canvas:', e);
+    }
+
+    // Desbloqueia áudio após interação do usuário
+    if (window.audioManager) {
+      if (typeof window.audioManager.notifyLoadingComplete === 'function') {
+        window.audioManager.notifyLoadingComplete();
+      } else if (window.audioManager.isLoadingComplete !== undefined) {
+        window.audioManager.isLoadingComplete = true;
+      }
+    }
+
     // Adiciona classe para animar a saída
     const loadingScreen = document.getElementById('loading-screen');
     if (loadingScreen) {
@@ -107,6 +133,11 @@ const LoadingUI = ({ onAnimationComplete }) => {
       setTimeout(() => {
         if (onAnimationComplete) onAnimationComplete();
       }, 1000);
+
+      // Garante que a tela de loading é removida completamente após a animação
+      setTimeout(() => {
+        loadingScreen.style.display = 'none';
+      }, 1500);
     }
   };
 
@@ -115,17 +146,7 @@ const LoadingUI = ({ onAnimationComplete }) => {
       <div className="loading-content">
         <div className="castle-icon">
           {/* Animação do castelo */}
-          {/* <div className="castle-shape">
-            <div className="tower left"></div>
-            <div className="tower center"></div>
-            <div className="tower right"></div>
-            <div className="base"></div>
-          </div> */}
         </div>
-{/*
-        <h1 className="loading-title">
-          <span className="loading-title-text">Entering in the 3D world</span>
-        </h1> */}
 
         <div className="progress-container">
           <div className="progress-bar">

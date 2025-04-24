@@ -65,6 +65,7 @@ const getCanvasConfig = isMobile => ({
   shadows: !isMobile,
 })
 
+
 const AssetPreloader = ({ onLoaded }) => {
   useEffect(() => {
     const dracoLoader = new DRACOLoader()
@@ -413,7 +414,7 @@ const Experience = ({ onSceneReady, loadedAssets, isReady }) => {
       <div className="absolute inset-0 z-0">
         <Canvas {...canvasConfig} className="w-full h-full">
           {/* Use AssetPreloader apenas se não tivermos loadedAssets */}
-          {!loadedAssets && <AssetPreloader onLoaded={handleAssetsLoaded} />}
+          {/* {!loadedAssets && <AssetPreloader onLoaded={handleAssetsLoaded} />} */}
 
           {/* Main scene content with loading fallback */}
           <Suspense>
