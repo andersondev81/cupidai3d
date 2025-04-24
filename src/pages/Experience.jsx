@@ -12,7 +12,7 @@ import * as THREE from "three"
 
 import Castle from "../assets/models/Castle"
 import { CastleUi } from "../assets/models/CastleUi"
-import { Flowers } from "../assets/models/Flowers"
+import { Flower } from "../assets/models/Flower"
 import { Pole } from "../assets/models/Pole"
 import { Stairs } from "../assets/models/Stairs"
 import { CloudGroup } from "../assets/models/CloudsGroup"
@@ -269,7 +269,7 @@ const PrimaryContent = React.memo(
         scale={[2, 1.6, 2]}
         loadedAssets={loadedAssets}
       />
-      <Flowers />
+      <Flower />
       <Stairs />
       <Orb loadedAssets={loadedAssets} />
       <Pole

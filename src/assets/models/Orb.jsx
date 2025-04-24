@@ -131,8 +131,7 @@ const OrbMesh = React.memo(({ isZoomed, setIsZoomed, onSectionChange }) => {
       if (window.navigationSystem?.clearPositionForElement) {
         window.navigationSystem.clearPositionForElement("orb")
       }
-    }
-    else if (navigationSource === "direct" && window.controls?.current) {
+    } else if (navigationSource === "direct" && window.controls?.current) {
       try {
         const position = window.controls.current.getPosition()
         const target = window.controls.current.getTarget()
