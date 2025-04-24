@@ -2,7 +2,14 @@ import { CameraControls, useGLTF, useTexture } from "@react-three/drei"
 import { useFrame } from "@react-three/fiber"
 import { Select } from "@react-three/postprocessing"
 import { button, useControls } from "leva"
-import React, { Suspense, useEffect, useMemo, useRef, useState, useCallback } from "react"
+import React, {
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+} from "react"
 import * as THREE from "three"
 import {
   Color,
@@ -426,11 +433,10 @@ const useVideoTexture = videoPath => {
     video.muted = true
     video.playsInline = true
     videoRef.current = video
-
     const videoTexture = new VideoTexture(video)
     videoTexture.minFilter = LinearFilter
     videoTexture.magFilter = LinearFilter
-    videoTexture.flipY = false
+    videoTexture.flipY = true
 
     setTexture(videoTexture)
 
@@ -500,6 +506,7 @@ const useCastleMaterial = () => {
   const textures = useTexture({
     map: "/texture/castleColor.webp",
     roughnessMap: "/texture/castleRoughnessV1.webp",
+    metalnessMap: "/texture/castleMetallicV1.webp",
   })
 
   const clouds = useTexture("/images/bg1.jpg")
@@ -521,7 +528,9 @@ const useCastleMaterial = () => {
     return new MeshStandardMaterial({
       map: textures.map,
       roughnessMap: textures.roughnessMap,
+      metalnessMap: textures.metalnessMap,
       roughness: 0.2,
+      metalness: 0,
       blending: NormalBlending,
       envMap: clouds,
       envMapIntensity: 1,
@@ -534,7 +543,7 @@ const useCastleMaterial = () => {
 
 // Heart Back Wall texure
 const useCastleHeartMaterial = (
-  metalness = 1.4,
+  metalness = 1.1,
   roughness = 0,
   emissiveIntensity = 0,
   emissiveColor = "#000000" // Fixed: Corrected hex color from "#0000000" to "#000000"
@@ -597,10 +606,10 @@ const useCastleHeartMaskMaterial = () => {
         alphaTest: 0.05,
         side: DoubleSide,
         blending: NormalBlending,
-        roughness: 0.19, // Rugosidade ligeiramente aumentada
-        metalness: 1.5, // Metalness ajustado
+        roughness: 0.26, // Rugosidade ligeiramente aumentada
+        metalness: 1.9, // Metalness ajustado
         envMap: clouds,
-        envMapIntensity: 1.3, // Reflexos mais intensos
+        envMapIntensity: 1.5, // Reflexos mais intensos
         emissive: new Color("#F0D060"), // Cor de emissão mais quente
         emissiveIntensity: 0.08, // Brilho sutil
         clearcoat: 0.5, // Camada extra de brilho
@@ -623,7 +632,7 @@ const useCastleLightsMaterial = () => {
     () =>
       new MeshStandardMaterial({
         emissive: new Color("#fff"),
-        emissiveIntensity: 2,
+        emissiveIntensity: 1,
         emissiveMap: emissiveMap,
         side: DoubleSide,
       }),
@@ -674,7 +683,7 @@ const usecastleGodsWallsMaterial = (
       metalness: metalness,
       blending: NormalBlending,
       envMap: clouds,
-      envMapIntensity: 1.6,
+      envMapIntensity: 1.8,
     }
 
     // Criar o material baseado no tipo selecionado
@@ -898,7 +907,7 @@ const useFloorHeartMaterial = () => {
       emissiveMap: textures.emissiveMap,
       side: DoubleSide,
       roughness: 0.2,
-      metalness: 1,
+      metalness: 1.3,
       emissive: new Color("#578fd7"),
       emissiveIntensity: 2.5,
       transparent: false,
@@ -977,8 +986,10 @@ const useLogoMaterial = () => {
 
 //Decor Material
 const useDecorMaterial = () => {
+  // Load environment map texture
   const clouds = useTexture("/images/studio.jpg")
 
+  // Configure environment map
   useEffect(() => {
     if (clouds) {
       clouds.mapping = THREE.EquirectangularReflectionMapping
@@ -988,24 +999,46 @@ const useDecorMaterial = () => {
   return useMemo(
     () =>
       new MeshPhysicalMaterial({
-        color: new Color("#E8B84E"), // Dourado mais quente
+        color: new Color("#F9DD71"),
         transparent: false,
         alphaTest: 0.05,
         side: DoubleSide,
         blending: NormalBlending,
-        roughness: 0.15, // Rugosidade ligeiramente aumentada
-        metalness: 1, // Metalness ajustado
+        roughness: 0,
+        metalness: 1.2,
         envMap: clouds,
-        envMapIntensity: 1.8, // Reflexos mais intensos
-        emissive: new Color("#F0D060"), // Cor de emissão mais quente
-        emissiveIntensity: 0.08, // Brilho sutil
-        clearcoat: 0.5, // Camada extra de brilho
-        clearcoatRoughness: 0.2, // Rugosidade da camada de clearcoat
-        sheen: 0.3, // Efeito de brilho difuso
-        sheenColor: new Color("#FFE080"), // Cor do sheen
-        sheenRoughness: 0.3,
+        envMapIntensity: 2.5,
       }),
-    [clouds]
+    [clouds] // Recreate material when envMap updates
+  )
+}
+
+//Decor Material
+const useBowMaterial = () => {
+  // Load environment map texture
+  const clouds = useTexture("/images/studio.jpg")
+
+  // Configure environment map
+  useEffect(() => {
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
+    }
+  }, [clouds])
+
+  return useMemo(
+    () =>
+      new MeshPhysicalMaterial({
+        color: new Color("#F9DD71"),
+        transparent: false,
+        alphaTest: 0.05,
+        side: DoubleSide,
+        blending: NormalBlending,
+        roughness: 0,
+        metalness: 1.2,
+        envMap: clouds,
+        envMapIntensity: 2,
+      }),
+    [clouds] // Recreate material when envMap updates
   )
 }
 
@@ -1186,9 +1219,9 @@ const useAtmMaterial = () => {
         metalness: 1.3,
         roughness: 1,
         emissive: new Color(0xc4627d),
-        emissiveIntensity: 7.5,
+        emissiveIntensity: 5,
         envMap: clouds,
-        envMapIntensity: 1.6,
+        envMapIntensity: 0.8,
       }),
     [textures, clouds] // Added clouds to dependencies
   )
@@ -1246,7 +1279,7 @@ const useScrollMaterial = () => {
     hasError
       ? {} // Load nothing if error
       : {
-          map: "/texture/ScrollColor.png",
+          map: "/texture/ScrollColorV1.webp",
         }
   )
 
@@ -1306,9 +1339,9 @@ const usePortalMaterial = () => {
     // video.play().catch(e => console.error("Video play failed:", e))
 
     const videoTexture = new THREE.VideoTexture(video)
-    videoTexture.minFilter = THREE.LinearFilter // Filtro básico
-    videoTexture.magFilter = THREE.LinearFilter // Sem suavização adicional
-    videoTexture.flipY = true // Corrige orientação
+    videoTexture.minFilter = THREE.LinearFilter
+    videoTexture.magFilter = THREE.LinearFilter
+    videoTexture.flipY = false
     videoTexture.encoding = THREE.sRGBEncoding // Mantém cores originais
 
     return new THREE.MeshBasicMaterial({
@@ -1323,7 +1356,7 @@ const usePortalMaterial = () => {
   }, [])
 }
 
-// Components
+// Components -----------------------------------------
 
 const handleAtmClick = e => {
   e.stopPropagation()
@@ -1378,6 +1411,7 @@ const CastleModel = ({
   const floorHeart = useFloorHeartMaterial()
   const logoMaterial = useLogoMaterial()
   const decorMaterial = useDecorMaterial()
+  const bowMaterial = useBowMaterial()
   const godsMaterial = useGodsMaterial()
   const hoofMaterial = useHoofMaterial()
   const atmMaterial = useAtmMaterial()
@@ -1717,7 +1751,7 @@ const CastleModel = ({
         <RotateAxis axis="y" speed={0.7} rotationType="euler">
           <mesh
             geometry={nodes.bow.geometry}
-            material={decorMaterial}
+            material={bowMaterial}
             castShadow={false}
             receiveShadow={false}
           />
@@ -1886,7 +1920,6 @@ const Castle = ({ activeSection }) => {
     //   console.log("Starting ambient sound from Castle component");
     //   window.audioManager.startAmbient();
     // }
-
 
     // Parar sons da seção anterior
     if (activeSection && activeSection !== sectionName) {

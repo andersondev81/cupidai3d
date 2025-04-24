@@ -26,8 +26,8 @@ const HEARTS_ENV_MAP_PATH = "/images/studio.jpg"
 
 const usePoleMaterial = () => {
   const textures = useTexture({
-    map: "/texture/PoleColorAO.webp",
-    metalnessMap: "/texture/PoleMetallicA.webp",
+    map: "/texture/PoleColor.webp",
+    metalnessMap: "/texture/Pole_Metallic.webp",
     roughnessMap: "/texture/Pole_Roughness.webp",
   })
 
@@ -76,12 +76,10 @@ const useHeartsMaterial = () => {
         envMap,
         side: DoubleSide,
         emissive: new THREE.Color(0x00bdff),
-        emissiveIntensity: 6.8,
-        metalness: 0.6,
-        roughness: 0.4,
-        clearcoat: 0.5,
-        clearcoatRoughness: 0.2,
-        envMapIntensity: 1.2,
+        emissiveIntensity: 6,
+        metalness: 1.5,
+        roughness: 0.6,
+        envMapIntensity: 1.4,
       }),
     [textures, envMap]
   )
@@ -89,8 +87,8 @@ const useHeartsMaterial = () => {
 
 const useFlowersMaterial = () => {
   const textures = useTexture({
-    map: "/texture/PoleColorAO.webp",
-    metalnessMap: "/texture/PoleMetallicA.webp",
+    map: "/texture/PoleColor.webp",
+    metalnessMap: "/texture/Pole_Metallic.webp",
     roughnessMap: "/texture/Pole_Roughness.webp",
   })
 
@@ -111,7 +109,7 @@ const useFlowersMaterial = () => {
         envMapIntensity: 1,
         side: DoubleSide,
         roughness: 1,
-        metalness: 0,
+        metalness: 0.5,
       }),
     [textures, envMap]
   )
@@ -136,7 +134,7 @@ export function Pole({ onSectionChange, ...props }) {
           : sectionName === "roadmap"
           ? "scroll"
           : sectionName === "about"
-          ? "orb"  // Adicionado este caso
+          ? "orb" // Adicionado este caso
           : null
 
       if (elementId) {
@@ -207,11 +205,11 @@ export function Pole({ onSectionChange, ...props }) {
             geometry={nodes.roadmap.geometry}
             material={materialHearts}
             onClick={e => {
-            createClickHandler(5, "roadmap")(e)
-            if (window.audioManager && window.audioManager.play) {
-              window.audioManager.play("transition")
-            }
-          }}
+              createClickHandler(5, "roadmap")(e)
+              if (window.audioManager && window.audioManager.play) {
+                window.audioManager.play("transition")
+              }
+            }}
             {...pointerHandlers}
           />
         )}
