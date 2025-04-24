@@ -1573,34 +1573,28 @@ const CastleModel = ({
         }
       }
     }
-    //----- GERENCIAMENTO DO SOM DA FONTE (FOUNTAIN) -----//
+
     // Cálculo de distância para a fonte
     const dxFountain = cameraPosition.x - fountainPosition.x
     const dyFountain = cameraPosition.y - fountainPosition.y
     const dzFountain = cameraPosition.z - fountainPosition.z
     const distToFountain = Math.sqrt(
       dxFountain * dxFountain +
-        dyFountain * dyFountain +
-        dzFountain * dzFountain
+      dyFountain * dyFountain +
+      dzFountain * dzFountain
     )
 
-    // Distância máxima para a fonte (um pouco maior que a do orb)
-    const maxFountainDistance = 2.5
+    const maxFountainDistance = 3.5
 
     // Gerenciar som da fonte
     if (window.audioManager.sounds.fountain) {
       // Verificar se está dentro do alcance
       if (distToFountain < maxFountainDistance) {
-        // Atenuação quadrática para a fonte (menos intensa que a cúbica do orb)
-        const attenuationFountain =
-          1 - Math.pow(distToFountain / maxFountainDistance, 2)
-        const fountainVolume = Math.max(0, 0.3 * attenuationFountain)
+        const attenuationFountain = 1 - (distToFountain / maxFountainDistance)
 
-        // Log para debug
-        // console.log(`Distância até a fonte: ${distToFountain.toFixed(2)}, Volume: ${fountainVolume.toFixed(2)}`);
+        const fountainVolume = Math.max(0, 0.2 * attenuationFountain)
 
-        // Aplicar volume apenas se for significativo
-        if (fountainVolume > 0.03) {
+        if (fountainVolume > 0.02) {
           window.audioManager.sounds.fountain.audio.volume = fountainVolume
 
           // Iniciar reprodução se não estiver tocando

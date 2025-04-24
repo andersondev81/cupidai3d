@@ -1,90 +1,91 @@
 import { Html } from "@react-three/drei";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import MirrorPage from "../../components/iframes/Mirror";
 
 const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
   const [showContent, setShowContent] = useState(false);
   const [showButtons, setShowButtons] = useState(false);
+  const [opacity, setOpacity] = useState(0);
+  const containerRef = useRef(null);
 
   useEffect(() => {
     if (isActive) {
+      setShowContent(true);
+
       if (window.audioManager && window.audioManager.sounds.mirror) {
         window.audioManager.play('mirror');
       }
 
-      const timer = setTimeout(() => {
-        setShowContent(true);
-        // Show buttons after a delay to ensure content has loaded
-        setTimeout(() => {
+      const fadeInTimer = setTimeout(() => {
+        setOpacity(1);
+
+        const buttonTimer = setTimeout(() => {
           setShowButtons(true);
-        }, 500);
-      }, 300);
+        }, 600);
+
+        return () => clearTimeout(buttonTimer);
+      }, 800);
 
       return () => {
-        clearTimeout(timer);
+        clearTimeout(fadeInTimer);
         if (window.audioManager && window.audioManager.sounds.mirror) {
           window.audioManager.stop('mirror');
         }
       };
     } else {
-      // When component becomes inactive, hide content and stop sound
-      setShowContent(false);
+      setOpacity(0);
       setShowButtons(false);
 
-      // Parar o som quando o componente fica inativo
       if (window.audioManager && window.audioManager.sounds.mirror) {
         window.audioManager.stop('mirror');
       }
+
+      const hideTimer = setTimeout(() => {
+        setShowContent(false);
+      }, 500);
+
+      return () => clearTimeout(hideTimer);
     }
   }, [isActive]);
 
-  // Function to handle Back to Main button click
   const handleBackToMain = () => {
+    setShowButtons(false);
+    setOpacity(0);
 
-    // Get the navigation source first
     const source = window.navigationSystem &&
                   window.navigationSystem.getNavigationSource ?
-                  window.navigationSystem.getNavigationSource('mirror') : 'direct'
+                  window.navigationSystem.getNavigationSource('mirror') : 'direct';
 
     if (source === "direct") {
-      // Use timeout to ensure the sound plays
       setTimeout(() => {
         if (window.audioManager) {
-          window.audioManager.play("transition")
+          window.audioManager.play("transition");
         } else {
-          console.log("✗ audioManager não disponível")
+          console.log("✗ audioManager não disponível");
         }
-      }, 50)
+      }, 50);
     }
 
-    // Primeiro, pare o som do mirror
     if (window.audioManager && window.audioManager.sounds.mirror) {
-      window.audioManager.stop('mirror')
+      window.audioManager.stop('mirror');
     }
 
-    // Verificar se precisamos parar todos os sons
     if (window.audioManager && window.audioManager.stopAllAudio) {
-      window.audioManager.stopAllAudio()
+      window.audioManager.stopAllAudio();
     }
 
-    // Hide content for a smooth transition
-    setShowContent(false)
-    setShowButtons(false)
-
-    // Disparar evento personalizado
     if (typeof document !== 'undefined') {
-      document.dispatchEvent(new CustomEvent('returnToCastle'))
+      document.dispatchEvent(new CustomEvent('returnToCastle'));
     }
 
-    // Wait a bit to ensure the fade-out animation is visible
     setTimeout(() => {
-      // Call the callback function provided by parent component
-      if (onReturnToMain) {
-        onReturnToMain(source)
-      }
-    }, 300)
-  }
+      setShowContent(false);
 
+      if (onReturnToMain) {
+        onReturnToMain(source);
+      }
+    }, 500);
+  };
 
   return (
     <group
@@ -92,7 +93,6 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
       rotation={[-1.567, -0.002, -2.037]}
       {...props}
     >
-      {/* HTML content - only shown when isActive is true */}
       {showContent && (
         <Html
           transform
@@ -109,12 +109,10 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
-            transition: "opacity 0.3s ease",
-            opacity: showContent ? 1 : 0,
+            transition: "opacity 0.8s ease-in-out",
+            opacity: opacity,
           }}>
-            <div style={{
-
-            }}>
+            <div>
               <div style={{
                 width: "100%",
                 height: "100%",
@@ -130,21 +128,24 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
               </div>
             </div>
 
-            {/* Back to Main button - styled like the Return to Cupid's Church button */}
-            {showButtons && (
-              <div className="text-center py-8">
-                <button
-                  onClick={handleBackToMain}
-                  className="px-8 py-4 bg-pink-500 text-white rounded-full font-bold text-lg hover:bg-pink-600 transition-all duration-300 shadow-lg hover:shadow-pink-300"
-                >
-                  {window.navigationSystem &&
-                   window.navigationSystem.getNavigationSource &&
-                   window.navigationSystem.getNavigationSource('mirror') === 'pole'
-                    ? "Return to Cupid's Church"
-                    : "Return to Castle"}
-                </button>
-              </div>
-            )}
+            <div
+              className="text-center py-8"
+              style={{
+                opacity: showButtons ? 1 : 0,
+                transition: "opacity 0.5s ease-in-out",
+              }}
+            >
+              <button
+                onClick={handleBackToMain}
+                className="px-8 py-4 bg-pink-500 text-white rounded-full font-bold text-lg hover:bg-pink-600 transition-all duration-300 shadow-lg hover:shadow-pink-300"
+              >
+                {window.navigationSystem &&
+                 window.navigationSystem.getNavigationSource &&
+                 window.navigationSystem.getNavigationSource('mirror') === 'pole'
+                  ? "Return to Cupid's Church"
+                  : "Return to Castle"}
+              </button>
+            </div>
           </div>
         </Html>
       )}
