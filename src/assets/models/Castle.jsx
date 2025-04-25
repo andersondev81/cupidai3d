@@ -1486,135 +1486,199 @@ const CastleModel = ({
     [waterTexture]
   )
 
-  const updateSpatialSounds = cameraPosition => {
-    // Verificações de segurança para o AudioManager
-    if (!window.audioManager || !window.audioManager.sounds) {
-      console.log("AudioManager não disponível")
-      return
-    }
+/**
+ * SPATIAL AUDIO CONFIGURATION
+ *
+ * 1. SOUND POSITIONS - Where each sound source is located in the 3D world
+ *    - Change x, y, z values to move the sound source
+ *
+ * 2. SOUND DISTANCES - How far away each sound can be heard
+ *    - Larger values = sound can be heard from further away
+ *    - Smaller values = sound can only be heard when close
+ *
+ * 3. VOLUME SETTINGS - How loud each sound plays
+ *    - BASE_VOLUME: Higher = louder overall
+ *    - MIN_VOLUME: Sound stops playing below this threshold
+ *
+ * 4. After making changes, save and reload to test
+ */
 
-    // Coordenadas fixas dos elementos
-    const orbPosition = { x: 1.76, y: 1.155, z: -0.883 }
-    const fountainPosition = { x: 0, y: 0.8, z: 2.406 } // Posição da fonte
+// ===== SOUND SOURCE POSITIONS =====
+// Coordinates where each sound is located in the 3D space
+const SOUND_POSITIONS = {
+  // Magical orb position
+  ORB: {
+    x: 1.76,  // left/right
+    y: 1.155, // up/down
+    z: -0.883 // forward/backward
+  },
 
-    //----- GERENCIAMENTO DO SOM DA ORB -----//
+  // Water fountain position
+  FOUNTAIN: {
+    x: 0,     // left/right
+    y: 0.8,   // up/down
+    z: 2.406  // forward/backward
+  },
 
-    // Cálculo de distância para o orb
-    const dxOrb = cameraPosition.x - orbPosition.x
-    const dyOrb = cameraPosition.y - orbPosition.y
-    const dzOrb = cameraPosition.z - orbPosition.z
-    const distToOrb = Math.sqrt(dxOrb * dxOrb + dyOrb * dyOrb + dzOrb * dzOrb)
+  // Pole position
+  POLE: {
+    x: 0.2,   // left/right
+    y: -0.35, // up/down
+    z: -0.2   // forward/backward
+  }
+};
 
-    // Distância máxima para o orb
-    const maxOrbDistance = 1.5
+// ===== SOUND DISTANCE SETTINGS =====
+// Maximum distance each sound can be heard (larger = heard from further away)
+const MAX_DISTANCES = {
+  ORB: 1.5,      // Orb sound audible range
+  FOUNTAIN: 3.5, // Fountain sound audible range
+  POLE: 12       // Pole sound audible range (very large area)
+};
 
-    // Gerenciar som do orb
-    if (window.audioManager.sounds.orb) {
-      if (distToOrb < maxOrbDistance) {
-        // Cálculo de volume para o orb
-        const attenuationOrb = 1 - Math.pow(distToOrb / maxOrbDistance, 3)
-        const orbVolume = Math.max(0, 0.2 * attenuationOrb)
+// ===== SOUND VOLUME SETTINGS =====
+// Controls how loud each sound plays
+const VOLUME_SETTINGS = {
+  // Base volume multiplier (higher = louder overall)
+  BASE_VOLUME: {
+    ORB: 0.2,      // Base volume for orb
+    FOUNTAIN: 0.05, // Base volume for fountain
+    POLE: 0.2      // Base volume for pole
+  },
 
-        if (orbVolume > 0.05) {
-          window.audioManager.sounds.orb.audio.volume = orbVolume
+  // Minimum volume threshold (sound stops below this)
+  MIN_VOLUME: {
+    ORB: 0.05,     // Orb stops playing below this volume
+    FOUNTAIN: 0.00, // Fountain stops playing below this volume
+    POLE: 0.05     // Pole stops playing below this volume
+  }
+};
 
-          if (!window.audioManager.sounds.orb.isPlaying) {
-            window.audioManager.play("orb")
-          }
-        } else {
-          if (window.audioManager.sounds.orb.isPlaying) {
-            window.audioManager.stop("orb")
-          }
-        }
-      } else {
-        if (window.audioManager.sounds.orb.isPlaying) {
-          window.audioManager.stop("orb")
-        }
+// Main function that updates all spatial sounds
+const updateSpatialSounds = cameraPosition => {
+  // Safety check - don't proceed if audio system isn't ready
+  if (!window.audioManager || !window.audioManager.sounds) {
+    console.log("Audio Manager not available");
+    return;
+  }
+
+  // Update each sound based on player distance
+  updateOrbSound(cameraPosition);
+  updatePoleSound(cameraPosition);
+  updateFountainSound(cameraPosition);
+};
+
+// Handle orb sound updates
+function updateOrbSound(cameraPosition) {
+  if (!window.audioManager.sounds.orb) return;
+
+  // Calculate distance from player to orb
+  const dx = cameraPosition.x - SOUND_POSITIONS.ORB.x;
+  const dy = cameraPosition.y - SOUND_POSITIONS.ORB.y;
+  const dz = cameraPosition.z - SOUND_POSITIONS.ORB.z;
+  const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+  // Check if player is in range
+  if (distance < MAX_DISTANCES.ORB) {
+    // Calculate volume based on distance (closer = louder)
+    const attenuation = 1 - Math.pow(distance / MAX_DISTANCES.ORB, 3);
+    const volume = Math.max(0, VOLUME_SETTINGS.BASE_VOLUME.ORB * attenuation);
+
+    // Play sound if volume is above minimum threshold
+    if (volume > VOLUME_SETTINGS.MIN_VOLUME.ORB) {
+      window.audioManager.sounds.orb.audio.volume = volume;
+
+      if (!window.audioManager.sounds.orb.isPlaying) {
+        window.audioManager.play("orb");
+      }
+    } else {
+      // Volume too low, stop sound
+      if (window.audioManager.sounds.orb.isPlaying) {
+        window.audioManager.stop("orb");
       }
     }
-
-    //----- GERENCIAMENTO DO SOM DO POLE (POLE) -----//
-    const polePosition = { x: 0.2, y: -0.35, z: -0.2 } // Posição do pole
-
-    // Cálculo de distância para o pole
-    const dxPole = cameraPosition.x - polePosition.x
-    const dyPole = cameraPosition.y - polePosition.y
-    const dzPole = cameraPosition.z - polePosition.z
-    const distToPole = Math.sqrt(
-      dxPole * dxPole + dyPole * dyPole + dzPole * dzPole
-    )
-
-    // Distância máxima para o pole
-    const maxPoleDistance = 12
-    // Gerenciar som do pole
-    if (window.audioManager.sounds.pole) {
-      // Verificar se está dentro do alcance
-      if (distToPole < maxPoleDistance) {
-        // Atenuação cúbica para o pole
-        const attenuationPole = 1 - Math.pow(distToPole / maxPoleDistance, 3)
-        const poleVolume = Math.max(0, 0.2 * attenuationPole)
-        // Aplicar volume apenas se for significativo
-        if (poleVolume > 0.05) {
-          window.audioManager.sounds.pole.audio.volume = poleVolume
-          // Iniciar reprodução se não estiver tocando
-          if (!window.audioManager.sounds.pole.isPlaying) {
-            window.audioManager.play("pole")
-          }
-        } else {
-          // Volume muito baixo, parar o som
-          if (window.audioManager.sounds.pole.isPlaying) {
-            window.audioManager.stop("pole")
-          }
-        }
-      } else {
-        // Fora do alcance, parar o som
-        if (window.audioManager.sounds.pole.isPlaying) {
-          window.audioManager.stop("pole")
-        }
-      }
-    }
-
-    // Cálculo de distância para a fonte
-    const dxFountain = cameraPosition.x - fountainPosition.x
-    const dyFountain = cameraPosition.y - fountainPosition.y
-    const dzFountain = cameraPosition.z - fountainPosition.z
-    const distToFountain = Math.sqrt(
-      dxFountain * dxFountain +
-      dyFountain * dyFountain +
-      dzFountain * dzFountain
-    )
-
-    const maxFountainDistance = 3.5
-
-    // Gerenciar som da fonte
-    if (window.audioManager.sounds.fountain) {
-      // Verificar se está dentro do alcance
-      if (distToFountain < maxFountainDistance) {
-        const attenuationFountain = 1 - (distToFountain / maxFountainDistance)
-
-        const fountainVolume = Math.max(0, 0.2 * attenuationFountain)
-
-        if (fountainVolume > 0.02) {
-          window.audioManager.sounds.fountain.audio.volume = fountainVolume
-
-          // Iniciar reprodução se não estiver tocando
-          if (!window.audioManager.sounds.fountain.isPlaying) {
-            window.audioManager.play("fountain")
-          }
-        } else {
-          // Volume muito baixo, parar o som
-          if (window.audioManager.sounds.fountain.isPlaying) {
-            window.audioManager.stop("fountain")
-          }
-        }
-      } else {
-        // Fora do alcance, parar o som
-        if (window.audioManager.sounds.fountain.isPlaying) {
-          window.audioManager.stop("fountain")
-        }
-      }
+  } else {
+    // Too far away, stop sound
+    if (window.audioManager.sounds.orb.isPlaying) {
+      window.audioManager.stop("orb");
     }
   }
+}
+
+// Handle pole sound updates
+function updatePoleSound(cameraPosition) {
+  if (!window.audioManager.sounds.pole) return;
+
+  // Calculate distance from player to pole
+  const dx = cameraPosition.x - SOUND_POSITIONS.POLE.x;
+  const dy = cameraPosition.y - SOUND_POSITIONS.POLE.y;
+  const dz = cameraPosition.z - SOUND_POSITIONS.POLE.z;
+  const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+  // Check if player is in range
+  if (distance < MAX_DISTANCES.POLE) {
+    // Calculate volume based on distance (closer = louder)
+    const attenuation = 1 - Math.pow(distance / MAX_DISTANCES.POLE, 3);
+    const volume = Math.max(0, VOLUME_SETTINGS.BASE_VOLUME.POLE * attenuation);
+
+    // Play sound if volume is above minimum threshold
+    if (volume > VOLUME_SETTINGS.MIN_VOLUME.POLE) {
+      window.audioManager.sounds.pole.audio.volume = volume;
+
+      if (!window.audioManager.sounds.pole.isPlaying) {
+        window.audioManager.play("pole");
+      }
+    } else {
+      // Volume too low, stop sound
+      if (window.audioManager.sounds.pole.isPlaying) {
+        window.audioManager.stop("pole");
+      }
+    }
+  } else {
+    // Too far away, stop sound
+    if (window.audioManager.sounds.pole.isPlaying) {
+      window.audioManager.stop("pole");
+    }
+  }
+}
+
+// Handle fountain sound updates
+function updateFountainSound(cameraPosition) {
+  if (!window.audioManager.sounds.fountain) return;
+
+  // Calculate distance from player to fountain
+  const dx = cameraPosition.x - SOUND_POSITIONS.FOUNTAIN.x;
+  const dy = cameraPosition.y - SOUND_POSITIONS.FOUNTAIN.y;
+  const dz = cameraPosition.z - SOUND_POSITIONS.FOUNTAIN.z;
+  const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+  // Check if player is in range
+  if (distance < MAX_DISTANCES.FOUNTAIN) {
+    // Calculate volume based on distance (closer = louder)
+    // Note: Fountain uses linear attenuation instead of cubic
+    const attenuation = 1 - (distance / MAX_DISTANCES.FOUNTAIN);
+    const volume = Math.max(0, VOLUME_SETTINGS.BASE_VOLUME.FOUNTAIN * attenuation);
+
+    // Play sound if volume is above minimum threshold
+    if (volume > VOLUME_SETTINGS.MIN_VOLUME.FOUNTAIN) {
+      window.audioManager.sounds.fountain.audio.volume = volume;
+
+      if (!window.audioManager.sounds.fountain.isPlaying) {
+        window.audioManager.play("fountain");
+      }
+    } else {
+      // Volume too low, stop sound
+      if (window.audioManager.sounds.fountain.isPlaying) {
+        window.audioManager.stop("fountain");
+      }
+    }
+  } else {
+    // Too far away, stop sound
+    if (window.audioManager.sounds.fountain.isPlaying) {
+      window.audioManager.stop("fountain");
+    }
+  }
+}
 
   // Adicione ou atualize o useEffect para garantir que tanto o som do orb quanto
   // o da fonte começam parados

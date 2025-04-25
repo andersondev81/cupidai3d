@@ -139,7 +139,7 @@ class AudioManager {
     });
     this.registerSound("fountain", "../sounds/fountain.mp3", {
       loop: true,
-      volume: 0.3,
+      volume: 0.0,
     });
     this.registerSound("pole", "../sounds/templeambiance.mp3", {
       loop: true,
