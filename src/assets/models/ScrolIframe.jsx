@@ -3,6 +3,15 @@ import React, { useEffect, useState, useRef } from "react";
 import RoadmapPage from "../../components/iframes/Roadmap";
 import audioManager from "./AudioManager";
 
+const ANIMATION_CONFIG = {
+  fadeInDelay: 300,
+  buttonsDelay: 300,
+  fadeOutDelay: 350,
+
+  fadeTransitionDuration: "0.4s",
+  buttonTransitionDuration: "0.3s"
+};
+
 export default function ScrollIframe({
   onReturnToMain,
   isActive = false,
@@ -30,10 +39,10 @@ export default function ScrollIframe({
 
         const buttonTimer = setTimeout(() => {
           setShowButtons(true);
-        }, 600);
+        }, ANIMATION_CONFIG.buttonsDelay);
 
         return () => clearTimeout(buttonTimer);
-      }, 800);
+      }, ANIMATION_CONFIG.fadeInDelay);
 
       return () => {
         clearTimeout(fadeInTimer);
@@ -56,7 +65,7 @@ export default function ScrollIframe({
 
       const hideTimer = setTimeout(() => {
         setShowContent(false);
-      }, 500);
+      }, ANIMATION_CONFIG.fadeOutDelay);
 
       return () => clearTimeout(hideTimer);
     }
@@ -69,7 +78,6 @@ export default function ScrollIframe({
     }
 
     setShowButtons(false);
-
     setOpacity(0);
 
     const source = window.navigationSystem &&
@@ -81,7 +89,7 @@ export default function ScrollIframe({
         if (window.audioManager) {
           window.audioManager.play("transition");
         }
-      }, 50);
+      }, ANIMATION_CONFIG.transitionDelay);
     }
 
     if (window.audioManager && window.audioManager.sounds.scroll) {
@@ -98,7 +106,7 @@ export default function ScrollIframe({
       if (onReturnToMain) {
         onReturnToMain(source);
       }
-    }, 500);
+    }, ANIMATION_CONFIG.fadeOutDelay);
   };
 
   return (
@@ -124,7 +132,7 @@ export default function ScrollIframe({
               height: "1160px",
               overflow: "hidden",
               position: "relative",
-              transition: "opacity 0.8s ease-in-out",
+              transition: `opacity ${ANIMATION_CONFIG.fadeTransitionDuration} ease-in-out`,
               opacity: opacity,
             }}
           >
@@ -164,7 +172,7 @@ export default function ScrollIframe({
                 textAlign: "center",
                 zIndex: 10,
                 opacity: showButtons ? 1 : 0,
-                transition: "opacity 0.5s ease-in-out",
+                transition: `opacity ${ANIMATION_CONFIG.buttonTransitionDuration} ease-in-out`,
               }}
             >
               <button

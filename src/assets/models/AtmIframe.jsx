@@ -2,6 +2,15 @@ import { Html } from "@react-three/drei"
 import React, { useEffect, useRef, useState } from "react"
 import TokenPage from "../../components/iframes/Token"
 
+const ANIMATION_CONFIG = {
+  fadeInDelay: 300,
+  buttonsDelay: 300,
+  fadeOutDelay: 350,
+
+  fadeTransitionDuration: "0.4s",
+  buttonTransitionDuration: "0.3s"
+};
+
 const AtmIframe = ({ onReturnToMain, isActive, ...props }) => {
   const [showContent, setShowContent] = useState(false);
   const [showButtons, setShowButtons] = useState(false);
@@ -21,10 +30,10 @@ const AtmIframe = ({ onReturnToMain, isActive, ...props }) => {
 
         const buttonTimer = setTimeout(() => {
           setShowButtons(true);
-        }, 600);
+        }, ANIMATION_CONFIG.buttonsDelay);
 
         return () => clearTimeout(buttonTimer);
-      }, 800);
+      }, ANIMATION_CONFIG.fadeInDelay);
 
       return () => {
         clearTimeout(fadeInTimer);
@@ -42,7 +51,7 @@ const AtmIframe = ({ onReturnToMain, isActive, ...props }) => {
 
       const hideTimer = setTimeout(() => {
         setShowContent(false);
-      }, 500);
+      }, ANIMATION_CONFIG.fadeOutDelay);
 
       return () => clearTimeout(hideTimer);
     }
@@ -78,7 +87,7 @@ const AtmIframe = ({ onReturnToMain, isActive, ...props }) => {
       if (onReturnToMain) {
         onReturnToMain(source);
       }
-    }, 500);
+    }, ANIMATION_CONFIG.fadeOutDelay);
   };
 
   const containerStyle = {
@@ -88,7 +97,7 @@ const AtmIframe = ({ onReturnToMain, isActive, ...props }) => {
     pointerEvents: showContent ? "auto" : "none",
     backgroundColor: "transparent",
     opacity: opacity,
-    transition: "opacity 0.8s ease-in-out",
+    transition: `opacity ${ANIMATION_CONFIG.fadeTransitionDuration} ease-in-out`,
   };
 
   const contentStyle = {
@@ -108,7 +117,7 @@ const AtmIframe = ({ onReturnToMain, isActive, ...props }) => {
     justifyContent: "center",
     zIndex: 1000,
     opacity: showButtons ? 1 : 0,
-    transition: "opacity 0.5s ease-in-out",
+    transition: `opacity ${ANIMATION_CONFIG.buttonTransitionDuration} ease-in-out`,
   };
 
   return (

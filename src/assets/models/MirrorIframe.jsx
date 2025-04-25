@@ -2,6 +2,15 @@ import { Html } from "@react-three/drei";
 import React, { useEffect, useState, useRef } from "react";
 import MirrorPage from "../../components/iframes/Mirror";
 
+const ANIMATION_CONFIG = {
+  fadeInDelay: 700,
+  buttonsDelay: 300,
+  fadeOutDelay: 300,
+
+  fadeTransitionDuration: "0.4s",
+  buttonTransitionDuration: "0.3s"
+};
+
 const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
   const [showContent, setShowContent] = useState(false);
   const [showButtons, setShowButtons] = useState(false);
@@ -21,10 +30,10 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
 
         const buttonTimer = setTimeout(() => {
           setShowButtons(true);
-        }, 600);
+        }, ANIMATION_CONFIG.buttonsDelay);
 
         return () => clearTimeout(buttonTimer);
-      }, 800);
+      }, ANIMATION_CONFIG.fadeInDelay);
 
       return () => {
         clearTimeout(fadeInTimer);
@@ -42,7 +51,7 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
 
       const hideTimer = setTimeout(() => {
         setShowContent(false);
-      }, 500);
+      }, ANIMATION_CONFIG.fadeOutDelay);
 
       return () => clearTimeout(hideTimer);
     }
@@ -63,7 +72,7 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
         } else {
           console.log("✗ audioManager não disponível");
         }
-      }, 50);
+      }, ANIMATION_CONFIG.transitionDelay);
     }
 
     if (window.audioManager && window.audioManager.sounds.mirror) {
@@ -84,7 +93,7 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
       if (onReturnToMain) {
         onReturnToMain(source);
       }
-    }, 500);
+    }, ANIMATION_CONFIG.fadeOutDelay);
   };
 
   return (
@@ -109,7 +118,7 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
-            transition: "opacity 0.8s ease-in-out",
+            transition: `opacity ${ANIMATION_CONFIG.fadeTransitionDuration} ease-in-out`,
             opacity: opacity,
           }}>
             <div>
@@ -132,7 +141,7 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
               className="text-center py-8"
               style={{
                 opacity: showButtons ? 1 : 0,
-                transition: "opacity 0.5s ease-in-out",
+                transition: `opacity ${ANIMATION_CONFIG.buttonTransitionDuration} ease-in-out`,
               }}
             >
               <button
