@@ -44,14 +44,14 @@ const setupAssets = () => {
     .addVideo('/video/tunnel.mp4', 'tunnel')
     .addVideo('/video/water.mp4', 'water');
 
-  // Áudio (se necessário)
-  [
-    '/audio/transition.mp3',
-    '/audio/ambient.mp3',
-    '/audio/fountain.mp3'
-  ].forEach((path, index) => {
-    loadingManager.addAudio(path, `audio${index}`);
-  });
+  // // Áudio (se necessário)
+  // [
+  //   '/audio/transition.mp3',
+  //   '/audio/ambient.mp3',
+  //   '/audio/fountain.mp3'
+  // ].forEach((path, index) => {
+  //   loadingManager.addAudio(path, `audio${index}`);
+  // });
 };
 
 function App() {
