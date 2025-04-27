@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 
 // Componente de UI de loading com progresso e verificação do Leva
-const LoadingUI = ({ isLoaded, levaReady, onStart }) => {
+const LoadingUI = ({ isLoaded, levaReady, onStart, isVercel = false, isFirstVisit = false }) => {
   const [progress, setProgress] = useState(0);
   const [loadingText, setLoadingText] = useState('Iniciando carregamento...');
   const [currentAsset, setCurrentAsset] = useState('');
   const [phase, setPhase] = useState('loading'); // loading, ready, error
   const [forceReady, setForceReady] = useState(false);
-  const [securityTimer, setSecurityTimer] = useState(15); // Contador de segurança (15 segundos)
+  const [securityTimer, setSecurityTimer] = useState(isVercel ? 20 : 15); // Timeout maior no Vercel
 
   // Monitorar eventos de progresso
   useEffect(() => {
@@ -38,6 +38,18 @@ const LoadingUI = ({ isLoaded, levaReady, onStart }) => {
       }
     };
 
+    // Monitorar eventos específicos do Vercel
+    const handleVercelProgress = (event) => {
+      const { progress, url } = event.detail;
+      setProgress(Math.round(progress * 100));
+
+      if (url) {
+        const assetName = url.split('/').pop().split('?')[0];
+        setCurrentAsset(assetName);
+        setLoadingText(`Carregamento forçado: ${assetName}`);
+      }
+    };
+
     // Monitorar erros
     const handleError = () => {
       setPhase('error');
@@ -59,6 +71,14 @@ const LoadingUI = ({ isLoaded, levaReady, onStart }) => {
     // Registro dos event listeners
     window.addEventListener('loading-progress', handleProgress);
     window.addEventListener('loading-error', handleError);
+
+    // Adicionar event listener específico para carregamento no Vercel
+    if (isVercel || isFirstVisit) {
+      window.addEventListener('vercel-loading-progress', handleVercelProgress);
+      window.addEventListener('vercel-loading-complete', () => {
+        console.log("✅ Carregamento forçado no Vercel concluído!");
+      });
+    }
 
     // Verificar periodicamente se o Leva está carregado
     const checkInterval = setInterval(() => {
@@ -86,10 +106,14 @@ const LoadingUI = ({ isLoaded, levaReady, onStart }) => {
     return () => {
       window.removeEventListener('loading-progress', handleProgress);
       window.removeEventListener('loading-error', handleError);
+      if (isVercel || isFirstVisit) {
+        window.removeEventListener('vercel-loading-progress', handleVercelProgress);
+        window.removeEventListener('vercel-loading-complete', () => {});
+      }
       clearInterval(checkInterval);
       if (securityInterval) clearInterval(securityInterval);
     };
-  }, [isLoaded, levaReady]);
+  }, [isLoaded, levaReady, isVercel, isFirstVisit]);
 
   // Efeito separado para monitorar quando estiver pronto
   useEffect(() => {
@@ -117,7 +141,9 @@ const LoadingUI = ({ isLoaded, levaReady, onStart }) => {
   // Gerar textos dinâmicos baseados no progresso
   const getHintText = () => {
     if (!isLoaded) {
-      if (progress < 30) {
+      if (isVercel && isFirstVisit) {
+        return "Primeira visita ao site. Carregando recursos... Isso pode levar mais tempo.";
+      } else if (progress < 30) {
         return "Preparando o castelo...";
       } else if (progress < 60) {
         return "Carregando texturas e materiais...";
@@ -168,6 +194,13 @@ const LoadingUI = ({ isLoaded, levaReady, onStart }) => {
         <div className="mb-8">
           <p className="text-lg">{loadingText}</p>
           <p className="text-sm text-gray-400 mt-2">{getHintText()}</p>
+
+          {/* Mensagem especial para Vercel */}
+          {isVercel && isFirstVisit && (
+            <p className="text-xs text-pink-400 mt-2">
+              Na primeira visita, o carregamento pode ser mais lento. Nas próximas visitas será mais rápido!
+            </p>
+          )}
         </div>
 
         {/* Botão de iniciar (exibido quando pronto OU após timer de segurança) */}

@@ -39,19 +39,19 @@ const setupAssets = () => {
     loadingManager.addTexture(path, `env${index}`);
   });
 
-  // // Vídeos
-  // loadingManager
-  //   .addVideo('/video/tunnel.mp4', 'tunnel')
-  //   .addVideo('/video/water.mp4', 'water');
+  // Vídeos
+  loadingManager
+    .addVideo('/video/tunnel.mp4', 'tunnel')
+    .addVideo('/video/water.mp4', 'water');
 
-  // // Áudio (se necessário)
-  // [
-  //   '/audio/transition.mp3',
-  //   '/audio/ambient.mp3',
-  //   '/audio/fountain.mp3'
-  // ].forEach((path, index) => {
-  //   loadingManager.addAudio(path, `audio${index}`);
-  // });
+  // Áudio (se necessário)
+  [
+    '/audio/transition.mp3',
+    '/audio/ambient.mp3',
+    '/audio/fountain.mp3'
+  ].forEach((path, index) => {
+    loadingManager.addAudio(path, `audio${index}`);
+  });
 };
 
 function App() {
@@ -61,8 +61,11 @@ function App() {
   const [showExperience, setShowExperience] = useState(false);
   const [loadingStarted, setLoadingStarted] = useState(false);
   const [levaReady, setLevaReady] = useState(false);
+  const [criticalModelsReady, setCriticalModelsReady] = useState(false);
   const loadingStartedRef = useRef(false);
   const levaCheckIntervalRef = useRef(null);
+  const isVercel = window.location.hostname.includes('vercel.app');
+  const isFirstVisit = !localStorage.getItem('hasVisitedSite');
 
   // Verificar dispositivo móvel
   useEffect(() => {
@@ -79,14 +82,15 @@ function App() {
 
   // Função para verificar se o Leva está carregado
   const checkLevaAvailability = () => {
-    // Verificar se Leva está disponível na window
-    // Podemos verificar qualquer um desses indicadores
+    // Verificar se Leva está disponível na window ou no DOM
     if (
       window.__LEVA__ ||
       window.leva ||
       // Verificar se controles existe nos componentes React
       document.querySelector('[data-leva-theme]') ||
-      document.querySelector('.leva-container')
+      document.querySelector('.leva-container') ||
+      document.querySelector('.leva-c-kWgxhW') ||
+      document.querySelector('.leva-panel')
     ) {
       console.log("✅ Leva detectado e disponível!");
       setLevaReady(true);
@@ -129,6 +133,46 @@ function App() {
       setTimeout(() => {
         setIsLoaded(true);
 
+        // No Vercel ou primeira visita, também verificar modelos críticos
+        if (isVercel || isFirstVisit) {
+          // Verificar se os modelos críticos realmente estão carregados
+          const castle = loadingManager.loadedAssets.models['castle'];
+          const clouds = loadingManager.loadedAssets.models['clouds'];
+
+          if (castle && clouds && castle.scene && clouds.scene) {
+            console.log("✅ Modelos críticos verificados e prontos!");
+            setCriticalModelsReady(true);
+          } else {
+            console.warn("⚠️ Modelos críticos ausentes, aguardando carregamento explícito...");
+            // Aguardar evento de carregamento forçado
+            const handleCriticalModelLoaded = () => {
+              // Re-verificar os modelos
+              const updatedCastle = loadingManager.loadedAssets.models['castle'];
+              const updatedClouds = loadingManager.loadedAssets.models['clouds'];
+
+              if (updatedCastle && updatedClouds && updatedCastle.scene && updatedClouds.scene) {
+                console.log("✅ Modelos críticos agora estão prontos após carregamento forçado!");
+                setCriticalModelsReady(true);
+              }
+            };
+
+            window.addEventListener('critical-model-loaded', handleCriticalModelLoaded);
+
+            // Forçar estado pronto após timeout de segurança
+            setTimeout(() => {
+              setCriticalModelsReady(true);
+              window.removeEventListener('critical-model-loaded', handleCriticalModelLoaded);
+            }, 10000); // 10 segundos de timeout
+
+            return () => {
+              window.removeEventListener('critical-model-loaded', handleCriticalModelLoaded);
+            };
+          }
+        } else {
+          // Se não for Vercel nem primeira visita, confiar nos modelos carregados
+          setCriticalModelsReady(true);
+        }
+
         // Após carregar os assets, iniciar verificação do Leva
         if (!levaReady && !levaCheckIntervalRef.current) {
           // Verificar imediatamente
@@ -136,19 +180,19 @@ function App() {
             // Se não estiver disponível, verificar a cada 300ms
             levaCheckIntervalRef.current = setInterval(checkLevaAvailability, 300);
 
-            // Definir timeout de segurança (30 segundos)
+            // Definir timeout de segurança (15 segundos)
             setTimeout(() => {
               if (levaCheckIntervalRef.current) {
                 clearInterval(levaCheckIntervalRef.current);
                 levaCheckIntervalRef.current = null;
 
-                // Se ainda não estiver pronto após 30s, forçar ready
+                // Se ainda não estiver pronto após 15s, forçar ready
                 if (!levaReady) {
                   console.warn("⚠️ Timeout ao aguardar Leva. Continuando mesmo assim...");
                   setLevaReady(true);
                 }
               }
-            }, 30000);
+            }, 15000);
           }
         }
       }, 500);
@@ -222,7 +266,7 @@ function App() {
         levaCheckIntervalRef.current = null;
       }
     };
-  }, [levaReady]);
+  }, []);
 
   // Monitorar evento de carregamento completo
   useEffect(() => {
@@ -247,6 +291,14 @@ function App() {
       window.removeEventListener('leva-loaded', onLevaLoaded);
     };
   }, []);
+
+  // Monitorar mudanças no estado de "pronto"
+  useEffect(() => {
+    // Verifica se tudo está pronto para mostrar o botão "iniciar"
+    if (isLoaded && levaReady && criticalModelsReady) {
+      console.log("✅✅✅ TUDO PRONTO: Assets, Leva e Modelos Críticos!");
+    }
+  }, [isLoaded, levaReady, criticalModelsReady]);
 
   // Função para iniciar a experiência
   const handleStart = () => {
@@ -323,8 +375,10 @@ function App() {
         >
           <LoadingUI
             isLoaded={isLoaded}
-            levaReady={levaReady}
+            levaReady={levaReady && criticalModelsReady}
             onStart={handleStart}
+            isVercel={isVercel}
+            isFirstVisit={isFirstVisit}
           />
         </div>
       )}
