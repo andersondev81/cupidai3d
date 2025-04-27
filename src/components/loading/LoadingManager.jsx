@@ -1,4 +1,4 @@
-// LoadingManager.js - Versão corrigida e simplificada
+// LoadingManager.js - Versão otimizada para Vercel
 import { LoadingManager } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
@@ -21,20 +21,10 @@ class AssetsLoadingManager {
     this.itemsLoaded = 0;
     this.itemsTotal = 0;
 
-    // Contador específico para modelos
-    this.modelsToLoad = 0;
-    this.modelsLoaded = 0;
-
     // Callbacks
     this.onProgress = null;
     this.onLoad = null;
     this.onError = null;
-
-    // Sistema de cache para primeira visita
-    this.firstVisit = !localStorage.getItem('hasVisited');
-    if (this.firstVisit) {
-      localStorage.setItem('hasVisited', 'true');
-    }
 
     // Configuração do LoadingManager
     this.manager = new LoadingManager();
@@ -42,34 +32,43 @@ class AssetsLoadingManager {
   }
 
   setupLoaders() {
-    // Configurar o Draco loader para decodificar modelos comprimidos
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
-    dracoLoader.setDecoderConfig({ type: 'js' });
+    // Configurando Draco para descompressão
+    this.dracoLoader = new DRACOLoader();
+    this.dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+    this.dracoLoader.setDecoderConfig({ type: 'js' });
 
-    // Pré-carregamento do decodificador para melhor desempenho
-    dracoLoader.preload();
+    // Pré-carregue o decodificador Draco
+    this.dracoLoader.preload();
 
     // Configurar o GLTF Loader com Draco
     this.gltfLoader = new GLTFLoader(this.manager);
-    this.gltfLoader.setDRACOLoader(dracoLoader);
+    this.gltfLoader.setDRACOLoader(this.dracoLoader);
+
+    // Tracking de loading
+    let mainLoadingCompleted = false;
+    let modelsLoadedCount = 0;
+    const totalModelsToLoad = () => this.assets.models.length;
 
     // Configura os callbacks do LoadingManager
     this.manager.onStart = (url, itemsLoaded, itemsTotal) => {
-      console.log(`Carregamento iniciado: ${url}`);
+      console.log(`Iniciando carregamento: ${url}`);
       this.itemsTotal = itemsTotal;
 
-      // Dispara evento para a UI
+      // Dispatcha evento para a UI
       window.dispatchEvent(new CustomEvent('loading-start', {
         detail: { url, itemsLoaded, itemsTotal }
       }));
+
+      if (this.onStart) this.onStart(url, itemsLoaded, itemsTotal);
     };
 
     this.manager.onProgress = (url, itemsLoaded, itemsTotal) => {
       this.itemsLoaded = itemsLoaded;
       this.progress = (itemsLoaded / itemsTotal) * 100;
 
-      // Dispara evento para a UI
+      console.log(`Progresso: ${this.progress.toFixed(0)}% (${url})`);
+
+      // Dispatcha evento para a UI
       window.dispatchEvent(new CustomEvent('loading-progress', {
         detail: { progress: this.progress, url, itemsLoaded, itemsTotal }
       }));
@@ -79,36 +78,46 @@ class AssetsLoadingManager {
 
     this.manager.onLoad = () => {
       console.log('LoadingManager base concluído');
+      mainLoadingCompleted = true;
 
-      // Verifica se todos os modelos foram carregados antes de finalizar
-      this.checkAllAssetsLoaded();
+      // Se todos os modelos estiverem carregados, finaliza o carregamento
+      if (modelsLoadedCount >= totalModelsToLoad()) {
+        this.finalizeLoading();
+      }
     };
 
     this.manager.onError = (url) => {
       console.error(`Erro ao carregar: ${url}`);
 
-      // Dispara evento para a UI
+      // Dispatcha evento para a UI
       window.dispatchEvent(new CustomEvent('loading-error', {
         detail: { url }
       }));
 
       if (this.onError) this.onError(url);
     };
-  }
 
-  // Verifica se todos os assets foram carregados
-  checkAllAssetsLoaded() {
-    console.log(`Modelos carregados: ${this.modelsLoaded}/${this.modelsToLoad}`);
+    // Adiciona método personalizado para finalizar o carregamento
+    this.finalizeLoading = () => {
+      if (!this.loaded) {
+        console.log('Todos assets carregados com sucesso');
+        this.loaded = true;
 
-    if (this.modelsLoaded >= this.modelsToLoad) {
-      console.log('Todos os modelos carregados com sucesso');
-      this.loaded = true;
+        window.dispatchEvent(new CustomEvent('loading-complete'));
 
-      // Dispara evento de conclusão
-      window.dispatchEvent(new CustomEvent('loading-complete'));
+        if (this.onLoad) this.onLoad();
+      }
+    };
 
-      if (this.onLoad) this.onLoad();
-    }
+    // Método para verificar model load
+    this.checkModelLoad = () => {
+      modelsLoadedCount++;
+      console.log(`Modelo carregado ${modelsLoadedCount}/${totalModelsToLoad()}`);
+
+      if (mainLoadingCompleted && modelsLoadedCount >= totalModelsToLoad()) {
+        this.finalizeLoading();
+      }
+    };
   }
 
   addModel(url, name) {
@@ -122,7 +131,6 @@ class AssetsLoadingManager {
       loadingScreen.style.display = 'flex';
     }
 
-    // Se não houver modelos para carregar, finaliza imediatamente
     if (this.assets.models.length === 0) {
       console.log('Nenhum modelo para carregar');
       setTimeout(() => {
@@ -135,10 +143,74 @@ class AssetsLoadingManager {
 
     console.log(`Iniciando carregamento de ${this.assets.models.length} modelos`);
 
-    // Reseta contadores para um novo carregamento
-    this.modelsToLoad = this.assets.models.length;
-    this.modelsLoaded = 0;
+    // Reseta o status de carregamento
+    this.loaded = false;
 
+    // Primeiro pré-buscar (prefetch) os recursos críticos
+    // Isso é crucial para o Vercel, pois ajuda a preparar os recursos
+    this.prefetchResources().then(() => {
+      // Depois da pré-busca, carrega os modelos de verdade
+      this.loadAllModels();
+    });
+
+    // Adiciona timeout de segurança (20 segundos)
+    setTimeout(() => {
+      if (!this.loaded) {
+        console.warn('Forçando conclusão do carregamento após timeout (20s)');
+        this.loaded = true;
+
+        // Dispara eventos de conclusão
+        window.dispatchEvent(new CustomEvent('loading-complete'));
+
+        if (this.onLoad) this.onLoad();
+      }
+    }, 20000);
+  }
+
+  // Pré-busca de recursos críticos (crucial para o Vercel)
+  prefetchResources() {
+    return new Promise((resolve) => {
+      console.log('Pré-buscando recursos críticos...');
+
+      // Lista de URLs críticas a serem pré-buscadas
+      const criticalUrls = [
+        '/models/Castle.glb',
+        '/models/castleClouds.glb',
+        '/texture/castleColor.webp',
+        '/texture/castleRoughnessV1.webp',
+        '/images/bg1.jpg'
+      ];
+
+      let preloaded = 0;
+
+      criticalUrls.forEach(url => {
+        const request = new XMLHttpRequest();
+        request.open('HEAD', url, true);
+        request.onload = () => {
+          preloaded++;
+          if (preloaded === criticalUrls.length) {
+            console.log('Pré-busca concluída!');
+            resolve();
+          }
+        };
+        request.onerror = () => {
+          console.warn(`Erro na pré-busca: ${url}`);
+          preloaded++;
+          if (preloaded === criticalUrls.length) {
+            console.log('Pré-busca concluída com alguns erros');
+            resolve();
+          }
+        };
+        request.send();
+      });
+
+      // Resolva após um curto período mesmo se as requisições falharem
+      setTimeout(resolve, 2000);
+    });
+  }
+
+  // Carrega todos os modelos
+  loadAllModels() {
     // Carrega todos os modelos
     this.assets.models.forEach(model => {
       console.log(`Carregando modelo: ${model.name} (${model.url})`);
@@ -148,23 +220,15 @@ class AssetsLoadingManager {
         (gltf) => {
           console.log(`Modelo carregado com sucesso: ${model.name}`);
 
-          // Importante: inicializa materiais e geometrias
-          gltf.scene.traverse((object) => {
-            if (object.isMesh) {
+          // Prepara os materiais e texturas do modelo
+          gltf.scene.traverse((child) => {
+            if (child.isMesh && child.material) {
               // Força atualização dos materiais
-              if (object.material) {
-                object.material.needsUpdate = true;
+              child.material.needsUpdate = true;
 
-                // Se tiver textura, força atualização também
-                if (object.material.map) {
-                  object.material.map.needsUpdate = true;
-                }
-              }
-
-              // Se tiver geometria, garante que buffers estão atualizados
-              if (object.geometry) {
-                object.geometry.computeBoundingSphere();
-                object.geometry.computeBoundingBox();
+              // Se tiver textura, força atualização também
+              if (child.material.map) {
+                child.material.map.needsUpdate = true;
               }
             }
           });
@@ -172,9 +236,8 @@ class AssetsLoadingManager {
           // Armazena o modelo carregado
           this.loadedAssets.models[model.name] = gltf;
 
-          // Incrementa contador e verifica se todos foram carregados
-          this.modelsLoaded++;
-          this.checkAllAssetsLoaded();
+          // Verifica se todos os modelos foram carregados
+          this.checkModelLoad();
         },
         // Callback de progresso
         (xhr) => {
@@ -187,25 +250,11 @@ class AssetsLoadingManager {
         (error) => {
           console.error(`Erro ao carregar modelo ${model.name}:`, error);
 
-          // Incrementa contador mesmo em caso de erro para não travar
-          this.modelsLoaded++;
-          this.checkAllAssetsLoaded();
+          // Incrementa contador mesmo em caso de erro
+          this.checkModelLoad();
         }
       );
     });
-
-    // Timeout de segurança (15 segundos)
-    setTimeout(() => {
-      if (!this.loaded) {
-        console.warn('Forçando conclusão do carregamento após timeout (15s)');
-        this.loaded = true;
-
-        // Dispara eventos de conclusão
-        window.dispatchEvent(new CustomEvent('loading-complete'));
-
-        if (this.onLoad) this.onLoad();
-      }
-    }, 15000);
   }
 
   getModel(name) {
@@ -217,13 +266,7 @@ class AssetsLoadingManager {
   }
 
   getProgress() {
-    if (this.modelsToLoad === 0) return 100;
-
-    // Considera tanto o progresso do ThreeJS quanto o contador de modelos
-    const threeProgress = this.progress * 0.3;
-    const modelProgress = (this.modelsLoaded / this.modelsToLoad) * 0.7;
-
-    return threeProgress + modelProgress;
+    return this.progress;
   }
 }
 

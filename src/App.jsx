@@ -3,21 +3,14 @@ import Experience from "./pages/Experience"
 import LoadingUI from "./components/loading/LoadingUI"
 import AssetsLoadingManager from "./components/loading/LoadingManager"
 
-// Cria o gerenciador de loading fora do componente para persistir
+// Criar o gerenciador de loading fora do componente
 const loadingManager = new AssetsLoadingManager();
 
-// Configura quais modelos precisam ser carregados
+// Configurar os modelos
 const setupModels = () => {
-  // Limpa modelos anteriores
-  loadingManager.assets.models = [];
-
-  // Adiciona os modelos necessários
   loadingManager
     .addModel('/models/Castle.glb', 'castle')
     .addModel('/models/castleClouds.glb', 'clouds');
-
-  // Adicione outros assets caso necessário
-  // .addTexture('/texture/example.webp', 'exampleTexture') (se implementar carregamento de texturas)
 };
 
 function App() {
@@ -25,10 +18,9 @@ function App() {
   const [isLoading, setIsLoading] = useState(true)
   const [modelsLoaded, setModelsLoaded] = useState(false)
   const [showExperience, setShowExperience] = useState(false)
-  const [loadingProgress, setLoadingProgress] = useState(0)
   const loadingStartedRef = useRef(false)
 
-  // Detecta dispositivo móvel
+  // Verifica dispositivo móvel
   useEffect(() => {
     const checkMobile = () => {
       const userAgent = navigator.userAgent || navigator.vendor || window.opera
@@ -41,10 +33,10 @@ function App() {
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
 
-  // Configura eventos de carregamento
+  // Monitorar eventos de carregamento
   useEffect(() => {
     const onLoadingProgress = (e) => {
-      setLoadingProgress(e.detail.progress);
+      // Atualização de progresso é feita no LoadingManager
     };
 
     const onLoadingComplete = () => {
@@ -62,50 +54,48 @@ function App() {
     };
   }, []);
 
-  // Inicia o carregamento dos modelos
+  // Iniciar carregamento quando o componente montar
   useEffect(() => {
     if (isMobileDevice === null || loadingStartedRef.current) return;
 
     console.log("Iniciando processo de carregamento");
 
-    // Configura callback para quando todos os modelos estiverem carregados
     loadingManager.onLoad = () => {
-      console.log("Callback onLoad do loadingManager acionado");
+      console.log("Todos modelos carregados!");
       setModelsLoaded(true);
     };
 
-    // Callback adicional para garantir que tudo foi carregado
-    loadingManager.onAllAssetsLoaded = () => {
-      console.log("TODOS os assets foram carregados com sucesso!");
-      setModelsLoaded(true);
-    };
-
-    // Configura e inicia o carregamento
+    // Configurar e iniciar o carregamento
     setupModels();
     loadingStartedRef.current = true;
     loadingManager.startLoading();
   }, [isMobileDevice]);
 
-  // Função para iniciar a experiência quando o carregamento estiver concluído
+  // Iniciar a experiência quando tudo estiver carregado
   const handleStartExperience = () => {
-    console.log("Iniciando experiência 3D");
+    console.log("Preparando experiência 3D...");
 
-    // Disponibiliza assets carregados globalmente
+    // IMPORTANTE: A ordem aqui é crucial - primeiro criar o Experience, depois mostrar
+    setShowExperience(true);
+
+    // Disponibilizar assets globalmente
     window.assets = {
       models: loadingManager.loadedAssets.models
     };
 
-    // Atualiza estados para mostrar a experiência
-    setIsLoading(false);
-    setShowExperience(true);
+    // Pequeno delay para garantir que tudo está pronto antes de remover a tela de loading
+    setTimeout(() => {
+      console.log("Mostrando experiência 3D");
+      setIsLoading(false);
+    }, 500);
   };
 
-  // Renderização durante verificação de dispositivo
+  // Durante verificação de dispositivo
   if (isMobileDevice === null) {
-    return <LoadingUI isLoadingStarted={false} progress={0} />
+    return <LoadingUI isLoadingStarted={false} />
   }
 
-  // Renderização para dispositivos móveis
+  // Para dispositivos móveis
   if (isMobileDevice) {
     return (
       <div className="fixed inset-0 w-full h-full flex flex-col items-center justify-center bg-black text-white p-6">
@@ -123,18 +113,19 @@ function App() {
     )
   }
 
-  // Renderização principal
   return (
     <div className="relative w-full h-screen bg-black">
-      {/* Experiência 3D (aparece quando carregada) */}
+      {/* Experiência 3D (carregada mas pode estar invisível) */}
       <div
         className={showExperience ? "opacity-100" : "opacity-0"}
-        style={{transition: "opacity 1s ease"}}
+        style={{transition: "opacity 0.8s ease"}}
       >
-        <Experience
-          loadedAssets={{models: loadingManager.loadedAssets.models}}
-          isReady={showExperience}
-        />
+        {modelsLoaded && (
+          <Experience
+            loadedAssets={{models: loadingManager.loadedAssets.models}}
+            isReady={showExperience}
+          />
+        )}
       </div>
 
       {/* Tela de carregamento */}
@@ -142,7 +133,6 @@ function App() {
         <div className="fixed inset-0 z-50 bg-black" id="loading-screen">
           <LoadingUI
             isLoadingStarted={true}
-            progress={loadingProgress}
             onAnimationComplete={handleStartExperience}
             forceComplete={modelsLoaded}
           />
