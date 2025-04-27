@@ -18,6 +18,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(true)
   const [modelsLoaded, setModelsLoaded] = useState(false)
   const [showExperience, setShowExperience] = useState(false)
+  const [userStarted, setUserStarted] = useState(false)
   const loadingStartedRef = useRef(false)
 
   // Verifica dispositivo móvel
@@ -35,21 +36,15 @@ function App() {
 
   // Monitorar eventos de carregamento
   useEffect(() => {
-    const onLoadingProgress = (e) => {
-      // Atualização de progresso é feita no LoadingManager
-    };
-
     const onLoadingComplete = () => {
       console.log("Carregamento completo detectado!");
       setModelsLoaded(true);
     };
 
     // Adiciona listeners para eventos de loading
-    window.addEventListener('loading-progress', onLoadingProgress);
     window.addEventListener('loading-complete', onLoadingComplete);
 
     return () => {
-      window.removeEventListener('loading-progress', onLoadingProgress);
       window.removeEventListener('loading-complete', onLoadingComplete);
     };
   }, []);
@@ -61,7 +56,7 @@ function App() {
     console.log("Iniciando processo de carregamento");
 
     loadingManager.onLoad = () => {
-      console.log("Todos modelos carregados!");
+      console.log("Carregamento concluído!");
       setModelsLoaded(true);
     };
 
@@ -71,21 +66,21 @@ function App() {
     loadingManager.startLoading();
   }, [isMobileDevice]);
 
-  // Iniciar a experiência quando tudo estiver carregado
+  // Função para iniciar a experiência quando o usuário clicar no botão
   const handleStartExperience = () => {
-    console.log("Preparando experiência 3D...");
-
-    // IMPORTANTE: A ordem aqui é crucial - primeiro criar o Experience, depois mostrar
-    setShowExperience(true);
+    console.log("Usuário iniciou a experiência");
+    setUserStarted(true);
 
     // Disponibilizar assets globalmente
     window.assets = {
       models: loadingManager.loadedAssets.models
     };
 
-    // Pequeno delay para garantir que tudo está pronto antes de remover a tela de loading
+    // Primeiro montar a Experience
+    setShowExperience(true);
+
+    // Depois de um tempo, remover a tela de loading
     setTimeout(() => {
-      console.log("Mostrando experiência 3D");
       setIsLoading(false);
     }, 500);
   };
@@ -115,7 +110,7 @@ function App() {
 
   return (
     <div className="relative w-full h-screen bg-black">
-      {/* Experiência 3D (carregada mas pode estar invisível) */}
+      {/* Experiência 3D */}
       <div
         className={showExperience ? "opacity-100" : "opacity-0"}
         style={{transition: "opacity 0.8s ease"}}
@@ -123,19 +118,29 @@ function App() {
         {modelsLoaded && (
           <Experience
             loadedAssets={{models: loadingManager.loadedAssets.models}}
-            isReady={showExperience}
+            isReady={userStarted}
           />
         )}
       </div>
 
-      {/* Tela de carregamento */}
+      {/* Tela de carregamento ou botão de entrada */}
       {isLoading && (
-        <div className="fixed inset-0 z-50 bg-black" id="loading-screen">
-          <LoadingUI
-            isLoadingStarted={true}
-            onAnimationComplete={handleStartExperience}
-            forceComplete={modelsLoaded}
-          />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black" id="loading-screen">
+          {!modelsLoaded ? (
+            // Tela de carregamento normal
+            <LoadingUI isLoadingStarted={true} />
+          ) : (
+            // Botão de entrada após carregamento
+            <div className="text-center">
+              <h1 className="text-4xl font-bold text-white mb-8">Tudo Pronto!</h1>
+              <button
+                onClick={handleStartExperience}
+                className="px-8 py-4 bg-pink-600 text-white text-xl font-bold rounded-lg hover:bg-pink-700 transition transform hover:scale-105"
+              >
+                Entrar na Experiência
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
