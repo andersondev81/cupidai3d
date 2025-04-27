@@ -13,7 +13,7 @@ const LoadingUI = ({ isLoadingStarted, progress, onAnimationComplete, forceCompl
       setInternalProgress(100);
       setTimeout(() => {
         setShowStartButton(true);
-      }, 1000);
+      }, 500);
       return;
     }
 
@@ -24,7 +24,7 @@ const LoadingUI = ({ isLoadingStarted, progress, onAnimationComplete, forceCompl
     if (progress > 99) {
       setTimeout(() => {
         setShowStartButton(true);
-      }, 1000);
+      }, 500);
     }
   }, [isLoadingStarted, progress, forceComplete]);
 
@@ -63,11 +63,6 @@ const LoadingUI = ({ isLoadingStarted, progress, onAnimationComplete, forceCompl
             Iniciar Experiência
           </button>
         )}
-
-        {/* Mensagem de dica */}
-        <p className="mt-8 text-sm text-gray-400">
-          Carregando recursos 3D... Por favor, aguarde.
-        </p>
       </div>
     </div>
   );
