@@ -286,16 +286,49 @@ const useCameraAnimation = (section, cameraRef) => {
 };
 
 // Scene Controller Component
-const SceneController = React.memo(({ section, cameraRef }) => {
+const SceneController = React.memo(({ section, cameraRef, onLevaReady }) => {
   const { camera } = useThree();
   useCameraAnimation(section, cameraRef);
 
   useEffect(() => {
     window.threeCamera = camera;
+
+    // Verificar se o Leva está disponível
+    const checkLevaAvailability = () => {
+      // Verificar se os controles Leva foram carregados
+      if (
+        window.__LEVA__ ||
+        window.leva ||
+        document.querySelector('[data-leva-theme]') ||
+        document.querySelector('.leva-container')
+      ) {
+        console.log("✅ Scene Controller: Leva detectado!");
+        if (onLevaReady) onLevaReady(true);
+
+        // Disparar evento para o App.jsx
+        window.dispatchEvent(new CustomEvent('leva-loaded'));
+        return true;
+      }
+      return false;
+    };
+
+    // Verificar imediatamente
+    if (!checkLevaAvailability()) {
+      // Se não estiver pronto, verificar periodicamente
+      const interval = setInterval(() => {
+        if (checkLevaAvailability()) {
+          clearInterval(interval);
+        }
+      }, 500);
+
+      // Limpar interval
+      return () => clearInterval(interval);
+    }
+
     return () => {
       delete window.threeCamera;
     };
-  }, [camera]);
+  }, [camera, onLevaReady]);
 
   return (
     <>
@@ -403,14 +436,15 @@ const SceneContent = React.memo(
   }
 );
 
-// Main Experience Component - Com sistema de loading interno
-const Experience = ({ onSceneReady, loadedAssets, isReady }) => {
+// Main Experience Component - Com sistema de loading e detecção do Leva
+const Experience = ({ onSceneReady, loadedAssets, isReady, onLevaReady }) => {
   const [currentSection, setCurrentSection] = useState(0);
   const [activeSection, setActiveSection] = useState("intro");
   const [internalLoadProgress, setInternalLoadProgress] = useState(0);
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [sceneLoaded, setSceneLoaded] = useState(false);
   const [showInternalLoader, setShowInternalLoader] = useState(true);
+  const [levaLoaded, setLevaLoaded] = useState(false);
   const cameraRef = useRef(null);
 
   const isMobile = useMobileDetection();
@@ -420,6 +454,17 @@ const Experience = ({ onSceneReady, loadedAssets, isReady }) => {
   const handleInternalProgress = useCallback((progress) => {
     setInternalLoadProgress(progress);
   }, []);
+
+  // Callback para quando o Leva estiver carregado
+  const handleLevaReady = useCallback((isReady) => {
+    console.log("🎛️ Leva carregado e pronto!");
+    setLevaLoaded(true);
+
+    // Notificar App.jsx que Leva está pronto
+    if (onLevaReady) {
+      onLevaReady(true);
+    }
+  }, [onLevaReady]);
 
   // Callback para quando assets internos terminarem de carregar
   const handleAssetsLoaded = useCallback(() => {
@@ -446,8 +491,8 @@ const Experience = ({ onSceneReady, loadedAssets, isReady }) => {
 
   // Notificar quando tudo estiver carregado
   useEffect(() => {
-    if (assetsLoaded && sceneLoaded && onSceneReady) {
-      console.log("🎮 Experience.jsx: Tudo pronto!");
+    if (assetsLoaded && sceneLoaded && levaLoaded && onSceneReady) {
+      console.log("🎮 Experience.jsx: Tudo pronto! (incluindo Leva)");
       onSceneReady();
 
       // Iniciar áudio ambiente se necessário
@@ -460,7 +505,7 @@ const Experience = ({ onSceneReady, loadedAssets, isReady }) => {
         }, 1000);
       }
     }
-  }, [assetsLoaded, sceneLoaded, onSceneReady]);
+  }, [assetsLoaded, sceneLoaded, levaLoaded, onSceneReady]);
 
   // Handler para mudança de seção
   const handleSectionChange = useCallback((index, sectionName) => {
@@ -537,7 +582,11 @@ const Experience = ({ onSceneReady, loadedAssets, isReady }) => {
 
           {/* Scene controller e conteúdo principal */}
           <Suspense fallback={null}>
-            <SceneController section={currentSection} cameraRef={cameraRef} />
+            <SceneController
+              section={currentSection}
+              cameraRef={cameraRef}
+              onLevaReady={handleLevaReady}
+            />
             <SceneContent
               activeSection={activeSection}
               onSectionChange={handleSectionChange}

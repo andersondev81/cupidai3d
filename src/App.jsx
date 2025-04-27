@@ -60,7 +60,9 @@ function App() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [showExperience, setShowExperience] = useState(false);
   const [loadingStarted, setLoadingStarted] = useState(false);
+  const [levaReady, setLevaReady] = useState(false);
   const loadingStartedRef = useRef(false);
+  const levaCheckIntervalRef = useRef(null);
 
   // Verificar dispositivo móvel
   useEffect(() => {
@@ -74,6 +76,33 @@ function App() {
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  // Função para verificar se o Leva está carregado
+  const checkLevaAvailability = () => {
+    // Verificar se Leva está disponível na window
+    // Podemos verificar qualquer um desses indicadores
+    if (
+      window.__LEVA__ ||
+      window.leva ||
+      // Verificar se controles existe nos componentes React
+      document.querySelector('[data-leva-theme]') ||
+      document.querySelector('.leva-container')
+    ) {
+      console.log("✅ Leva detectado e disponível!");
+      setLevaReady(true);
+
+      // Limpar o intervalo uma vez que Leva foi detectado
+      if (levaCheckIntervalRef.current) {
+        clearInterval(levaCheckIntervalRef.current);
+        levaCheckIntervalRef.current = null;
+      }
+
+      // Disparar evento personalizado
+      window.dispatchEvent(new CustomEvent('leva-loaded'));
+      return true;
+    }
+    return false;
+  };
 
   // Iniciar pré-carregamento imediatamente
   useEffect(() => {
@@ -99,6 +128,29 @@ function App() {
       console.log("✅ Todos os assets carregados com sucesso!");
       setTimeout(() => {
         setIsLoaded(true);
+
+        // Após carregar os assets, iniciar verificação do Leva
+        if (!levaReady && !levaCheckIntervalRef.current) {
+          // Verificar imediatamente
+          if (!checkLevaAvailability()) {
+            // Se não estiver disponível, verificar a cada 300ms
+            levaCheckIntervalRef.current = setInterval(checkLevaAvailability, 300);
+
+            // Definir timeout de segurança (30 segundos)
+            setTimeout(() => {
+              if (levaCheckIntervalRef.current) {
+                clearInterval(levaCheckIntervalRef.current);
+                levaCheckIntervalRef.current = null;
+
+                // Se ainda não estiver pronto após 30s, forçar ready
+                if (!levaReady) {
+                  console.warn("⚠️ Timeout ao aguardar Leva. Continuando mesmo assim...");
+                  setLevaReady(true);
+                }
+              }
+            }, 30000);
+          }
+        }
       }, 500);
     };
 
@@ -165,8 +217,12 @@ function App() {
     // Limpar ao desmontar
     return () => {
       loadingManager.dispose();
+      if (levaCheckIntervalRef.current) {
+        clearInterval(levaCheckIntervalRef.current);
+        levaCheckIntervalRef.current = null;
+      }
     };
-  }, []);
+  }, [levaReady]);
 
   // Monitorar evento de carregamento completo
   useEffect(() => {
@@ -177,8 +233,19 @@ function App() {
       }, 500);
     };
 
+    // Evento para quando o Leva estiver carregado
+    const onLevaLoaded = () => {
+      console.log("Leva carregado e pronto!");
+      setLevaReady(true);
+    };
+
     window.addEventListener('loading-complete', onLoadingComplete);
-    return () => window.removeEventListener('loading-complete', onLoadingComplete);
+    window.addEventListener('leva-loaded', onLevaLoaded);
+
+    return () => {
+      window.removeEventListener('loading-complete', onLoadingComplete);
+      window.removeEventListener('leva-loaded', onLevaLoaded);
+    };
   }, []);
 
   // Função para iniciar a experiência
@@ -242,6 +309,7 @@ function App() {
               videos: loadingManager.loadedAssets.videos
             }}
             isReady={showExperience}
+            onLevaReady={() => setLevaReady(true)}
           />
         )}
       </div>
@@ -255,6 +323,7 @@ function App() {
         >
           <LoadingUI
             isLoaded={isLoaded}
+            levaReady={levaReady}
             onStart={handleStart}
           />
         </div>

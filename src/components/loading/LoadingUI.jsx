@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 
-// Componente de UI de loading com progresso
-const LoadingUI = ({ isLoaded, onStart }) => {
+// Componente de UI de loading com progresso e verificação do Leva
+const LoadingUI = ({ isLoaded, levaReady, onStart }) => {
   const [progress, setProgress] = useState(0);
   const [loadingText, setLoadingText] = useState('Iniciando carregamento...');
   const [currentAsset, setCurrentAsset] = useState('');
   const [phase, setPhase] = useState('loading'); // loading, ready, error
+  const [forceReady, setForceReady] = useState(false);
+  const [securityTimer, setSecurityTimer] = useState(15); // Contador de segurança (15 segundos)
 
   // Monitorar eventos de progresso
   useEffect(() => {
@@ -42,38 +44,97 @@ const LoadingUI = ({ isLoaded, onStart }) => {
       setLoadingText('Ocorreu um erro durante o carregamento. Tentando novamente...');
     };
 
+    // Verificação manual do Leva
+    const checkLevaManually = () => {
+      // Procurar elementos visíveis que indicam a presença do Leva
+      const levaElements = document.querySelectorAll('[data-leva-theme], .leva-c-kWgxhW, .leva-container, .leva-panel');
+      if (levaElements.length > 0) {
+        console.log("✅ LoadingUI: Leva detectado manualmente!", levaElements);
+        setForceReady(true);
+        return true;
+      }
+      return false;
+    };
+
     // Registro dos event listeners
     window.addEventListener('loading-progress', handleProgress);
     window.addEventListener('loading-error', handleError);
 
-    // Limpar event listeners
+    // Verificar periodicamente se o Leva está carregado
+    const checkInterval = setInterval(() => {
+      checkLevaManually();
+    }, 1000);
+
+    // Timer de segurança para forçar o botão a aparecer
+    let securityInterval;
+    if (isLoaded && !levaReady && !forceReady) {
+      securityInterval = setInterval(() => {
+        setSecurityTimer(prev => {
+          const newValue = prev - 1;
+          if (newValue <= 0) {
+            console.log("⚠️ Timer de segurança ativado. Habilitando botão de início.");
+            clearInterval(securityInterval);
+            setForceReady(true);
+            return 0;
+          }
+          return newValue;
+        });
+      }, 1000);
+    }
+
+    // Limpar event listeners e intervalos
     return () => {
       window.removeEventListener('loading-progress', handleProgress);
       window.removeEventListener('loading-error', handleError);
+      clearInterval(checkInterval);
+      if (securityInterval) clearInterval(securityInterval);
     };
-  }, []);
+  }, [isLoaded, levaReady]);
 
   // Efeito separado para monitorar quando estiver pronto
   useEffect(() => {
-    if (isLoaded) {
-      setLoadingText('Carregamento concluído!');
+    if (isLoaded && (levaReady || forceReady)) {
+      setLoadingText('Tudo pronto para iniciar!');
       setPhase('ready');
       setProgress(100);
+      console.log("✅ Carregamento concluído!");
+    } else if (isLoaded && !levaReady && !forceReady) {
+      setLoadingText('Finalizando configurações...');
+      setProgress(95); // Mostrar quase completo
     }
-  }, [isLoaded]);
+  }, [isLoaded, levaReady, forceReady]);
+
+  // Verificar manualmente no DOM em cada render
+  useEffect(() => {
+    // Tentativa de detecção no DOM atual
+    const levaElements = document.querySelectorAll('[data-leva-theme], .leva-c-kWgxhW, .leva-container, .leva-panel');
+    if (levaElements.length > 0 && !forceReady) {
+      console.log("✅ LoadingUI useEffect: Leva detectado manualmente!", levaElements);
+      setForceReady(true);
+    }
+  });
 
   // Gerar textos dinâmicos baseados no progresso
   const getHintText = () => {
-    if (progress < 30) {
-      return "Preparando o castelo...";
-    } else if (progress < 60) {
-      return "Carregando texturas e materiais...";
-    } else if (progress < 90) {
-      return "Quase lá! Configurando luzes e efeitos...";
+    if (!isLoaded) {
+      if (progress < 30) {
+        return "Preparando o castelo...";
+      } else if (progress < 60) {
+        return "Carregando texturas e materiais...";
+      } else if (progress < 90) {
+        return "Quase lá! Configurando luzes e efeitos...";
+      } else {
+        return "Finalizando carregamento de recursos...";
+      }
+    } else if (!levaReady && !forceReady) {
+      return `Aguardando inicialização dos controles... (${securityTimer}s)`;
     } else {
       return "Tudo pronto para sua experiência!";
     }
   };
+
+  // Forçar botão após timer de segurança
+  const isButtonVisible = phase === 'ready' || (isLoaded && (levaReady || forceReady));
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black text-white">
@@ -109,13 +170,33 @@ const LoadingUI = ({ isLoaded, onStart }) => {
           <p className="text-sm text-gray-400 mt-2">{getHintText()}</p>
         </div>
 
-        {/* Botão de iniciar (apenas mostrado quando pronto) */}
-        {phase === 'ready' && (
+        {/* Botão de iniciar (exibido quando pronto OU após timer de segurança) */}
+        {isButtonVisible && (
           <button
             onClick={onStart}
             className="px-8 py-4 text-xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg hover:from-pink-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg"
           >
             INICIAR EXPERIÊNCIA
+          </button>
+        )}
+
+        {/* Indicador de finalização (quando assets carregaram mas Leva ainda não) */}
+        {isLoaded && !levaReady && !forceReady && (
+          <div className="animate-pulse">
+            <p className="text-lg text-pink-400">Finalizando inicialização dos controles...</p>
+            <div className="mt-4 flex justify-center">
+              <div className="w-8 h-8 border-4 border-t-pink-600 border-r-pink-600 border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+            </div>
+          </div>
+        )}
+
+        {/* Forçar botão aparecer se está demorando muito */}
+        {isLoaded && !levaReady && !forceReady && securityTimer < 10 && (
+          <button
+            onClick={() => setForceReady(true)}
+            className="mt-4 px-4 py-2 text-sm font-medium bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
+          >
+            Não quero esperar ({securityTimer}s)
           </button>
         )}
 
