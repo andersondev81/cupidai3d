@@ -1,27 +1,46 @@
 import { useEffect, useState, useRef } from "react"
 import Experience from "./pages/Experience"
-import LoadingUI from "./components/loading/LoadingUI"
 import AssetsLoadingManager from "./components/loading/LoadingManager"
 
-// Criar o gerenciador de loading fora do componente
+// Criar o gerenciador fora do componente
 const loadingManager = new AssetsLoadingManager();
 
-// Configurar os modelos
+// Configurar modelos
 const setupModels = () => {
   loadingManager
     .addModel('/models/Castle.glb', 'castle')
     .addModel('/models/castleClouds.glb', 'clouds');
 };
 
+// Componente de Loading extremamente simples
+const SimpleLoadingScreen = ({ onStart, isLoaded }) => (
+  <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black text-white">
+    <h1 className="text-4xl font-bold mb-8">Castle Experience</h1>
+
+    {!isLoaded ? (
+      <div className="flex flex-col items-center">
+        <div className="w-16 h-16 border-4 border-t-pink-600 border-r-pink-600 border-b-transparent border-l-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-lg">Carregando recursos 3D...</p>
+      </div>
+    ) : (
+      <button
+        onClick={onStart}
+        className="px-8 py-4 text-xl font-bold bg-pink-600 rounded-lg hover:bg-pink-700 transition-colors"
+      >
+        INICIAR EXPERIÊNCIA
+      </button>
+    )}
+  </div>
+);
+
 function App() {
-  const [isMobileDevice, setIsMobileDevice] = useState(null)
+  const [isMobileDevice, setIsMobileDevice] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [modelsLoaded, setModelsLoaded] = useState(false)
+  const [isLoaded, setIsLoaded] = useState(false)
   const [showExperience, setShowExperience] = useState(false)
-  const [userStarted, setUserStarted] = useState(false)
   const loadingStartedRef = useRef(false)
 
-  // Verifica dispositivo móvel
+  // Verificar dispositivo móvel
   useEffect(() => {
     const checkMobile = () => {
       const userAgent = navigator.userAgent || navigator.vendor || window.opera
@@ -34,44 +53,46 @@ function App() {
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
 
-  // Monitorar eventos de carregamento
+  // Monitorar evento de carregamento completo
   useEffect(() => {
     const onLoadingComplete = () => {
-      console.log("Carregamento completo detectado!");
-      setModelsLoaded(true);
+      console.log("✅ Carregamento completo!");
+      setTimeout(() => {
+        setIsLoaded(true);
+      }, 500);
     };
 
-    // Adiciona listeners para eventos de loading
     window.addEventListener('loading-complete', onLoadingComplete);
-
-    return () => {
-      window.removeEventListener('loading-complete', onLoadingComplete);
-    };
+    return () => window.removeEventListener('loading-complete', onLoadingComplete);
   }, []);
 
-  // Iniciar carregamento quando o componente montar
+  // Iniciar carregamento
   useEffect(() => {
-    if (isMobileDevice === null || loadingStartedRef.current) return;
+    if (loadingStartedRef.current) return;
 
-    console.log("Iniciando processo de carregamento");
-
-    loadingManager.onLoad = () => {
-      console.log("Carregamento concluído!");
-      setModelsLoaded(true);
-    };
-
-    // Configurar e iniciar o carregamento
-    setupModels();
+    console.log("Iniciando carregamento...");
     loadingStartedRef.current = true;
+
+    // Silenciar todos os sons durante o carregamento
+    if (window.audioManager) {
+      window.audioManager.muteAll = true;
+
+      // Certificar-se que nenhum som esteja tocando
+      if (window.audioManager.stopAll) {
+        window.audioManager.stopAll();
+      }
+    }
+
+    setupModels();
+    loadingManager.onLoad = () => console.log("Modelos carregados!");
     loadingManager.startLoading();
-  }, [isMobileDevice]);
+  }, []);
 
-  // Função para iniciar a experiência quando o usuário clicar no botão
-  const handleStartExperience = () => {
+  // Função para iniciar a experiência
+  const handleStart = () => {
     console.log("Usuário iniciou a experiência");
-    setUserStarted(true);
 
-    // Disponibilizar assets globalmente
+    // Preparar a experiência
     window.assets = {
       models: loadingManager.loadedAssets.models
     };
@@ -79,18 +100,18 @@ function App() {
     // Primeiro montar a Experience
     setShowExperience(true);
 
-    // Depois de um tempo, remover a tela de loading
+    // Depois remover a tela de carregamento
     setTimeout(() => {
       setIsLoading(false);
-    }, 500);
+
+      // Reativar o áudio apenas DEPOIS que tudo estiver carregado
+      if (window.audioManager) {
+        window.audioManager.muteAll = false;
+      }
+    }, 100);
   };
 
-  // Durante verificação de dispositivo
-  if (isMobileDevice === null) {
-    return <LoadingUI isLoadingStarted={false} />
-  }
-
-  // Para dispositivos móveis
+  // Tela para dispositivos móveis
   if (isMobileDevice) {
     return (
       <div className="fixed inset-0 w-full h-full flex flex-col items-center justify-center bg-black text-white p-6">
@@ -109,39 +130,24 @@ function App() {
   }
 
   return (
-    <div className="relative w-full h-screen bg-black">
+    <div className="w-full h-screen bg-black relative">
       {/* Experiência 3D */}
-      <div
-        className={showExperience ? "opacity-100" : "opacity-0"}
-        style={{transition: "opacity 0.8s ease"}}
-      >
-        {modelsLoaded && (
+      <div className={showExperience ? "opacity-100" : "opacity-0"}
+           style={{transition: "opacity 0.5s ease"}}>
+        {loadingManager.isLoaded() && (
           <Experience
             loadedAssets={{models: loadingManager.loadedAssets.models}}
-            isReady={userStarted}
+            isReady={showExperience}
           />
         )}
       </div>
 
-      {/* Tela de carregamento ou botão de entrada */}
+      {/* Tela de carregamento */}
       {isLoading && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black" id="loading-screen">
-          {!modelsLoaded ? (
-            // Tela de carregamento normal
-            <LoadingUI isLoadingStarted={true} />
-          ) : (
-            // Botão de entrada após carregamento
-            <div className="text-center">
-              <h1 className="text-4xl font-bold text-white mb-8">Tudo Pronto!</h1>
-              <button
-                onClick={handleStartExperience}
-                className="px-8 py-4 bg-pink-600 text-white text-xl font-bold rounded-lg hover:bg-pink-700 transition transform hover:scale-105"
-              >
-                Entrar na Experiência
-              </button>
-            </div>
-          )}
-        </div>
+        <SimpleLoadingScreen
+          onStart={handleStart}
+          isLoaded={isLoaded}
+        />
       )}
     </div>
   )
