@@ -1,162 +1,73 @@
-// LoadingUI.jsx
-import React, { useEffect, useState, useRef } from 'react';
-import './LoadingUI.css';
+import { useEffect, useState } from 'react';
 
-const LoadingUI = ({ onAnimationComplete }) => {
-  const [progress, setProgress] = useState(0);
-  const [currentItem, setCurrentItem] = useState('');
-  const [loadStatus, setLoadStatus] = useState('Iniciando...');
-  const [isComplete, setIsComplete] = useState(false);
+const LoadingUI = ({ isLoadingStarted, progress, onAnimationComplete, forceComplete }) => {
+  const [internalProgress, setInternalProgress] = useState(0);
   const [showStartButton, setShowStartButton] = useState(false);
-  const animationFrameRef = useRef();
-  const targetProgressRef = useRef(0);
 
-  // Gerenciador de mensagens de status baseado no progresso
-  const getStatusMessage = (progress) => {
-    if (progress < 20) return 'Loading textures...';
-    if (progress < 40) return 'Loading models...';
-    if (progress < 60) return 'Loading ambients...';
-    if (progress < 80) return 'Loading effects...';
-    if (progress < 99) return 'Finishing...';
-    return 'Ready to go!';
-  };
-
-  // Efeito para animação suave do progresso
+  // Gerencia a progressão visual do carregamento
   useEffect(() => {
-    const animateProgress = () => {
-      setProgress(prevProgress => {
-        // Calcula o próximo valor com easing
-        const diff = targetProgressRef.current - prevProgress;
-        // Se a diferença for pequena, simplesmente iguale ao valor alvo
-        if (Math.abs(diff) < 0.1) return targetProgressRef.current;
-        // Caso contrário, aplique uma interpolação suave
-        return prevProgress + diff * 0.1;
-      });
+    if (!isLoadingStarted) return;
 
-      // Atualiza a mensagem de status
-      setLoadStatus(getStatusMessage(progress));
-
-      // Continue a animação se não tiver terminado
-      if (progress < 100) {
-        animationFrameRef.current = requestAnimationFrame(animateProgress);
-      } else if (!isComplete) {
-        setIsComplete(true);
-        // Mostra o botão de iniciar após uma pequena pausa
-        setTimeout(() => {
-          setShowStartButton(true);
-        }, 500);
-      }
-    };
-
-    animationFrameRef.current = requestAnimationFrame(animateProgress);
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, [progress, isComplete]);
-
-  // Escuta os eventos de carregamento do LoadingManager
-  useEffect(() => {
-    const handleLoadingStart = (e) => {
-      const { itemsTotal } = e.detail;
-    };
-
-    const handleLoadingProgress = (e) => {
-      const { progress, url } = e.detail;
-      // Atualizamos o valor alvo do progresso
-      targetProgressRef.current = progress;
-
-      // Extraímos o nome do arquivo da URL para exibição
-      const fileName = url.split('/').pop();
-      setCurrentItem(fileName);
-    };
-
-    const handleLoadingComplete = () => {
-      targetProgressRef.current = 100;
-    };
-
-    const handleLoadingError = (e) => {
-      console.error(`Erro ao carregar: ${e.detail.url}`);
-    };
-
-    // Registra os ouvintes de eventos
-    window.addEventListener('loading-start', handleLoadingStart);
-    window.addEventListener('loading-progress', handleLoadingProgress);
-    window.addEventListener('loading-complete', handleLoadingComplete);
-    window.addEventListener('loading-error', handleLoadingError);
-
-    return () => {
-      // Remove os ouvintes ao desmontar
-      window.removeEventListener('loading-start', handleLoadingStart);
-      window.removeEventListener('loading-progress', handleLoadingProgress);
-      window.removeEventListener('loading-complete', handleLoadingComplete);
-      window.removeEventListener('loading-error', handleLoadingError);
-    };
-  }, []);
-
-  // Manipula o clique no botão iniciar
-  const handleStartClick = () => {
-    // Adiciona classe para animar a saída
-    const loadingScreen = document.getElementById('loading-screen');
-    if (loadingScreen) {
-      loadingScreen.classList.add('loaded');
-
-      // Chama o callback após a animação terminar
+    // Se forceComplete for true, pulamos para 100%
+    if (forceComplete) {
+      setInternalProgress(100);
       setTimeout(() => {
-        if (onAnimationComplete) onAnimationComplete();
+        setShowStartButton(true);
       }, 1000);
+      return;
+    }
+
+    // Caso contrário, atualizamos com base no progresso real
+    setInternalProgress(Math.min(progress, 99.9));
+
+    // Se o progresso estiver quase completo, mostramos o botão de iniciar
+    if (progress > 99) {
+      setTimeout(() => {
+        setShowStartButton(true);
+      }, 1000);
+    }
+  }, [isLoadingStarted, progress, forceComplete]);
+
+  const handleStartClick = () => {
+    if (onAnimationComplete) {
+      onAnimationComplete();
     }
   };
 
   return (
-    <div id="loading-screen" className="loading-screen">
-      <div className="loading-content">
-        <div className="castle-icon">
-          {/* Animação do castelo */}
-          {/* <div className="castle-shape">
-            <div className="tower left"></div>
-            <div className="tower center"></div>
-            <div className="tower right"></div>
-            <div className="base"></div>
-          </div> */}
-        </div>
-{/*
-        <h1 className="loading-title">
-          <span className="loading-title-text">Entering in the 3D world</span>
-        </h1> */}
+    <div className="flex flex-col items-center justify-center w-full h-full bg-black text-white p-4">
+      <div className="w-full max-w-md mx-auto text-center">
+        <h1 className="text-3xl font-bold mb-8">Carregando Experiência</h1>
 
-        <div className="progress-container">
-          <div className="progress-bar">
-            <div
-              className="progress-fill"
-              style={{ width: `${Math.min(progress, 100)}%` }}
-            ></div>
-          </div>
-          <div className="progress-text">
-            {Math.floor(progress)}%
-          </div>
+        {/* Barra de progresso */}
+        <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden mb-4">
+          <div
+            className="h-full bg-pink-600 transition-all duration-300"
+            style={{ width: `${internalProgress}%` }}
+          />
         </div>
 
-        <div className="loading-status">
-          {loadStatus}
-        </div>
+        {/* Texto de progresso */}
+        <p className="text-lg mb-8">
+          {internalProgress < 100
+            ? `${Math.floor(internalProgress)}% carregado...`
+            : 'Carregamento completo!'}
+        </p>
 
-        {currentItem && (
-          <div className="loading-item">
-            Loading: {currentItem}
-          </div>
-        )}
-
+        {/* Botão de iniciar */}
         {showStartButton && (
           <button
-            className="start-button"
             onClick={handleStartClick}
+            className="px-8 py-3 bg-pink-600 text-white rounded-lg font-bold text-lg hover:bg-pink-700 transition-colors"
           >
-            Start experience
+            Iniciar Experiência
           </button>
         )}
+
+        {/* Mensagem de dica */}
+        <p className="mt-8 text-sm text-gray-400">
+          Carregando recursos 3D... Por favor, aguarde.
+        </p>
       </div>
     </div>
   );
