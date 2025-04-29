@@ -1188,7 +1188,7 @@ const useAtmMaterial = () => {
   const textures = useTexture({
     map: "/texture/atmBake1.webp",
     metalnessMap: "/texture/atmMetallicV1.webp",
-    materialEmissive: "/texture/atmEmissive.webp",
+    materialEmissive: "/texture/atmEmissiveV2.webp",
   })
 
   const clouds = useTexture("/images/studio.jpg")
@@ -1232,7 +1232,7 @@ const useAtmMetalMaterial = () => {
   const textures = useTexture({
     map: "/texture/atmBake1.webp",
     metalnessMap: "/texture/atmMetallicV1.webp",
-    materialEmissive: "/texture/atmEmissive.webp",
+    materialEmissive: "/texture/atmEmissiveV2.webp",
   })
 
   const clouds = useTexture("/images/studio.jpg")
@@ -1580,8 +1580,8 @@ const CastleModel = ({
     const dzFountain = cameraPosition.z - fountainPosition.z
     const distToFountain = Math.sqrt(
       dxFountain * dxFountain +
-      dyFountain * dyFountain +
-      dzFountain * dzFountain
+        dyFountain * dyFountain +
+        dzFountain * dzFountain
     )
 
     const maxFountainDistance = 3.5
@@ -1590,7 +1590,7 @@ const CastleModel = ({
     if (window.audioManager.sounds.fountain) {
       // Verificar se está dentro do alcance
       if (distToFountain < maxFountainDistance) {
-        const attenuationFountain = 1 - (distToFountain / maxFountainDistance)
+        const attenuationFountain = 1 - distToFountain / maxFountainDistance
 
         const fountainVolume = Math.max(0, 0.2 * attenuationFountain)
 
