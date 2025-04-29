@@ -5,12 +5,12 @@ import { MeshStandardMaterial, NearestFilter, DoubleSide } from "three"
 import * as THREE from "three"
 
 export function Flower(props) {
-  const { nodes } = useGLTF("/models/FlowerV2.glb")
+  const { nodes } = useGLTF("/models/Flower.glb")
   const textures = useTexture({
-    diffuse: "/texture/Flowers_Baked_PBR_Diffuse.jpg",
+    diffuse: "/texture/FlowersColor.webp",
     normal: "/texture/Flowers_Baked_PBR_Normal.jpg",
     alpha: "/texture/Flowers_Baked_PBR_Alpha.jpg",
-    env: "/images/bg1.jpg",
+    env: "/images/studio.jpg",
   })
 
   // Configure textures
@@ -38,23 +38,23 @@ export function Flower(props) {
         transparent: true,
         alphaTest: 0.2,
         side: THREE.DoubleSide,
-        roughness: 1, // Quanto menor, mais reflexivo
-        metalness: 1.3, // 1 = material metálico
+        roughness: 1,
+        metalness: 1.2,
       }),
     [textures]
   )
 
   return (
     <group {...props} dispose={null}>
-      <group position={[0, 2.841, 0]}>
-        <mesh geometry={nodes.Flowers.geometry} material={material} />
+      <group position={[0, 0, 0]}>
+        <mesh geometry={nodes.flowers.geometry} material={material} />
       </group>
     </group>
   )
 }
 
 // Preload assets
-useGLTF.preload("/models/FlowerV2.glb")
+useGLTF.preload("/models/Flower.glb")
 useTexture.preload("/texture/Flowers_Baked_PBR_Diffuse.jpg")
 useTexture.preload("/texture/Flowers_Baked_PBR_Normal.jpg")
 useTexture.preload("/texture/Flowers_Baked_PBR_Alpha.jpg")
