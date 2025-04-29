@@ -343,7 +343,7 @@ const PrimaryContent = React.memo(
   ({ activeSection, onSectionChange, loadedAssets }) => (
     <>
       <Environment
-        files="/images/bg1.hdr"
+        files="/images/bg1.jpg"
         background
         resolution={256}
         ground={{ height: 5, radius: 20, scale: 14 }}
