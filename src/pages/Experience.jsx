@@ -345,8 +345,13 @@ const PrimaryContent = React.memo(
       <Environment
         files="/images/bg1.jpg"
         background
+        backgroundBlurriness={50}
         resolution={256}
-        ground={{ height: 5, radius: 20, scale: 14 }}
+        ground={{
+          height: 7,
+          radius: 28,
+          scale: 100,
+        }}
       />
 
       <EffectsTree />
