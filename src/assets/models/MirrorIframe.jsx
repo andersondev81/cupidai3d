@@ -166,8 +166,8 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
           <Html
             transform
             wrapperClass="mirror-html-wrapper"
-            distanceFactor={100}
-          >
+            distanceFactor={350}
+            >
             <div
               className="mirror-content"
               style={{ opacity: uiState.opacity }}
@@ -177,8 +177,9 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
               </div>
 
               {uiState.showButtons && (
-                <div className="mirror-buttons">
-                  <button onClick={handleBackToMain} className="mirror-button">
+                // button in the bottom
+                <div className="justify-center flex flex-col items-center">
+                  <button onClick={handleBackToMain} className="text-white bg-pink-500 hover:bg-pink-600 border border-pink-400 rounded-lg px-4 py-2 mt-4">
                     {getNavigationSource("mirror") === "pole"
                       ? "Return to Cupid's Church"
                       : "Return to Castle"}
