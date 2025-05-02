@@ -1043,53 +1043,31 @@ const useBowMaterial = () => {
   )
 }
 
-// Mirror Material
-const useMirrorMaterial = activeSection => {
-  const defaultEnvMap = useTexture("/images/clouds.jpg")
-  // Replace texture with video
-  const { texture: mirrorVideoTexture, playVideo: playMirrorVideo } =
-    useVideoTexture("/video/Mirror.mp4")
+//MirrorMaterial
+const useMirrorMaterial = () => {
+  const clouds = useTexture("/images/clouds.jpg")
 
   useEffect(() => {
-    if (defaultEnvMap) {
-      defaultEnvMap.mapping = THREE.EquirectangularReflectionMapping
-      defaultEnvMap.needsUpdate = true
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
     }
-  }, [defaultEnvMap])
+  }, [clouds])
 
-  // Play the video when the material is created
-  useEffect(() => {
-    if (mirrorVideoTexture) {
-      playMirrorVideo()
-    }
-  }, [mirrorVideoTexture, playMirrorVideo])
-
-  return useMemo(() => {
-    // Version for mirror section (aidatingcoach)
-    if (activeSection === "aidatingcoach") {
-      return new THREE.MeshBasicMaterial({
-        map: mirrorVideoTexture, // Use video texture instead of static image
-        opacity: 1,
-        roughness: 0,
-        metalness: 0,
-        side: THREE.DoubleSide,
+  return useMemo(
+    () =>
+      new MeshPhysicalMaterial({
+        color: new Color("#a6cce5"),
         transparent: false,
-      })
-    }
-
-    // Version for other sections
-    return new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color("#a6cce5"),
-      transparent: false,
-      alphaTest: 0.05,
-      side: THREE.DoubleSide,
-      blending: THREE.NormalBlending,
-      roughness: 0,
-      metalness: 0.3,
-      envMap: defaultEnvMap,
-      envMapIntensity: 1.0,
-    })
-  }, [mirrorVideoTexture, defaultEnvMap, activeSection])
+        alphaTest: 0.05,
+        side: DoubleSide,
+        blending: NormalBlending,
+        roughness: 0,
+        metalness: 0.3,
+        envMap: clouds,
+        envMapIntensity: 1.0,
+      }),
+    [clouds]
+  )
 }
 //Hallos Material
 const useHallosMaterial = () => {
@@ -1738,12 +1716,12 @@ const CastleModel = ({
       />
       <mesh geometry={nodes.floorHeart.geometry} material={floorHeart} />
       <mesh geometry={nodes.MirrorFrame.geometry} material={mirrorFrame} />
-      {/* <mesh
+      <mesh
         geometry={nodes.Mirror.geometry}
         material={mirror}
         onClick={mirrorHandlers.handleClick}
         {...mirrorHandlers.pointerHandlers}
-      /> */}
+      />
       <mesh
         geometry={nodes.Hallos.geometry}
         material={hallosMaterial}
