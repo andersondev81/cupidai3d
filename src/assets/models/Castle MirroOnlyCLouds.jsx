@@ -432,7 +432,6 @@ const useVideoTexture = videoPath => {
     video.loop = true
     video.muted = true
     video.playsInline = true
-    video.autoplay = true
     videoRef.current = video
     const videoTexture = new VideoTexture(video)
     videoTexture.minFilter = LinearFilter
@@ -589,7 +588,7 @@ const useCastleHeartMaterial = (
     })
   }, [textures, metalness, roughness, emissiveIntensity, emissiveColor, clouds])
 }
-// Castle Heart Mask Material
+
 const useCastleHeartMaskMaterial = () => {
   const clouds = useTexture("/images/studio.jpg")
 
@@ -1069,6 +1068,7 @@ const useMirrorMaterial = () => {
     [clouds]
   )
 }
+
 //Hallos Material
 const useHallosMaterial = () => {
   // Load environment map texture
@@ -1397,7 +1397,6 @@ const CastleModel = ({
   setScrollIframeActive,
   onPortalPlay,
   onWaterPlay,
-  activeSection,
 }) => {
   const { nodes } = useGLTF("/models/Castle.glb")
   const material = useCastleMaterial()
@@ -1419,7 +1418,7 @@ const CastleModel = ({
   const AtmMetalMaterial = useAtmMetalMaterial()
   const scrollMaterial = useScrollMaterial()
   const portal = usePortalMaterial()
-  const mirror = useMirrorMaterial(activeSection)
+  const mirror = useMirrorMaterial()
   const hallosMaterial = useHallosMaterial()
 
   useFrame(({ camera }) => {
@@ -2258,7 +2257,6 @@ const Castle = ({ activeSection }) => {
           setAtmiframeActive={setAtmiframeActive}
           setMirrorIframeActive={setMirrorIframeActive}
           setScrollIframeActive={setScrollIframeActive}
-          activeSection={activeSection}
           // onPortalPlay={() => console.log("Portal played")}
           // onWaterPlay={() => console.log("Water played")}
         />
