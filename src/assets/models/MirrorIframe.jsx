@@ -9,7 +9,7 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
     showContent: false,
     showButtons: false,
     opacity: 0,
-    meshOpacity: 0, // Novo estado para a opacidade da mesh
+    meshOpacity: 0,
   })
 
   // Referências
@@ -64,7 +64,6 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
   useEffect(() => {
     if (isActive) {
       activateMirror()
-      return () => deactivateMirror()
     } else {
       deactivateMirror()
     }
@@ -72,13 +71,36 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
 
   // Handlers atualizados para controlar a mesh também
   const activateMirror = () => {
+    // Primeiro, mostrar o conteúdo (ainda com opacidade 0)
     setUiState(prev => ({ ...prev, showContent: true }))
     playSound("mirror")
 
-    // Animação para a mesh
+    // Adicionar um pequeno delay antes de iniciar a animação da mesh
     setTimeout(() => {
-      setUiState(prev => ({ ...prev, meshOpacity: 1 }))
-    }, 300)
+      // Animação gradual para a mesh ao longo de 800ms
+      const startTime = Date.now();
+      const duration = 800;
+
+      const animateMesh = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Função de easing para suavizar a transição
+        const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+        const easedProgress = easeOutCubic(progress);
+
+        setUiState(prev => ({
+          ...prev,
+          meshOpacity: easedProgress
+        }));
+
+        if (progress < 1) {
+          requestAnimationFrame(animateMesh);
+        }
+      };
+
+      requestAnimationFrame(animateMesh);
+    }, 800)
 
     // Animação para o conteúdo HTML
     setTimeout(() => {
@@ -96,13 +118,13 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
       ...prev,
       opacity: 0,
       meshOpacity: 0,
-      showButtons: false,
+      showButtons: false
     }))
     stopSound("mirror")
 
     setTimeout(() => {
       setUiState(prev => ({ ...prev, showContent: false }))
-    }, 500)
+    }, 800)
   }
 
   const handleBackToMain = () => {
@@ -110,7 +132,7 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
       ...prev,
       opacity: 0,
       meshOpacity: 0,
-      showButtons: false,
+      showButtons: false
     }))
 
     const source = getNavigationSource("mirror")
@@ -119,18 +141,44 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
     setTimeout(() => {
       setUiState(prev => ({ ...prev, showContent: false }))
       onReturnToMain?.(source)
-    }, 500)
+    }, 800)
   }
 
-  // Funções auxiliares (mantidas iguais)
-  const playSound = sound => window.audioManager?.sounds[sound]?.play()
-  const stopSound = sound => window.audioManager?.sounds[sound]?.stop()
+  const playSound = sound => {
+    if (window.audioManager?.sounds[sound]) {
+      window.audioManager.sounds[sound].play()
+      console.log(`Som do ${sound} iniciado`)
+    }
+  }
+
+  const stopSound = sound => {
+    if (window.audioManager?.sounds[sound]) {
+      window.audioManager.sounds[sound].stop()
+      console.log(`Som do ${sound} parado`)
+    }
+  }
+
   const getNavigationSource = page =>
     window.navigationSystem?.getNavigationSource?.(page) || "direct"
+
   const handleNavigation = source => {
-    if (source === "direct") setTimeout(() => playSound("transition"), 50)
-    if (typeof document !== "undefined")
+    if (source === "direct") {
+      setTimeout(() => {
+        if (window.audioManager) {
+          window.audioManager.play("transition")
+          console.log("Som de transição reproduzido")
+        }
+      }, 50)
+    }
+
+    // Parar todos os sons se necessário
+    if (window.audioManager?.stopAllAudio) {
+      window.audioManager.stopAllAudio()
+    }
+
+    if (typeof document !== "undefined") {
       document.dispatchEvent(new CustomEvent("returnToCastle"))
+    }
   }
 
   return (
@@ -146,7 +194,7 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
             <meshStandardMaterial
               map={textureRef.current}
               transparent={true}
-              opacity={uiState.meshOpacity * 0.9} // Controlado pelo estado
+              opacity={uiState.meshOpacity * 0.9}
               emissiveMap={textureRef.current}
               emissiveIntensity={0.5 * uiState.meshOpacity} // Também animado
               emissive={new THREE.Color(0xffffff)}
@@ -167,19 +215,30 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
             transform
             wrapperClass="mirror-html-wrapper"
             distanceFactor={350}
-            >
+          >
             <div
               className="mirror-content"
-              style={{ opacity: uiState.opacity }}
+              style={{
+                opacity: uiState.opacity,
+                transition: "opacity 0.5s ease-in-out"
+              }}
             >
               <div className="mirror-page-wrapper">
                 <MirrorPage />
               </div>
 
               {uiState.showButtons && (
-                // button in the bottom
-                <div className="justify-center flex flex-col items-center">
-                  <button onClick={handleBackToMain} className="text-white bg-pink-500 hover:bg-pink-600 border border-pink-400 rounded-lg px-4 py-2 mt-4">
+                <div
+                  className="justify-center flex flex-col items-center"
+                  style={{
+                    opacity: uiState.showButtons ? 1 : 0,
+                    transition: "opacity 0.5s ease-in-out"
+                  }}
+                >
+                  <button
+                    onClick={handleBackToMain}
+                    className="text-white bg-pink-500 hover:bg-pink-600 border border-pink-400 rounded-lg px-4 py-2 mt-4"
+                  >
                     {getNavigationSource("mirror") === "pole"
                       ? "Return to Cupid's Church"
                       : "Return to Castle"}
