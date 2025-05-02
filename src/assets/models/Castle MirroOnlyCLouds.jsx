@@ -432,7 +432,6 @@ const useVideoTexture = videoPath => {
     video.loop = true
     video.muted = true
     video.playsInline = true
-    video.autoplay = true
     videoRef.current = video
     const videoTexture = new VideoTexture(video)
     videoTexture.minFilter = LinearFilter
@@ -589,7 +588,7 @@ const useCastleHeartMaterial = (
     })
   }, [textures, metalness, roughness, emissiveIntensity, emissiveColor, clouds])
 }
-// Castle Heart Mask Material
+
 const useCastleHeartMaskMaterial = () => {
   const clouds = useTexture("/images/studio.jpg")
 
@@ -1043,54 +1042,33 @@ const useBowMaterial = () => {
   )
 }
 
-// Mirror Material
-const useMirrorMaterial = activeSection => {
-  const defaultEnvMap = useTexture("/images/clouds.jpg")
-  // Replace texture with video
-  const { texture: mirrorVideoTexture, playVideo: playMirrorVideo } =
-    useVideoTexture("/video/Mirror.mp4")
+//MirrorMaterial
+const useMirrorMaterial = () => {
+  const clouds = useTexture("/images/clouds.jpg")
 
   useEffect(() => {
-    if (defaultEnvMap) {
-      defaultEnvMap.mapping = THREE.EquirectangularReflectionMapping
-      defaultEnvMap.needsUpdate = true
+    if (clouds) {
+      clouds.mapping = THREE.EquirectangularReflectionMapping
     }
-  }, [defaultEnvMap])
+  }, [clouds])
 
-  // Play the video when the material is created
-  useEffect(() => {
-    if (mirrorVideoTexture) {
-      playMirrorVideo()
-    }
-  }, [mirrorVideoTexture, playMirrorVideo])
-
-  return useMemo(() => {
-    // Version for mirror section (aidatingcoach)
-    if (activeSection === "aidatingcoach") {
-      return new THREE.MeshBasicMaterial({
-        map: mirrorVideoTexture, // Use video texture instead of static image
-        opacity: 1,
-        roughness: 0,
-        metalness: 0,
-        side: THREE.DoubleSide,
+  return useMemo(
+    () =>
+      new MeshPhysicalMaterial({
+        color: new Color("#a6cce5"),
         transparent: false,
-      })
-    }
-
-    // Version for other sections
-    return new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color("#a6cce5"),
-      transparent: false,
-      alphaTest: 0.05,
-      side: THREE.DoubleSide,
-      blending: THREE.NormalBlending,
-      roughness: 0,
-      metalness: 0.3,
-      envMap: defaultEnvMap,
-      envMapIntensity: 1.0,
-    })
-  }, [mirrorVideoTexture, defaultEnvMap, activeSection])
+        alphaTest: 0.05,
+        side: DoubleSide,
+        blending: NormalBlending,
+        roughness: 0,
+        metalness: 0.3,
+        envMap: clouds,
+        envMapIntensity: 1.0,
+      }),
+    [clouds]
+  )
 }
+
 //Hallos Material
 const useHallosMaterial = () => {
   // Load environment map texture
@@ -1419,7 +1397,6 @@ const CastleModel = ({
   setScrollIframeActive,
   onPortalPlay,
   onWaterPlay,
-  activeSection,
 }) => {
   const { nodes } = useGLTF("/models/Castle.glb")
   const material = useCastleMaterial()
@@ -1441,7 +1418,7 @@ const CastleModel = ({
   const AtmMetalMaterial = useAtmMetalMaterial()
   const scrollMaterial = useScrollMaterial()
   const portal = usePortalMaterial()
-  const mirror = useMirrorMaterial(activeSection)
+  const mirror = useMirrorMaterial()
   const hallosMaterial = useHallosMaterial()
 
   useFrame(({ camera }) => {
@@ -1738,12 +1715,12 @@ const CastleModel = ({
       />
       <mesh geometry={nodes.floorHeart.geometry} material={floorHeart} />
       <mesh geometry={nodes.MirrorFrame.geometry} material={mirrorFrame} />
-      {/* <mesh
+      <mesh
         geometry={nodes.Mirror.geometry}
         material={mirror}
         onClick={mirrorHandlers.handleClick}
         {...mirrorHandlers.pointerHandlers}
-      /> */}
+      />
       <mesh
         geometry={nodes.Hallos.geometry}
         material={hallosMaterial}
@@ -2280,7 +2257,6 @@ const Castle = ({ activeSection }) => {
           setAtmiframeActive={setAtmiframeActive}
           setMirrorIframeActive={setMirrorIframeActive}
           setScrollIframeActive={setScrollIframeActive}
-          activeSection={activeSection}
           // onPortalPlay={() => console.log("Portal played")}
           // onWaterPlay={() => console.log("Water played")}
         />

@@ -2,12 +2,14 @@ import { Html } from "@react-three/drei"
 import React, { useEffect, useState, useRef } from "react"
 import MirrorPage from "../../components/iframes/Mirror"
 import MirrorBg from "../../components/iframes/MirrorBg"
+import { useGLTF } from "@react-three/drei"
 
 const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
   const [showContent, setShowContent] = useState(false)
   const [showButtons, setShowButtons] = useState(false)
   const [opacity, setOpacity] = useState(0)
   const containerRef = useRef(null)
+  const { nodes, materials } = useGLTF("/models/mirrorPos.glb")
 
   useEffect(() => {
     if (isActive) {
@@ -91,8 +93,9 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
 
   return (
     <group
-      position={[-1.64, 1.45, -0.823]}
-      rotation={[-1.567, -0.002, -2.037]}
+      position={[-1.638, 1.524, -0.825]}
+      rotation={[Math.PI / 2, 0, 0]}
+      scale={0.01}
       {...props}
     >
       {showContent && (
@@ -117,9 +120,9 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
             }}
           >
             {/* Adicione o MirrorBg como background */}
-            <div>
+            {/* <div>
               <MirrorBg />
-            </div>
+            </div> */}
 
             <div>
               <div
@@ -160,6 +163,11 @@ const MirrorIframe = ({ onReturnToMain, isActive, ...props }) => {
           </div>
         </Html>
       )}
+      <mesh
+        geometry={nodes.glassF.geometry}
+        material={nodes.glassF.material}
+        position={[0, 0, -0.1]} // Ajuste a posição Z se necessário
+      />
     </group>
   )
 }
