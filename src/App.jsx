@@ -1,336 +1,77 @@
-import { useEffect, useState, useRef } from "react";
-import Experience from "./pages/Experience";
-import AssetsLoadingManager from "./components/loading/LoadingManager";
-import LoadingUI from "./components/loading/LoadingUI";
+// App.jsx - Versão otimizada apenas para modelos
+import { useEffect, useState } from "react"
+import Experience from "./pages/Experience"
+import LoadingUI from "./components/loading/LoadingUI"
+import AssetsLoadingManager from "./components/loading/LoadingManager"
 
-// Criar o gerenciador de loading no nível mais alto para garantir persistência
+// Cria instância do gerenciador de carregamento
 const loadingManager = new AssetsLoadingManager();
 
-// Pré-configurar todos os recursos necessários
-const setupAssets = () => {
-  // Modelos 3D principais
+// Lista dos modelos essenciais
+const setupModels = () => {
   loadingManager
     .addModel('/models/Castle.glb', 'castle')
     .addModel('/models/castleClouds.glb', 'clouds');
-
-  // Texturas críticas
-  [
-    '/texture/castleColor.webp',
-    '/texture/castleRoughnessV1.webp',
-    '/texture/castleMetallicV1.webp',
-    '/texture/castleHeart_Base_colorAO.webp',
-    '/texture/castleLights_Emissive.webp',
-    '/texture/GodsWallColor.webp',
-    '/texture/WallsColor.webp',
-    '/texture/PilarsColor.webp',
-    '/texture/floorAO.webp',
-    '/texture/floorHeartColor.webp',
-    '/texture/wingsColor_.webp'
-  ].forEach((path, index) => {
-    loadingManager.addTexture(path, `texture${index}`);
-  });
-
-  // Imagens de ambiente
-  [
-    '/images/bg1.jpg',
-    '/images/studio.jpg',
-    '/images/clouds.jpg'
-  ].forEach((path, index) => {
-    loadingManager.addTexture(path, `env${index}`);
-  });
-
-  // Vídeos
-  loadingManager
-    .addVideo('/video/tunnel.mp4', 'tunnel')
-    .addVideo('/video/water.mp4', 'water');
-
-  // // Áudio (se necessário)
-  // [
-  //   '/audio/transition.mp3',
-  //   '/audio/ambient.mp3',
-  //   '/audio/fountain.mp3'
-  // ].forEach((path, index) => {
-  //   loadingManager.addAudio(path, `audio${index}`);
-  // });
 };
 
 function App() {
-  const [isMobileDevice, setIsMobileDevice] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [showExperience, setShowExperience] = useState(false);
-  const [loadingStarted, setLoadingStarted] = useState(false);
-  const [levaReady, setLevaReady] = useState(false);
-  const [criticalModelsReady, setCriticalModelsReady] = useState(false);
-  const loadingStartedRef = useRef(false);
-  const levaCheckIntervalRef = useRef(null);
-  const isVercel = window.location.hostname.includes('vercel.app');
-  const isFirstVisit = !localStorage.getItem('hasVisitedSite');
+  const [isMobileDevice, setIsMobileDevice] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [modelsLoaded, setModelsLoaded] = useState(false)
+  const [showExperience, setShowExperience] = useState(false)
 
-  // Verificar dispositivo móvel
+  // Verifica se é dispositivo móvel
   useEffect(() => {
     const checkMobile = () => {
-      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-      const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-      setIsMobileDevice(mobileRegex.test(userAgent) || window.innerWidth < 768);
-    };
-
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  // Função para verificar se o Leva está carregado
-  const checkLevaAvailability = () => {
-    // Verificar se Leva está disponível na window ou no DOM
-    if (
-      window.__LEVA__ ||
-      window.leva ||
-      // Verificar se controles existe nos componentes React
-      document.querySelector('[data-leva-theme]') ||
-      document.querySelector('.leva-container') ||
-      document.querySelector('.leva-c-kWgxhW') ||
-      document.querySelector('.leva-panel')
-    ) {
-      console.log("✅ Leva detectado e disponível!");
-      setLevaReady(true);
-
-      // Limpar o intervalo uma vez que Leva foi detectado
-      if (levaCheckIntervalRef.current) {
-        clearInterval(levaCheckIntervalRef.current);
-        levaCheckIntervalRef.current = null;
-      }
-
-      // Disparar evento personalizado
-      window.dispatchEvent(new CustomEvent('leva-loaded'));
-      return true;
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera
+      const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
+      setIsMobileDevice(mobileRegex.test(userAgent) || window.innerWidth < 768)
     }
-    return false;
-  };
 
-  // Iniciar pré-carregamento imediatamente
+    checkMobile()
+    window.addEventListener("resize", checkMobile)
+    return () => window.removeEventListener("resize", checkMobile)
+  }, [])
+
+  // Inicia carregamento de modelos
   useEffect(() => {
-    if (loadingStartedRef.current) return;
+    if (isMobileDevice === null) return;
 
-    console.log("Iniciando carregamento...");
-    loadingStartedRef.current = true;
-    setLoadingStarted(true);
-
-    // Silenciar todos os sons durante o carregamento
-    if (window.audioManager) {
-      window.audioManager.muteAll = true;
-      if (window.audioManager.stopAll) {
-        window.audioManager.stopAll();
-      }
-    }
-
-    // Pré-configurar todos os assets
-    setupAssets();
-
-    // Definir callback de conclusão
+    // Configura callback para quando modelos estiverem carregados
     loadingManager.onLoad = () => {
-      console.log("✅ Todos os assets carregados com sucesso!");
-      setTimeout(() => {
-        setIsLoaded(true);
-
-        // No Vercel ou primeira visita, também verificar modelos críticos
-        if (isVercel || isFirstVisit) {
-          // Verificar se os modelos críticos realmente estão carregados
-          const castle = loadingManager.loadedAssets.models['castle'];
-          const clouds = loadingManager.loadedAssets.models['clouds'];
-
-          if (castle && clouds && castle.scene && clouds.scene) {
-            console.log("✅ Modelos críticos verificados e prontos!");
-            setCriticalModelsReady(true);
-          } else {
-            console.warn("⚠️ Modelos críticos ausentes, aguardando carregamento explícito...");
-            // Aguardar evento de carregamento forçado
-            const handleCriticalModelLoaded = () => {
-              // Re-verificar os modelos
-              const updatedCastle = loadingManager.loadedAssets.models['castle'];
-              const updatedClouds = loadingManager.loadedAssets.models['clouds'];
-
-              if (updatedCastle && updatedClouds && updatedCastle.scene && updatedClouds.scene) {
-                console.log("✅ Modelos críticos agora estão prontos após carregamento forçado!");
-                setCriticalModelsReady(true);
-              }
-            };
-
-            window.addEventListener('critical-model-loaded', handleCriticalModelLoaded);
-
-            // Forçar estado pronto após timeout de segurança
-            setTimeout(() => {
-              setCriticalModelsReady(true);
-              window.removeEventListener('critical-model-loaded', handleCriticalModelLoaded);
-            }, 10000); // 10 segundos de timeout
-
-            return () => {
-              window.removeEventListener('critical-model-loaded', handleCriticalModelLoaded);
-            };
-          }
-        } else {
-          // Se não for Vercel nem primeira visita, confiar nos modelos carregados
-          setCriticalModelsReady(true);
-        }
-
-        // Após carregar os assets, iniciar verificação do Leva
-        if (!levaReady && !levaCheckIntervalRef.current) {
-          // Verificar imediatamente
-          if (!checkLevaAvailability()) {
-            // Se não estiver disponível, verificar a cada 300ms
-            levaCheckIntervalRef.current = setInterval(checkLevaAvailability, 300);
-
-            // Definir timeout de segurança (15 segundos)
-            setTimeout(() => {
-              if (levaCheckIntervalRef.current) {
-                clearInterval(levaCheckIntervalRef.current);
-                levaCheckIntervalRef.current = null;
-
-                // Se ainda não estiver pronto após 15s, forçar ready
-                if (!levaReady) {
-                  console.warn("⚠️ Timeout ao aguardar Leva. Continuando mesmo assim...");
-                  setLevaReady(true);
-                }
-              }
-            }, 15000);
-          }
-        }
-      }, 500);
+      console.log('Modelos carregados com sucesso');
+      setModelsLoaded(true);
     };
 
-    // Iniciar carregamento
+    // Inicia carregamento
+    setupModels();
     loadingManager.startLoading();
+  }, [isMobileDevice]);
 
-    // Criar um worker para iniciar o carregamento do Experience em segundo plano
-    const preloadExperience = () => {
-      // Criar um iframe invisível que pré-carrega o canvas mas não é visível
-      const iframe = document.createElement('iframe');
-      iframe.style.position = 'absolute';
-      iframe.style.width = '1px';
-      iframe.style.height = '1px';
-      iframe.style.opacity = '0.01';
-      iframe.style.pointerEvents = 'none';
-      iframe.style.zIndex = '-1000';
-      iframe.src = 'about:blank';
+  // Função chamada quando usuário clicar em Iniciar
+  const handleStartExperience = () => {
+    console.log('Iniciando experiência 3D');
 
-      document.body.appendChild(iframe);
-
-      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-
-      // Criar um canvas invisível dentro do iframe
-      const canvas = iframeDoc.createElement('canvas');
-      canvas.width = 1;
-      canvas.height = 1;
-      iframeDoc.body.appendChild(canvas);
-
-      // Iniciar contexto WebGL
-      try {
-        const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
-        if (gl) {
-          console.log("✓ Contexto WebGL inicializado em segundo plano");
-
-          // Pré-carregar shaders comuns do Three.js
-          const vertexShader = `
-            void main() {
-              gl_Position = vec4(position, 1.0);
-            }
-          `;
-
-          const fragmentShader = `
-            void main() {
-              gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-            }
-          `;
-
-          const vs = gl.createShader(gl.VERTEX_SHADER);
-          gl.shaderSource(vs, vertexShader);
-          gl.compileShader(vs);
-
-          const fs = gl.createShader(gl.FRAGMENT_SHADER);
-          gl.shaderSource(fs, fragmentShader);
-          gl.compileShader(fs);
-        }
-      } catch (e) {
-        console.warn("Não foi possível inicializar WebGL em background:", e);
-      }
-    };
-
-    // Iniciar pré-carregamento após 1 segundo
-    setTimeout(preloadExperience, 1000);
-
-    // Limpar ao desmontar
-    return () => {
-      loadingManager.dispose();
-      if (levaCheckIntervalRef.current) {
-        clearInterval(levaCheckIntervalRef.current);
-        levaCheckIntervalRef.current = null;
-      }
-    };
-  }, []);
-
-  // Monitorar evento de carregamento completo
-  useEffect(() => {
-    const onLoadingComplete = () => {
-      console.log("Carregamento completo! Pronto para iniciar.");
-      setTimeout(() => {
-        setIsLoaded(true);
-      }, 500);
-    };
-
-    // Evento para quando o Leva estiver carregado
-    const onLevaLoaded = () => {
-      console.log("Leva carregado e pronto!");
-      setLevaReady(true);
-    };
-
-    window.addEventListener('loading-complete', onLoadingComplete);
-    window.addEventListener('leva-loaded', onLevaLoaded);
-
-    return () => {
-      window.removeEventListener('loading-complete', onLoadingComplete);
-      window.removeEventListener('leva-loaded', onLevaLoaded);
-    };
-  }, []);
-
-  // Monitorar mudanças no estado de "pronto"
-  useEffect(() => {
-    // Verifica se tudo está pronto para mostrar o botão "iniciar"
-    if (isLoaded && levaReady && criticalModelsReady) {
-      console.log("✅✅✅ TUDO PRONTO: Assets, Leva e Modelos Críticos!");
-    }
-  }, [isLoaded, levaReady, criticalModelsReady]);
-
-  // Função para iniciar a experiência
-  const handleStart = () => {
-    console.log("Usuário iniciou a experiência");
-
-    // Disponibilizar assets carregados globalmente
+    // Disponibiliza modelos globalmente
     window.assets = {
-      models: loadingManager.loadedAssets.models,
-      textures: loadingManager.loadedAssets.textures,
-      videos: loadingManager.loadedAssets.videos,
-      audio: loadingManager.loadedAssets.audio
+      models: loadingManager.loadedAssets.models
     };
 
-    // Montar a Experience
+    // Mostra a experiência
+    setIsLoading(false);
     setShowExperience(true);
-
-    // Remover a tela de carregamento com uma transição suave
-    setTimeout(() => {
-      setIsLoading(false);
-
-      // Reativar o áudio apenas DEPOIS que tudo estiver carregado
-      if (window.audioManager) {
-        window.audioManager.muteAll = false;
-      }
-    }, 800);
   };
 
-  // Tela para dispositivos móveis
+  // Aguardando detecção de dispositivo
+  if (isMobileDevice === null) {
+    return <LoadingUI isLoadingStarted={false} />
+  }
+
+  // Aviso para dispositivos móveis
   if (isMobileDevice) {
     return (
       <div className="fixed inset-0 w-full h-full flex flex-col items-center justify-center bg-black text-white p-6">
-        <h2 className="text-2xl mb-4">Dispositivo Móvel Detectado</h2>
+        <h2 className="text-2xl mb-4">Dispositivo Móvel</h2>
         <p className="text-center mb-6">
           A experiência 3D funciona melhor em desktops. Desempenho pode ser limitado em dispositivos móveis.
         </p>
@@ -341,49 +82,31 @@ function App() {
           Continuar Mesmo Assim
         </button>
       </div>
-    );
+    )
   }
 
   return (
-    <div className="w-full h-screen bg-black relative overflow-hidden">
-      {/* Container da Experiência com transição suave */}
-      <div
-        className={`absolute inset-0 transition-opacity duration-800 ease-in-out ${
-          showExperience ? "opacity-100" : "opacity-0"
-        }`}
-      >
-        {/* Renderiza Experience apenas após loadingManager estar pronto */}
-        {(loadingManager.isLoaded() || showExperience) && (
-          <Experience
-            loadedAssets={{
-              models: loadingManager.loadedAssets.models,
-              textures: loadingManager.loadedAssets.textures,
-              videos: loadingManager.loadedAssets.videos
-            }}
-            isReady={showExperience}
-            onLevaReady={() => setLevaReady(true)}
-          />
-        )}
+    <div className="relative w-full h-screen bg-black">
+      {/* Experiência 3D - mostrada apenas após carregamento */}
+      <div className={showExperience ? "opacity-100" : "opacity-0"} style={{transition: "opacity 1s ease"}}>
+        <Experience
+          loadedAssets={{models: loadingManager.loadedAssets.models}}
+          isReady={showExperience}
+        />
       </div>
 
-      {/* Tela de carregamento com transição suave */}
+      {/* Loading UI - mostrada até o usuário clicar em iniciar */}
       {isLoading && (
-        <div
-          className={`absolute inset-0 z-50 transition-opacity duration-500 ${
-            showExperience ? "opacity-0 pointer-events-none" : "opacity-100"
-          }`}
-        >
+        <div className="fixed inset-0 z-50 bg-black">
           <LoadingUI
-            isLoaded={isLoaded}
-            levaReady={levaReady && criticalModelsReady}
-            onStart={handleStart}
-            isVercel={isVercel}
-            isFirstVisit={isFirstVisit}
+            isLoadingStarted={true}
+            onAnimationComplete={handleStartExperience}
+            forceComplete={modelsLoaded}
           />
         </div>
       )}
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
