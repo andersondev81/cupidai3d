@@ -1,6 +1,7 @@
 // LoadingUI.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import './LoadingUI.css';
+import CupidLoad from '../../assets/animations/CupidLoad';
 
 const LoadingUI = ({ onAnimationComplete }) => {
   const [progress, setProgress] = useState(0);
@@ -114,8 +115,11 @@ const LoadingUI = ({ onAnimationComplete }) => {
 
   return (
     <div id="loading-screen" className="loading-screen">
+
       <div className="loading-content">
+
         <div className="castle-icon">
+        <CupidLoad/>
           {/* Animação do castelo */}
           {/* <div className="castle-shape">
             <div className="tower left"></div>
@@ -130,6 +134,7 @@ const LoadingUI = ({ onAnimationComplete }) => {
         </h1> */}
 
         <div className="progress-container">
+
           <div className="progress-bar">
             <div
               className="progress-fill"
