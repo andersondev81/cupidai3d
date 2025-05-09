@@ -47,8 +47,8 @@ const usePoleMaterial = () => {
         envMap,
         envMapIntensity: 2,
         side: DoubleSide,
-        roughness: 0.6,
-        metalness: 1,
+        roughness: 0.7,
+        metalness: 0.7,
       }),
     [textures, envMap]
   )
@@ -77,9 +77,9 @@ const useHeartsMaterial = () => {
         side: DoubleSide,
         emissive: new THREE.Color(0x00bdff),
         emissiveIntensity: 6,
-        metalness: 1.5,
-        roughness: 0.6,
-        envMapIntensity: 1.4,
+        metalness: 1.2,
+        roughness: 0.5,
+        envMapIntensity: 3.5,
       }),
     [textures, envMap]
   )

@@ -20,6 +20,7 @@
     "gsap": "^3.12.7",
     "howler": "^2.2.4",
     "leva": "^0.10.0",
+    "lottie-react": "^2.4.1",
     "lottie-web": "^5.12.2",
     "lucide-react": "^0.487.0",
     "material-composer-r3f": "^0.2.5",
