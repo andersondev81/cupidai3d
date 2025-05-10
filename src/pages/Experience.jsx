@@ -1,4 +1,5 @@
 import { Perf } from "r3f-perf"
+import gsap from "gsap"
 import React, {
   Suspense,
   useState,
@@ -340,31 +341,64 @@ const SceneController = React.memo(({ section, cameraRef, onLevaReady }) => {
 
 // Scene Content Components
 const PrimaryContent = React.memo(
-  ({ activeSection, onSectionChange, loadedAssets }) => (
-    <>
-      <Environment
-        files="/images/CloudsBG1.hdr"
-        background
-        resolution={256}
-        ground={{ height: 5, radius: 20, scale: 100 }}
-      />
+  ({ activeSection, onSectionChange, loadedAssets }) => {
+    const groundParams = useRef({
+      height: 5,
+      radius: 1200,
+      scale: 100,
+    })
 
-      <EffectsTree />
-      <Castle
-        activeSection={activeSection}
-        scale={[2, 1.6, 2]}
-        loadedAssets={loadedAssets}
-      />
-      <Flower />
-      <Stairs />
-      <Orb loadedAssets={loadedAssets} />
-      <Pole
-        position={[-0.8, 0, 5.8]}
-        scale={[0.6, 0.6, 0.6]}
-        onSectionChange={onSectionChange}
-      />
-    </>
-  )
+    const [forceUpdate, setForceUpdate] = useState(0)
+
+    useEffect(() => {
+      if (typeof gsap !== "undefined") {
+        console.log("Start Environment Animation")
+
+        gsap.to(groundParams.current, {
+          radius: 20,
+          duration: 2,
+          delay: 3,
+          ease: "power2.inOut",
+          onUpdate: () => {
+            setForceUpdate(prev => prev + 1)
+          },
+          onComplete: () => {
+            console.log("Animação concluída!")
+          },
+        })
+      }
+    }, [])
+
+    return (
+      <>
+        <Environment
+          key={`env-${forceUpdate}`} // Chave única para forçar recriação
+          files="/images/CloudsBG1.hdr"
+          background
+          resolution={256}
+          ground={{
+            height: groundParams.current.height,
+            radius: groundParams.current.radius, // Garante que pega o valor atual
+            scale: groundParams.current.scale,
+          }}
+        />
+        <EffectsTree />
+        <Castle
+          activeSection={activeSection}
+          scale={[2, 1.6, 2]}
+          loadedAssets={loadedAssets}
+        />
+        <Flower />
+        <Stairs />
+        <Orb loadedAssets={loadedAssets} />
+        <Pole
+          position={[-0.8, 0, 5.8]}
+          scale={[0.6, 0.6, 0.6]}
+          onSectionChange={onSectionChange}
+        />
+      </>
+    )
+  }
 )
 
 const SecondaryContent = React.memo(({ loadedAssets }) => {
@@ -418,48 +452,137 @@ const SecondaryContent = React.memo(({ loadedAssets }) => {
           }}
           clouds={[
             //Front clouds
-        { position: [-0.1, 0, 4.3], fade: 20 },
-        { position: [0, 0, 4.5], segments: 25, bounds: [10,1,1.2], fade: 5, opacity: 1.3  },
-        { position: [-0.6, -0.15, 5], segments: 8, bounds: [1.5,1,1], opacity: 1.5  },
-       //far front
-        { position: [0, 0, 5.6], density:1, segments: 30, bounds: [10,1,6]  },
-        { position: [-2.8, 0, 3.3], density:1, segments: 35, bounds: [12,1,5]  },
-        { position: [-3.0, 0, 5.0], density:1, segments: 30, bounds: [10,1,5]  },
-        { position: [2.8, 0, 3.3], density:1, segments: 35, bounds: [12,1,5]  },
-        { position: [3.0, 0, 5.0], density:1, segments: 30, bounds: [10,1,5]  },
-        // right side
-        { position: [0.2, 0, 3.95], rotation: [0, 1.7, 3.3]},
-        { position: [1.6, 0.2, 2.6], rotation: [0, 0.15, 0] },
-        { position: [2.05, 0.15, 2.2], rotation: [0, 1, 0] },
-        { position: [2.65, 0.15, 1.1], rotation: [0, 1.7, 0] },
-        { position: [2.8, 0.1, -0.6], rotation: [0, 1.4, 0] },
-        // far right
-        { position: [6.6, 0, 2], density:1, segments: 30, bounds: [10,1,5], rotation: [0, 3.14, 0]  },
-        { position: [6.6, 0, -1.5], density:1, segments: 30, bounds: [10,1,5], rotation: [0, 3.14, 0]  },
-        { position: [6.0, 0, -4.8], density:1, segments: 30, bounds: [10,1,5], rotation: [0, 3.14, 0]  },
-        // rear side
-        { position: [2.9, 0.15, -2.0], rotation: [0, 2, 0] },
-        { position: [1.4, 0.2, -3.35], rotation: [3.14, 0.15, 0] },
-        { position: [-0.1, 0.2, -3.45], rotation: [3.14, 0, 0] },
-        { position: [-1.5, 0.2, -3.35], rotation: [3.14, -0.1, 0] },
-        { position: [-1.75, 0.15, -2.55], rotation: [0, 0.8, 0] },
-        // far back
-        { position: [0, 0, -6.0], density:1, segments: 30, bounds: [12,1,5], rotation: [0, 3.14, 0]  },
-        { position: [3, 0, -8.3], density:1, segments: 20, bounds: [10,1,3], rotation: [0, 3.14, 0]  },
-        { position: [-3, 0, -8.0], density:1, segments: 20, bounds: [10,1,3], rotation: [0, 3.14, 0]  },
-        //{ position: [3.5, 0, -10.0], density:1, segments: 20, bounds: [8,1,6], rotation: [0, 5.2, 0]  },
-        //{ position: [-3.5, 0, -9.0], density:1, segments: 30, bounds: [10,1,6], rotation: [0, 3.14, 0]  },
-        //left side
-        { position: [-2.55, 0.15, -1], rotation: [0, 1.65, 3.14] },
-        { position: [-2.7, 0.15, 0.1], rotation: [3.14, 1.7, 3.14] },
-        { position: [-2, 0.15, 2.4], rotation: [0, -1.1, 0] },
-        { position: [-1, 0.15, 2.75], rotation: [0, -0.4, 0] },
-        { position: [-0.25, 0, 4.2], rotation: [0, -1.9, 0] },
-        // far left
-        { position: [-6.6, 0, 2.0], density:1, segments: 30, bounds: [10,1,5], rotation: [0, 3.14, 0]  },
-        { position: [-6.6, 0, -1.5], density:1, segments: 30, bounds: [10,1,5], rotation: [0, 3.14, 0]  },
-        { position: [-6.0, 0, -4.8], density:1, segments: 30, bounds: [10,1,5], rotation: [0, 3.14, 0]  },
-
+            { position: [-0.1, 0, 4.3], fade: 20 },
+            {
+              position: [0, 0, 4.5],
+              segments: 25,
+              bounds: [10, 1, 1.2],
+              fade: 5,
+              opacity: 1.3,
+            },
+            {
+              position: [-0.6, -0.15, 5],
+              segments: 8,
+              bounds: [1.5, 1, 1],
+              opacity: 1.5,
+            },
+            //far front
+            {
+              position: [0, 0, 5.6],
+              density: 1,
+              segments: 30,
+              bounds: [10, 1, 6],
+            },
+            {
+              position: [-2.8, 0, 3.3],
+              density: 1,
+              segments: 35,
+              bounds: [12, 1, 5],
+            },
+            {
+              position: [-3.0, 0, 5.0],
+              density: 1,
+              segments: 30,
+              bounds: [10, 1, 5],
+            },
+            {
+              position: [2.8, 0, 3.3],
+              density: 1,
+              segments: 35,
+              bounds: [12, 1, 5],
+            },
+            {
+              position: [3.0, 0, 5.0],
+              density: 1,
+              segments: 30,
+              bounds: [10, 1, 5],
+            },
+            // right side
+            { position: [0.2, 0, 3.95], rotation: [0, 1.7, 3.3] },
+            { position: [1.6, 0.2, 2.6], rotation: [0, 0.15, 0] },
+            { position: [2.05, 0.15, 2.2], rotation: [0, 1, 0] },
+            { position: [2.65, 0.15, 1.1], rotation: [0, 1.7, 0] },
+            { position: [2.8, 0.1, -0.6], rotation: [0, 1.4, 0] },
+            // far right
+            {
+              position: [6.6, 0, 2],
+              density: 1,
+              segments: 30,
+              bounds: [10, 1, 5],
+              rotation: [0, 3.14, 0],
+            },
+            {
+              position: [6.6, 0, -1.5],
+              density: 1,
+              segments: 30,
+              bounds: [10, 1, 5],
+              rotation: [0, 3.14, 0],
+            },
+            {
+              position: [6.0, 0, -4.8],
+              density: 1,
+              segments: 30,
+              bounds: [10, 1, 5],
+              rotation: [0, 3.14, 0],
+            },
+            // rear side
+            { position: [2.9, 0.15, -2.0], rotation: [0, 2, 0] },
+            { position: [1.4, 0.2, -3.35], rotation: [3.14, 0.15, 0] },
+            { position: [-0.1, 0.2, -3.45], rotation: [3.14, 0, 0] },
+            { position: [-1.5, 0.2, -3.35], rotation: [3.14, -0.1, 0] },
+            { position: [-1.75, 0.15, -2.55], rotation: [0, 0.8, 0] },
+            // far back
+            {
+              position: [0, 0, -6.0],
+              density: 1,
+              segments: 30,
+              bounds: [12, 1, 5],
+              rotation: [0, 3.14, 0],
+            },
+            {
+              position: [3, 0, -8.3],
+              density: 1,
+              segments: 20,
+              bounds: [10, 1, 3],
+              rotation: [0, 3.14, 0],
+            },
+            {
+              position: [-3, 0, -8.0],
+              density: 1,
+              segments: 20,
+              bounds: [10, 1, 3],
+              rotation: [0, 3.14, 0],
+            },
+            //{ position: [3.5, 0, -10.0], density:1, segments: 20, bounds: [8,1,6], rotation: [0, 5.2, 0]  },
+            //{ position: [-3.5, 0, -9.0], density:1, segments: 30, bounds: [10,1,6], rotation: [0, 3.14, 0]  },
+            //left side
+            { position: [-2.55, 0.15, -1], rotation: [0, 1.65, 3.14] },
+            { position: [-2.7, 0.15, 0.1], rotation: [3.14, 1.7, 3.14] },
+            { position: [-2, 0.15, 2.4], rotation: [0, -1.1, 0] },
+            { position: [-1, 0.15, 2.75], rotation: [0, -0.4, 0] },
+            { position: [-0.25, 0, 4.2], rotation: [0, -1.9, 0] },
+            // far left
+            {
+              position: [-6.6, 0, 2.0],
+              density: 1,
+              segments: 30,
+              bounds: [10, 1, 5],
+              rotation: [0, 3.14, 0],
+            },
+            {
+              position: [-6.6, 0, -1.5],
+              density: 1,
+              segments: 30,
+              bounds: [10, 1, 5],
+              rotation: [0, 3.14, 0],
+            },
+            {
+              position: [-6.0, 0, -4.8],
+              density: 1,
+              segments: 30,
+              bounds: [10, 1, 5],
+              rotation: [0, 3.14, 0],
+            },
           ]}
         />
       </group>
