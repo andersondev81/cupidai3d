@@ -3,7 +3,7 @@ import Experience from "./pages/Experience"
 import LoadingUI from "./components/loading/LoadingUI"
 import AssetsLoadingManager from "./components/loading/LoadingManager"
 
-let loadingManager = null;
+let loadingManager = null
 
 function App() {
   const [isMobileDevice, setIsMobileDevice] = useState(null)
@@ -23,40 +23,39 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (isMobileDevice === null) return;
+    if (isMobileDevice === null) return
 
-    loadingManager = new AssetsLoadingManager();
-
+    loadingManager = new AssetsLoadingManager()
 
     loadingManager.onLoad = () => {
-      console.log('Models loaded successfully');
+      console.log("Models loaded successfully")
 
-      setLoadedAssets(loadingManager.loadedAssets);
-      setModelsLoaded(true);
-    };
+      setLoadedAssets(loadingManager.loadedAssets)
+      setModelsLoaded(true)
+    }
 
     loadingManager
-      .addModel('/models/Castle.glb', 'castle')
-      .addModel('/models/castleClouds.glb', 'clouds');
+      .addModel("/models/Castle.glb", "castle")
+      .addModel("/models/castleClouds.glb", "clouds")
 
-    loadingManager.startLoading();
+    loadingManager.startLoading()
 
     return () => {
       if (loadingManager && loadingManager.dispose) {
-        loadingManager.dispose();
+        loadingManager.dispose()
       }
 
-      setLoadedAssets(null);
-      loadingManager = null;
-    };
-  }, [isMobileDevice]);
+      setLoadedAssets(null)
+      loadingManager = null
+    }
+  }, [isMobileDevice])
 
   const handleStartExperience = () => {
-    console.log('Starting 3D experience');
+    console.log("Starting 3D experience")
 
-    setIsLoading(false);
-    setShowExperience(true);
-  };
+    setIsLoading(false)
+    setShowExperience(true)
+  }
 
   if (isMobileDevice === null) {
     return <LoadingUI isLoadingStarted={false} />
@@ -67,7 +66,8 @@ function App() {
       <div className="fixed inset-0 w-full h-full flex flex-col items-center justify-center bg-black text-white p-6">
         <h2 className="text-2xl mb-4">Mobile Device</h2>
         <p className="text-center mb-6">
-          The 3D experience works better on desktops. Performance may be limited on mobile devices.
+          The 3D experience works better on desktops. Performance may be limited
+          on mobile devices.
         </p>
         <button
           onClick={() => setIsMobileDevice(false)}
@@ -82,11 +82,11 @@ function App() {
   return (
     <div className="relative w-full h-screen bg-black">
       {showExperience && (
-        <div className={showExperience ? "opacity-100" : "opacity-0"} style={{transition: "opacity 1s ease"}}>
-          <Experience
-            loadedAssets={loadedAssets}
-            isReady={showExperience}
-          />
+        <div
+          className={showExperience ? "opacity-100" : "opacity-0"}
+          style={{ transition: "opacity 1s ease" }}
+        >
+          <Experience loadedAssets={loadedAssets} isReady={showExperience} />
         </div>
       )}
 
