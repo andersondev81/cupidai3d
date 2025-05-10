@@ -302,8 +302,8 @@ window.globalNavigation = {
 const cameraConfig = {
   default: {
     large: [
-      132.95512091806918, 87.33269746995288, 188.3864842177005,
-      -0.1823668021901385, -0.24424001987657776, 0.22391277970336168,
+      -0.6191818190771635, 1.0420789531859995, 92.27433517944273,
+      -0.21830679207380707, 1.042078953185994, 0.860456882413919,
     ],
     small: [
       132.95512091806918, 87.33269746995288, 188.3864842177005,
@@ -320,14 +320,7 @@ const cameraConfig = {
         1.936122025766665, 1.1392067925461205, -0.9748917781012864,
         0.4694349273915467, 1.0221643232260371, -0.2668941766080719,
       ],
-      // aidatingcoach: [
-      //   -2.2760569098812082, 1.4206049444523328,
-      //   -1.131720176265031,
-      //   0.1949301285107338,
-      //   1.5907278022411098,
-      //   0.1158981525808553,
 
-      // ],
       aidatingcoach: [
         -2.361710501463067,
 
@@ -342,36 +335,16 @@ const cameraConfig = {
         -0.07648364070439503,
       ],
 
-      // aidatingcoach: [
-      //   -1.724581420919758,
-
-      //   1.0878093340956256,
-
-      //   1.7689856870620106,
-
-      //   -0.21830679207380707,
-
-      //   1.042078953185994,
-
-      //   0.860456882413919,
-      // ],
-
       download: [
         1.936122025766665, 1.1392067925461205, -0.9748917781012864,
         0.4694349273915467, 1.0221643232260371, -0.2668941766080719,
       ],
-      // token: [
-      //   1.471229417317432, 1.243021425805931, 1.751274978169417,
-      //   -0.218306792073807, 1.042078953185994, 0.860456882413919,
-      // ],
+
       token: [
         1.825378771634347, 1.233948744799477, 0.9290349176726579,
         -0.1281470601284271, 0.805001281674392, -0.041739658223842804,
       ],
-      // token: [
-      //   1.8594047310086075, 1.2131688334714825, 0.9650521303938466,
-      //   0.20040299564538017, 0.827161135786848, 0.08615779431913168,
-      // ],
+
       roadmap: [
         -2.162176291859386,
 
@@ -611,7 +584,6 @@ const useCastleHeartMaskMaterial = () => {
         envMapIntensity: 1.5, // Reflexos mais intensos
         emissive: new Color("#F0D060"), // Cor de emissão mais quente
         emissiveIntensity: 0.3, // Brilho sutil
-
       }),
     [clouds]
   )
@@ -1084,7 +1056,6 @@ const useHallosMaterial = () => {
         // Advanced Effects
         emissive: new THREE.Color("#DABB46").multiplyScalar(0.1), // Subtle glow
         emissiveIntensity: 2, // Controlled self-illumination
-
       }),
     [clouds] // Recreate material when envMap updates
   )
@@ -1201,7 +1172,6 @@ const useAtmMaterial = () => {
         emissiveIntensity: -0.5,
         envMap: clouds,
         envMapIntensity: 0.8,
-
       }),
     [textures, clouds] // Added clouds to dependencies
   )
@@ -1377,7 +1347,7 @@ const CastleModel = ({
   setScrollIframeActive,
   onPortalPlay,
   onWaterPlay,
-    activeSection,
+  activeSection,
 }) => {
   const { nodes } = useGLTF("/models/Castle.glb")
   const material = useCastleMaterial()
@@ -1564,7 +1534,6 @@ const CastleModel = ({
         dyFountain * dyFountain +
         dzFountain * dzFountain
     )
-
 
     const maxFountainDistance = 3.5
 
